@@ -2,16 +2,18 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useSession, signOut } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, LayoutGrid, Settings, HelpCircle, LogOut, Menu, X } from "lucide-react"
+import { Plus, LayoutGrid, Settings, HelpCircle, LogOut, Menu, X, BookOpen, FolderKanban } from "lucide-react"
 
 export function Sidebar() {
     const { data: session } = useSession()
     const router = useRouter()
     const searchParams = useSearchParams()
+    const pathname = usePathname()
     const currentChatId = searchParams.get('id')
     const [isOpen, setIsOpen] = React.useState(false)
     const [chats, setChats] = React.useState<any[]>([])
@@ -30,7 +32,7 @@ export function Sidebar() {
     // Close sidebar on route change (mobile)
     React.useEffect(() => {
         setIsOpen(false)
-    }, [currentChatId])
+    }, [currentChatId, pathname])
 
     const name = session?.user?.name || "User"
     const email = session?.user?.email || "No email"
@@ -43,11 +45,30 @@ export function Sidebar() {
     const todayChats = chats.filter(c => new Date(c.updatedAt) >= today)
     const olderChats = chats.filter(c => new Date(c.updatedAt) < today)
 
+    const navLinks = [
+        { href: "/prompt-bank", icon: <LayoutGrid size={16} />, label: "Prompt Bank" },
+        { href: "/blog", icon: <BookOpen size={16} />, label: "Blog" },
+        { href: "/projects", icon: <FolderKanban size={16} />, label: "My Projects" },
+    ]
+
     const sidebarContent = (
         <>
             <div className="p-4 border-b border-border">
                 <div className="flex items-center justify-between mb-6 px-2">
-                    <Link href="/" className="flex items-center gap-1 font-bold text-xl" onClick={() => setIsOpen(false)}>
+                    <Link href="/" className="flex items-center gap-2 font-bold text-xl" onClick={() => setIsOpen(false)}>
+                        {/* Derek logo — small rounded circle */}
+                        <div className="relative w-7 h-7 shrink-0">
+                            <Image
+                                src="/derek-logo.png"
+                                alt="Derek"
+                                fill
+                                className="object-cover rounded-full ring-1 ring-[#e05252]/40"
+                                onError={(e) => {
+                                    const t = e.target as HTMLImageElement
+                                    t.style.display = 'none'
+                                }}
+                            />
+                        </div>
                         <span className="text-text-primary">EaseMyPrompt</span>
                         <span className="text-accent">.ai</span>
                     </Link>
@@ -103,13 +124,21 @@ export function Sidebar() {
                     </div>
                 )}
 
-                <div className="pt-2 border-t border-border mt-4">
-                    <Link href="/prompt-bank" onClick={() => setIsOpen(false)}>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-btn transition-colors">
-                            <LayoutGrid size={16} />
-                            Prompt Bank
-                        </button>
-                    </Link>
+                {/* Navigation Links */}
+                <div className="pt-2 border-t border-border mt-4 space-y-1">
+                    {navLinks.map(link => (
+                        <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)}>
+                            <button
+                                className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-btn transition-colors ${pathname === link.href
+                                    ? 'bg-bg-hover text-text-primary'
+                                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                                    }`}
+                            >
+                                {link.icon}
+                                {link.label}
+                            </button>
+                        </Link>
+                    ))}
                 </div>
             </div>
 
@@ -147,7 +176,7 @@ export function Sidebar() {
                 <Menu size={20} />
             </button>
 
-            {/* ── BACKDROP (mobile only, shown when open) ── */}
+            {/* ── BACKDROP (mobile only) ── */}
             {isOpen && (
                 <div
                     className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
@@ -155,7 +184,7 @@ export function Sidebar() {
                 />
             )}
 
-            {/* ── SIDEBAR: always visible on md+, slide-in drawer on mobile ── */}
+            {/* ── SIDEBAR ── */}
             <aside
                 className={`
                     fixed md:static inset-y-0 left-0 z-[60]
