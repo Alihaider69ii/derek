@@ -62,11 +62,24 @@ function ThinkingIndicator({ words, color }: { words: string[]; color: string })
 }
 
 // ── Copy button ─────────────────────────────────────────────────────────────
+function extractCopyableText(text: string): string {
+    if (!text) return "";
+    
+    // 1. Try to extract content between "STRUCTURED PROMPT:" and "PRO TIP:"
+    const promptMatch = text.match(/(?:\*\*STRUCTURED PROMPT:\*\*|STRUCTURED PROMPT:)\s*([\s\S]*?)(?=(?:\*\*PRO\s*TIP:\*\*|PRO\s*TIP:)|$)/i);
+    if (promptMatch && promptMatch[1].trim()) {
+        return promptMatch[1].trim();
+    }
+    
+    // Fallback: return full text if no known separators are found
+    return text.trim();
+}
+
 function CopyButton({ text, color }: { text: string; color: string }) {
     const [copied, setCopied] = React.useState(false)
     const handleCopy = async () => {
         try {
-            await navigator.clipboard.writeText(text)
+            await navigator.clipboard.writeText(extractCopyableText(text))
             setCopied(true)
             setTimeout(() => setCopied(false), 2000)
         } catch {}
@@ -75,10 +88,10 @@ function CopyButton({ text, color }: { text: string; color: string }) {
         <button
             onClick={handleCopy}
             className="flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary transition-colors mt-1 ml-1 select-none"
-            title="Copy response"
+            title="Smart Copy: Copies only the essential relevant content"
         >
             {copied ? <Check size={13} className="text-green-500" /> : <Copy size={13} />}
-            {copied ? "Copied" : "Copy"}
+            {copied ? "Copied" : "Smart Copy"}
         </button>
     )
 }
