@@ -116,9 +116,15 @@ export default function LandingPage() {
               <h1 className="mb-6 text-text-primary text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-balance">
                 Engineer Prompts <span className="text-accent text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover">Like a Pro</span>. Test Them Instantly.
               </h1>
-              <p className="text-text-secondary text-lg md:text-xl">
+              <p className="text-text-secondary text-lg md:text-xl mb-8">
                 Tell Derek your casual idea. He turns it into a structured, world-class prompt. Then paste it to Claude and see the magic happen.
               </p>
+              
+              <div className="mt-12 mb-4 inline-block bg-accent/5 border border-accent/20 rounded-full px-6 py-3">
+                 <p className="text-accent font-semibold animate-pulse text-sm md:text-base">
+                   Stop guessing, start getting results — convert any idea into precision-crafted AI prompts built for speed, quality, and impact
+                 </p>
+              </div>
             </div>
 
             <div className="w-full max-w-6xl mx-auto animate-in slide-in-from-bottom-10 fade-in duration-700 delay-150 fill-mode-both">
@@ -132,10 +138,13 @@ export default function LandingPage() {
         {/* VIRAL PROMPTS CAROUSEL */}
         <section className="py-16 bg-bg-panel/50 border-y border-border overflow-hidden">
           <div className="container mx-auto px-4 mb-8">
-            <h2 className="text-2xl font-bold text-text-primary flex items-center gap-3">
-              <div className="w-1.5 h-6 bg-accent rounded-full" />
-              Viral Prompts
-            </h2>
+            <div className="w-full text-center px-4 mb-10">
+              <p className="text-accent font-medium tracking-wide uppercase text-sm mb-2">Unlock AI's Full potential with perfect prompts by derek</p>
+              <h2 className="text-2xl font-bold text-text-primary flex items-center justify-center gap-3">
+                <div className="w-1.5 h-6 bg-accent rounded-full" />
+                Viral Prompts
+              </h2>
+            </div>
           </div>
 
           <div className="relative overflow-hidden hide-scrollbar pb-4">
@@ -158,7 +167,9 @@ export default function LandingPage() {
         {/* POPULAR PROMPTS GRID */}
         <section className="py-20 px-4 container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-            <h2 className="text-3xl font-bold text-text-primary">Popular Prompts</h2>
+            <div className="w-full text-center mb-10">
+              <h2 className="text-3xl font-bold text-text-primary">Popular Prompts</h2>
+            </div>
             <div className="flex overflow-x-auto gap-2 pb-2 w-full md:w-auto hide-scrollbar">
               {tabs.map((tab) => (
                 <button 
@@ -190,7 +201,18 @@ export default function LandingPage() {
           <div className="container mx-auto max-w-5xl">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl font-bold text-text-primary mb-8">Built for Creators</h2>
+                <h2 className="text-3xl font-bold text-text-primary mb-6">About Us</h2>
+                <p className="text-text-secondary text-sm leading-relaxed mb-6">
+                  easemyprompt.ai is built for people who want clarity, speed, and impact. No guesswork. No generic outputs. Just smart, tailored prompts that unlock scroll-stopping captions, viral scripts, and high-performing hooks—every time.
+                  <br /><br />
+                  Our platform is designed to turn simple ideas into powerful prompts that work with any AI tool. Whether you want to create an Instagram caption, viral hooks, write a message, generate content, plan a project, or simply get help with everyday tasks, easemyprompt.ai helps you generate the perfect prompt in seconds.
+                  <br /><br />
+                  easemyprompt.ai is built for everyone. From social media ideas to daily hustles, work tasks, learning, and creative thinking, we help transform your thoughts into clear, effective prompts that unlock better results from AI.
+                  <br /><br />
+                  Instead of struggling to figure out what to type into AI, you simply share your idea. Our system transforms that idea into a structured, optimized prompt that you can copy and paste into any AI platform to get better, clearer, and more impactful results.
+                  <br /><br />
+                  Because great idea shouldn’t start with confusion — it should start with the right prompt.
+                </p>
                 <div className="space-y-8">
                   <div className="flex gap-4">
                     <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
@@ -198,35 +220,32 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold text-text-primary mb-1">Our Mission</h4>
-                      <p className="text-text-secondary text-sm">To democratize access to world-class prompt engineering for everyone, regardless of technical background.</p>
+                      <p className="text-text-secondary text-sm">Our mission is to simplify, structure, and elevate AI usage by providing a powerful Prompt Bank built on performance, not randomness; text-based AI coaching through Derek; and clear pathways to create, optimize, and monetize AI-generated content.</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
                     <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
-                      <span className="text-xl">👁️</span>
+                      <span className="text-xl">🚀</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-text-primary mb-1">Our Vision</h4>
-                      <p className="text-text-secondary text-sm">A future where human intent translates flawlessly into AI action, minimizing the syntax barrier.</p>
+                      <h4 className="text-lg font-semibold text-text-primary mb-1">Continuous Evolution</h4>
+                      <p className="text-text-secondary text-sm">easemyprompt.ai grows smarter every day. By learning from real usage patterns, trends, and feedback, our platform continuously improves to deliver faster, sharper, and more effective prompts—so users always get better results with AI.</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Timeline */}
-              <div className="relative border-l border-border pl-8 space-y-10 py-4 ml-4 md:ml-12">
-                {[
-                  { year: "2023", text: "Started as a simple Notion template." },
-                  { year: "2024", text: "Derek persona developed and tested on 10k prompts." },
-                  { year: "2025", text: "EaseMyPrompt.ai platform launched." }
-                ].map((item, i) => (
-                  <div key={i} className="relative">
-                    <div className="absolute w-3 h-3 bg-accent rounded-full -left-[38.5px] top-1.5 ring-4 ring-bg-panel" />
-                    <h4 className="text-text-primary font-bold">{item.year}</h4>
-                    <p className="text-text-secondary mt-1 text-sm">{item.text}</p>
+                <div className="space-y-6">
+                  <div className="bg-bg-panel/50 p-6 rounded-card border border-border">
+                    <h4 className="text-lg font-semibold text-text-primary mb-2 flex items-center gap-2">
+                       <span className="text-accent">👁️</span> Our Vision
+                    </h4>
+                    <p className="text-text-secondary text-sm leading-relaxed">
+                      To become the world’s most trusted platform for thinking clearly with AI — where prompts are not guesses, but strategic tools that drive impact, creativity, and income. We envision a future where anyone can turn ideas into results using AI, without technical barriers, noise, or confusion.
+                    </p>
                   </div>
-                ))}
-              </div>
+                </div>
             </div>
           </div>
         </section>
@@ -287,8 +306,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 mb-12">
             <div className="text-center md:text-left">
               <Link href="/" className="inline-flex items-center gap-1 font-bold text-xl mb-2">
-                <span className="text-text-primary">EaseMyPrompt</span>
-                <span className="text-accent">.ai</span>
+                <span className="text-text-primary">easemyprompt.ai</span>
               </Link>
               <p className="text-text-secondary text-sm max-w-xs mt-2 leading-relaxed">Democratizing prompt engineering for a human-centric AI future.</p>
             </div>

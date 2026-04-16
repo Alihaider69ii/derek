@@ -11,9 +11,10 @@ import { FreeTierModal } from "@/components/shared/FreeTierModal"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 
-const GUEST_LIMIT = 2
-const DEREK_KEY = "emp_guest_derek_uses"
-const CLAUDE_KEY = "emp_guest_claude_uses"
+const CHAT_LIMIT = 3
+const COOLDOWN_HOURS = 3
+const DEREK_KEY = "emp_derek_timestamps"
+const CLAUDE_KEY = "emp_claude_timestamps"
 
 const ALLOWED_TYPES = [
     "application/pdf",
@@ -163,21 +164,21 @@ function PanelHeader({
             className="px-5 py-4 border-b border-border flex items-center justify-between shrink-0"
             style={{
                 background: isDerek
-                    ? "linear-gradient(135deg, #1a0808 0%, #2d1212 100%)"
+                    ? "linear-gradient(135deg, #0a1128 0%, #151b3d 100%)"
                     : "linear-gradient(135deg, #0d1117 0%, #0f1824 100%)",
-                borderColor: isDerek ? "#5a2020" : "#1e2d40",
+                borderColor: isDerek ? "#1e2d40" : "#1e2d40",
             }}
         >
             <div className="flex items-center gap-3">
                 {/* Avatar */}
                 {isDerek ? (
-                    <div className="relative w-9 h-9 shrink-0">
+                    <div className="relative w-12 h-12 shrink-0">
                         <Image
                             src="/derek-logo.png"
                             alt="Derek"
                             fill
                             className="object-cover rounded-full ring-2"
-                            style={{ ringColor: "#e05252" } as React.CSSProperties}
+                            style={{ ringColor: "#3b82f6" } as React.CSSProperties}
                             onError={(e) => {
                                 // Fallback if image not found
                                 const target = e.target as HTMLImageElement;
@@ -190,30 +191,41 @@ function PanelHeader({
                         />
                     </div>
                 ) : (
-                    <div
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                        style={{ background: "linear-gradient(135deg, #6c63ff, #4f46e5)", color: "white" }}
-                    >
-                        C
+                    <div className="relative w-12 h-12 shrink-0">
+                        <Image
+                            src="/claude-avatar.png"
+                            alt="Claude"
+                            fill
+                            className="object-cover rounded-full ring-2"
+                            style={{ ringColor: "#6c63ff" } as React.CSSProperties}
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                    parent.innerHTML = '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg, #6c63ff, #4f46e5);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:white">C</div>';
+                                }
+                            }}
+                        />
                     </div>
                 )}
                 <div>
                     <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold" style={{ color: isDerek ? "#e05252" : "#a5b4fc" }}>
+                        <h3 className="text-base font-bold" style={{ color: isDerek ? "#60a5fa" : "#a5b4fc" }}>
                             {isDerek ? "Derek" : "Claude"}
                         </h3>
                         <span
                             className="text-[0.6rem] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest hidden sm:inline-block"
                             style={{
-                                background: isDerek ? "rgba(224,82,82,0.15)" : "rgba(108,99,255,0.15)",
-                                color: isDerek ? "#e05252" : "#6c63ff",
-                                border: `1px solid ${isDerek ? "rgba(224,82,82,0.3)" : "rgba(108,99,255,0.3)"}`,
+                                background: isDerek ? "rgba(59,130,246,0.15)" : "rgba(108,99,255,0.15)",
+                                color: isDerek ? "#60a5fa" : "#6c63ff",
+                                border: `1px solid ${isDerek ? "rgba(59,130,246,0.3)" : "rgba(108,99,255,0.3)"}`,
                             }}
                         >
                             {badge}
                         </span>
                     </div>
-                    <p className="text-[0.7rem] mt-0.5" style={{ color: isDerek ? "#a06060" : "#5a7090" }}>
+                    <p className="text-[0.7rem] mt-0.5" style={{ color: isDerek ? "#94a3b8" : "#5a7090" }}>
                         {subtitle}
                     </p>
                 </div>
@@ -237,9 +249,10 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
     const [selectedModel, setSelectedModel] = React.useState("claude-sonnet-4-6")
     const [isDerekStreaming, setIsDerekStreaming] = React.useState(false)
     const [isClaudeStreaming, setIsClaudeStreaming] = React.useState(false)
-    const [derekUses, setDerekUses] = React.useState(0)
-    const [claudeUses, setClaudeUses] = React.useState(0)
+    const [derekTimestamps, setDerekTimestamps] = React.useState<number[]>([])
+    const [claudeTimestamps, setClaudeTimestamps] = React.useState<number[]>([])
     const [showLimitModal, setShowLimitModal] = React.useState(false)
+    const [remainingTime, setRemainingTime] = React.useState<string | null>(null)
 
     // File state
     const [derekFile, setDerekFile] = React.useState<File | null>(null)
@@ -260,17 +273,47 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
     }, [claudeMessages])
 
     React.useEffect(() => {
-        if (guestMode) {
-            setDerekUses(parseInt(localStorage.getItem(DEREK_KEY) ?? "0", 10))
-            setClaudeUses(parseInt(localStorage.getItem(CLAUDE_KEY) ?? "0", 10))
-        }
-    }, [guestMode])
+        const dTimestamps = JSON.parse(localStorage.getItem(DEREK_KEY) || "[]")
+        const cTimestamps = JSON.parse(localStorage.getItem(CLAUDE_KEY) || "[]")
+        setDerekTimestamps(dTimestamps)
+        setClaudeTimestamps(cTimestamps)
+    }, [])
 
-    const canSendDerek = !guestMode || status === "authenticated" || derekUses < GUEST_LIMIT
-    const canSendClaude = !guestMode || status === "authenticated" || claudeUses < GUEST_LIMIT
+    const getRemainingChats = (timestamps: number[]) => {
+        const now = Date.now()
+        const activeChats = timestamps.filter(t => now - t < COOLDOWN_HOURS * 60 * 60 * 1000)
+        return Math.max(0, CHAT_LIMIT - activeChats.length)
+    }
 
-    const bumpDerekUse = () => { const n = derekUses + 1; setDerekUses(n); localStorage.setItem(DEREK_KEY, String(n)) }
-    const bumpClaudeUse = () => { const n = claudeUses + 1; setClaudeUses(n); localStorage.setItem(CLAUDE_KEY, String(n)) }
+    const getTimeToWait = (timestamps: number[]) => {
+        if (timestamps.length < CHAT_LIMIT) return null
+        const now = Date.now()
+        const oldestEntry = Math.min(...timestamps)
+        const diff = (COOLDOWN_HOURS * 60 * 60 * 1000) - (now - oldestEntry)
+        if (diff <= 0) return null
+        const h = Math.floor(diff / (1000 * 60 * 60))
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        return `${h}h ${m}m`
+    }
+
+    const canSendDerek = getRemainingChats(derekTimestamps) > 0
+    const canSendClaude = getRemainingChats(claudeTimestamps) > 0
+
+    const recordDerekUse = () => {
+        const now = Date.now()
+        const valid = derekTimestamps.filter(t => now - t < COOLDOWN_HOURS * 60 * 60 * 1000)
+        const updated = [...valid, now]
+        setDerekTimestamps(updated)
+        localStorage.setItem(DEREK_KEY, JSON.stringify(updated))
+    }
+
+    const recordClaudeUse = () => {
+        const now = Date.now()
+        const valid = claudeTimestamps.filter(t => now - t < COOLDOWN_HOURS * 60 * 60 * 1000)
+        const updated = [...valid, now]
+        setClaudeTimestamps(updated)
+        localStorage.setItem(CLAUDE_KEY, JSON.stringify(updated))
+    }
 
     React.useEffect(() => {
         if (chatId) {
@@ -391,7 +434,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
             const text = await res.text()
             streamingMsgs[streamingMsgs.length - 1].content = text
             setDerekMessages(streamingMsgs)
-            bumpDerekUse()
+            recordDerekUse()
         } catch (e) {
             console.error(e)
             if (streamingMsgs[streamingMsgs.length - 1]?.role === "ai" && streamingMsgs[streamingMsgs.length - 1].content === "")
@@ -406,7 +449,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
         if (!canSendClaude) { setShowLimitModal(true); return }
         const fileToSend = claudeFile
         setClaudeFile(null)
-        bumpClaudeUse()
+        recordClaudeUse()
         await sendToClaude(claudeInput, claudeMessages, fileToSend)
         setClaudeInput("")
     }
@@ -421,9 +464,9 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
         emptyText: string
     ) => {
         const isDerek = type === "derek"
-        const accentColor = isDerek ? "#e05252" : "#6c63ff"
-        const aiMsgBg = isDerek ? "rgba(224,82,82,0.07)" : "rgba(108,99,255,0.07)"
-        const aiMsgBorder = isDerek ? "rgba(224,82,82,0.15)" : "rgba(108,99,255,0.15)"
+        const accentColor = isDerek ? "#3b82f6" : "#6c63ff"
+        const aiMsgBg = isDerek ? "rgba(59,130,246,0.07)" : "rgba(108,99,255,0.07)"
+        const aiMsgBorder = isDerek ? "rgba(59,130,246,0.15)" : "rgba(108,99,255,0.15)"
 
         return (
             <div
@@ -436,10 +479,22 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                         <div className="flex items-start gap-3 max-w-[85%]">
                             {msg.role === "ai" && (
                                 <div
-                                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-1"
-                                    style={{ background: accentColor, color: "white" }}
+                                    className="relative w-8 h-8 shrink-0 mt-1"
                                 >
-                                    {isDerek ? "D" : "C"}
+                                    <Image
+                                        src={isDerek ? "/derek-logo.png" : "/claude-avatar.png"}
+                                        alt={isDerek ? "Derek" : "Claude"}
+                                        fill
+                                        className="object-cover rounded-full"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                            const parent = target.parentElement;
+                                            if (parent) {
+                                                parent.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:${accentColor};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:white">${isDerek ? 'D' : 'C'}</div>`;
+                                            }
+                                        }}
+                                    />
                                 </div>
                             )}
                             <div
@@ -488,19 +543,20 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
             <FreeTierModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
 
             {/* LEFT PANEL — DEREK (Prompt Engine) */}
-            <div className="flex-1 flex flex-col border-b md:border-b-0 md:border-r relative min-w-0 overflow-hidden" style={{ borderColor: "#5a2020" }}>
+            <div className="flex-1 flex flex-col border-b md:border-b-0 md:border-r relative min-w-0 overflow-hidden" style={{ borderColor: "#1e2d40" }}>
                 <PanelHeader type="derek" badge="Prompt Engine" subtitle="Structures your idea into a perfect prompt">
-                    {guestMode && status !== "authenticated" && (
-                        <span className={cn("text-xs font-medium px-2 py-1 rounded-full",
-                            derekUses >= GUEST_LIMIT
-                                ? "bg-danger/10 text-danger border border-danger/30"
-                                : "border"
-                        )}
-                            style={derekUses < GUEST_LIMIT ? { background: "rgba(224,82,82,0.1)", color: "#e05252", borderColor: "rgba(224,82,82,0.3)" } : {}}
-                        >
-                            {Math.max(0, GUEST_LIMIT - derekUses)} free left
+                    <div className="flex flex-col items-end gap-1">
+                        <span className={cn("text-[0.65rem] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter",
+                            getRemainingChats(derekTimestamps) === 0
+                                ? "bg-red-500/10 text-red-400 border border-red-500/30"
+                                : "bg-blue-500/10 text-blue-400 border border-blue-500/30"
+                        )}>
+                            {getRemainingChats(derekTimestamps)} chats left
                         </span>
-                    )}
+                        {getRemainingChats(derekTimestamps) === 0 && (
+                            <span className="text-[0.6rem] text-text-secondary">Wait {getTimeToWait(derekTimestamps)}</span>
+                        )}
+                    </div>
                 </PanelHeader>
 
                 {renderMessages(
@@ -512,7 +568,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                     "Describe your idea and Derek will engineer a perfect, structured prompt."
                 )}
 
-                <div className="p-4 border-t shrink-0" style={{ borderColor: "#5a2020", background: "#160a0a" }}>
+                <div className="p-4 border-t shrink-0" style={{ borderColor: "#1e2d40", background: "#080c1a" }}>
                     {derekFile && (
                         <div className="mb-2">
                             <FileBadge file={derekFile} onRemove={() => setDerekFile(null)} />
@@ -526,19 +582,13 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                             className="hidden"
                             onChange={e => setDerekFile(e.target.files?.[0] ?? null)}
                         />
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute left-1 hover:text-red-400"
-                            style={{ color: "#a06060" }}
-                            onClick={() => derekFileRef.current?.click()}
-                            title="Attach file"
-                        >
-                            <Paperclip size={18} />
-                        </Button>
+                        <div className="absolute -top-10 left-10 pointer-events-none animate-bounce delay-700 bg-blue-600/10 border border-blue-500/20 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                           <Cpu size={14} className="text-blue-400" />
+                           <span className="text-[0.7rem] font-medium text-blue-300">Ask me anything here, I’ll generate customized prompt in second</span>
+                        </div>
                         <Input
                             className="pl-10 pr-12 w-full"
-                            style={{ background: "#1e0e0e", borderColor: "#5a2020", color: "#e6edf3" }}
+                            style={{ background: "#0d1326", borderColor: "#1e2d40", color: "#e6edf3" }}
                             placeholder="Describe your idea to Derek…"
                             value={derekInput}
                             onChange={(e) => setDerekInput(e.target.value)}
@@ -547,7 +597,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                         <Button
                             size="icon"
                             className="absolute right-1 w-8 h-8 rounded flex items-center justify-center text-white"
-                            style={{ background: "#e05252" }}
+                            style={{ background: "#3b82f6" }}
                             onClick={handleSendDerek}
                         >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
@@ -560,15 +610,18 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
             <div className="flex-1 flex flex-col bg-bg-base relative min-w-0 overflow-hidden">
                 <PanelHeader type="claude" badge="Response Area" subtitle="Generates your final AI response">
                     <div className="flex items-center gap-2">
-                        {guestMode && status !== "authenticated" && (
-                            <span className={cn("text-xs font-medium px-2 py-1 rounded-full",
-                                claudeUses >= GUEST_LIMIT
-                                    ? "bg-danger/10 text-danger border border-danger/30"
+                        <div className="flex flex-col items-end gap-1">
+                            <span className={cn("text-[0.65rem] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter",
+                                getRemainingChats(claudeTimestamps) === 0
+                                    ? "bg-red-500/10 text-red-400 border border-red-500/30"
                                     : "bg-accent/10 text-accent border border-accent/30"
                             )}>
-                                {Math.max(0, GUEST_LIMIT - claudeUses)} free left
+                                {getRemainingChats(claudeTimestamps)} chats left
                             </span>
-                        )}
+                            {getRemainingChats(claudeTimestamps) === 0 && (
+                                <span className="text-[0.6rem] text-text-secondary">Wait {getTimeToWait(claudeTimestamps)}</span>
+                            )}
+                        </div>
                         <Dropdown
                             value={selectedModel}
                             onChange={setSelectedModel}
