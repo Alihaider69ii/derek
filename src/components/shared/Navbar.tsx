@@ -23,7 +23,7 @@ export function Navbar() {
                             }}
                         />
                     </div>
-                    <span className="text-text-primary">easemyprompt.ai</span>
+                    <span><span className="text-text-primary">easemyprompt</span><span className="text-accent">.ai</span></span>
                 </Link>
 
                 {/* Center Links (Desktop) */}

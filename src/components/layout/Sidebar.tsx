@@ -69,7 +69,7 @@ export function Sidebar() {
                                 }}
                             />
                         </div>
-                        <span className="text-text-primary">easemyprompt.ai</span>
+                        <span><span className="text-text-primary">easemyprompt</span><span className="text-accent">.ai</span></span>
                     </Link>
                     {/* Close button — only visible on mobile */}
                     <button
