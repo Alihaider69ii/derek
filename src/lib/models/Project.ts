@@ -4,6 +4,7 @@ export interface IProjectPrompt {
     label: string;
     promptText: string;
     order: number;
+    wantsToSell: boolean; // user wants to list this prompt for sale
 }
 
 export interface IProject extends Document {
@@ -22,6 +23,7 @@ const ProjectPromptSchema = new Schema<IProjectPrompt>(
         label: { type: String, required: true },
         promptText: { type: String, required: true },
         order: { type: Number, default: 0 },
+        wantsToSell: { type: Boolean, default: false },
     },
     { _id: false }
 );

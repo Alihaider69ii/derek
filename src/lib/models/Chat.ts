@@ -8,6 +8,7 @@ export interface IMessage {
 
 export interface IChat extends Document {
     userId: mongoose.Types.ObjectId;
+    projectId?: mongoose.Types.ObjectId; // optional — if set, chat belongs to a project
     title: string;
     derekMessages: IMessage[];
     claudeMessages: IMessage[];
@@ -27,6 +28,7 @@ const MessageSchema = new Schema<IMessage>(
 const ChatSchema = new Schema<IChat>(
     {
         userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        projectId: { type: Schema.Types.ObjectId, ref: "Project", default: null },
         title: { type: String, default: "New Chat" },
         derekMessages: { type: [MessageSchema], default: [] },
         claudeMessages: { type: [MessageSchema], default: [] },

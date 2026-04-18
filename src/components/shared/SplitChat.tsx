@@ -11,10 +11,12 @@ import { FreeTierModal } from "@/components/shared/FreeTierModal"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 
-// ── Rate limiting (3 free chats, then 3hr cooldown) ─────────────────────────
+// ── Rate limiting ─────────────────────────────────────────────────────────────
 const DEREK_TS_KEY = "emp_derek_timestamps"
 const CLAUDE_TS_KEY = "emp_claude_timestamps"
-const FREE_LIMIT = 3
+// Guest = 2 free chats, Logged-in = 3 free chats
+const GUEST_FREE_LIMIT = 2
+const AUTH_FREE_LIMIT = 3
 const COOLDOWN_MS = 3 * 60 * 60 * 1000 // 3 hours
 
 function getTimestamps(key: string): number[] {
@@ -31,9 +33,9 @@ function pruneOld(ts: number[]): number[] {
     return ts.filter(t => t > cutoff)
 }
 
-function canSendNow(key: string): boolean {
+function canSendNow(key: string, limit: number): boolean {
     const ts = pruneOld(getTimestamps(key))
-    return ts.length < FREE_LIMIT
+    return ts.length < limit
 }
 
 function recordSend(key: string) {
@@ -43,9 +45,9 @@ function recordSend(key: string) {
 }
 
 /** Returns ms until next slot opens, or 0 if already can send */
-function msUntilNextSlot(key: string): number {
+function msUntilNextSlot(key: string, limit: number): number {
     const ts = pruneOld(getTimestamps(key))
-    if (ts.length < FREE_LIMIT) return 0
+    if (ts.length < limit) return 0
     const oldest = Math.min(...ts)
     return Math.max(0, oldest + COOLDOWN_MS - Date.now())
 }
@@ -179,7 +181,7 @@ async function buildFilePayload(file: File): Promise<{ type: "text"; text: strin
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface Message { role: "user" | "ai"; content: string }
-interface SplitChatProps { guestMode?: boolean }
+interface SplitChatProps { guestMode?: boolean; projectId?: string }
 
 // ── File badge ───────────────────────────────────────────────────────────────
 function FileBadge({ file, onRemove }: { file: File; onRemove: () => void }) {
@@ -192,7 +194,7 @@ function FileBadge({ file, onRemove }: { file: File; onRemove: () => void }) {
     )
 }
 
-// ── Derek Avatar (small) ─────────────────────────────────────────────────────
+// ── Derek Avatar ─────────────────────────────────────────────────────────────
 function DerekAvatar({ size = 32 }: { size?: number }) {
     const [imgErr, setImgErr] = React.useState(false)
     if (imgErr) {
@@ -218,20 +220,55 @@ function DerekAvatar({ size = 32 }: { size?: number }) {
     )
 }
 
-// ── Claude Avatar (small) ────────────────────────────────────────────────────
+// ── Claude Avatar — Anthropic official coral flower logo ─────────────────────
 function ClaudeAvatar({ size = 32 }: { size?: number }) {
+    // Anthropic's Claude logo: a radial asterisk/flower shape with 8 rounded petals
+    // Official brand color: #D97757 (warm coral)
+    const s = size
+    const cx = s / 2
+    const cy = s / 2
+    const CLAUDE_CORAL = "#D97757"
+    const petalW = s * 0.16
+    const petalH = s * 0.38
+    const petalR = petalW / 2
+    const petals = 8
+
     return (
         <div style={{
-            width: size, height: size, borderRadius: "50%",
-            background: "linear-gradient(135deg, #6c63ff, #4f46e5)",
+            width: s, height: s, borderRadius: "50%",
+            background: "linear-gradient(135deg, #2d1a0e, #3d2010)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: size * 0.38, fontWeight: 800, color: "white", flexShrink: 0,
-            border: "2px solid rgba(108,99,255,0.4)",
-            letterSpacing: "-0.02em"
+            flexShrink: 0,
+            border: `2px solid ${CLAUDE_CORAL}40`,
         }}>
-            {/* Claude stylised "C" icon */}
-            <svg width={size * 0.52} height={size * 0.52} viewBox="0 0 24 24" fill="none">
-                <path d="M20 12a8 8 0 1 1-4.343-7.1" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+            <svg
+                width={s * 0.72}
+                height={s * 0.72}
+                viewBox={`0 0 ${s} ${s}`}
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                {Array.from({ length: petals }).map((_, i) => {
+                    const angle = (i * 360) / petals
+                    const rad = (angle * Math.PI) / 180
+                    // petal center offset from center
+                    const offset = s * 0.18
+                    const px = cx + offset * Math.sin(rad)
+                    const py = cy - offset * Math.cos(rad)
+                    return (
+                        <rect
+                            key={i}
+                            x={px - petalW / 2}
+                            y={py - petalH / 2}
+                            width={petalW}
+                            height={petalH}
+                            rx={petalR}
+                            ry={petalR}
+                            fill={CLAUDE_CORAL}
+                            transform={`rotate(${angle}, ${px}, ${py})`}
+                        />
+                    )
+                })}
             </svg>
         </div>
     )
@@ -261,7 +298,6 @@ function PanelHeader({
             }}
         >
             <div className="flex items-center gap-3">
-                {/* Avatar */}
                 {isDerek ? (
                     <DerekAvatar size={44} />
                 ) : (
@@ -269,21 +305,21 @@ function PanelHeader({
                 )}
                 <div>
                     <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold" style={{ color: isDerek ? DEREK_ACCENT : "#a5b4fc" }}>
+                        <h3 className="text-base font-bold" style={{ color: isDerek ? DEREK_ACCENT : "#D97757" }}>
                             {isDerek ? "Derek" : "Claude"}
                         </h3>
                         <span
                             className="text-[0.6rem] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest hidden sm:inline-block"
                             style={{
-                                background: isDerek ? DEREK_ACCENT_SOFT : "rgba(108,99,255,0.15)",
-                                color: isDerek ? DEREK_ACCENT : "#6c63ff",
-                                border: `1px solid ${isDerek ? DEREK_ACCENT_BORDER : "rgba(108,99,255,0.3)"}`,
+                                background: isDerek ? DEREK_ACCENT_SOFT : "rgba(217,119,87,0.15)",
+                                color: isDerek ? DEREK_ACCENT : "#D97757",
+                                border: `1px solid ${isDerek ? DEREK_ACCENT_BORDER : "rgba(217,119,87,0.3)"}`,
                             }}
                         >
                             {badge}
                         </span>
                     </div>
-                    <p className="text-[0.7rem] mt-0.5" style={{ color: isDerek ? DEREK_TEXT_DIM : "#5a7090" }}>
+                    <p className="text-[0.7rem] mt-0.5" style={{ color: isDerek ? DEREK_TEXT_DIM : "#8a6a5a" }}>
                         {subtitle}
                     </p>
                 </div>
@@ -294,34 +330,42 @@ function PanelHeader({
 }
 
 // ── Cooldown Banner ──────────────────────────────────────────────────────────
-function CooldownBanner({ tsKey, color }: { tsKey: string; color: string }) {
-    const [remaining, setRemaining] = React.useState(() => msUntilNextSlot(tsKey))
+function CooldownBanner({ tsKey, color, limit, isGuest }: { tsKey: string; color: string; limit: number; isGuest: boolean }) {
+    const [remaining, setRemaining] = React.useState(() => msUntilNextSlot(tsKey, limit))
 
     React.useEffect(() => {
         if (remaining <= 0) return
         const id = setInterval(() => {
-            const ms = msUntilNextSlot(tsKey)
+            const ms = msUntilNextSlot(tsKey, limit)
             setRemaining(ms)
             if (ms <= 0) clearInterval(id)
         }, 1000)
         return () => clearInterval(id)
-    }, [tsKey, remaining])
+    }, [tsKey, limit, remaining])
 
     if (remaining <= 0) return null
+
     return (
         <div className="mx-4 my-2 px-4 py-2 rounded-lg text-xs text-center font-medium"
             style={{ background: `${color}18`, border: `1px solid ${color}40`, color }}>
-            ⏳ You've used your 3 free chats. Next slot opens in <strong>{formatCountdown(remaining)}</strong>
+            {isGuest
+                ? <>🔒 You've used your {limit} free guest chats. <strong>Login for 3 more!</strong></>
+                : <>⏳ You've used your {limit} free chats. Next slot opens in <strong>{formatCountdown(remaining)}</strong></>
+            }
         </div>
     )
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export function SplitChat({ guestMode = false }: SplitChatProps) {
+export function SplitChat({ guestMode = false, projectId }: SplitChatProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const chatId = searchParams.get('id')
     const { data: session, status } = useSession()
+
+    // Determine limits based on auth state
+    const isAuthenticated = status === "authenticated"
+    const FREE_LIMIT = isAuthenticated ? AUTH_FREE_LIMIT : GUEST_FREE_LIMIT
 
     const [derekMessages, setDerekMessages] = React.useState<Message[]>([])
     const [claudeMessages, setClaudeMessages] = React.useState<Message[]>([])
@@ -331,6 +375,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
     const [isDerekStreaming, setIsDerekStreaming] = React.useState(false)
     const [isClaudeStreaming, setIsClaudeStreaming] = React.useState(false)
     const [showLimitModal, setShowLimitModal] = React.useState(false)
+    const [limitType, setLimitType] = React.useState<"guest" | "auth">("guest")
     const [, forceUpdate] = React.useState(0)
 
     // File state
@@ -387,13 +432,27 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
     const saveChat = async (dM: Message[], cM: Message[]) => {
         const clean = (msgs: Message[]) => msgs.filter(m => m.content.trim().length > 0)
         try {
+            // Get projectId from URL params if present
+            const urlProjectId = searchParams.get('projectId') || projectId || null
             const res = await fetch("/api/chats", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: chatId, derekMessages: clean(dM), claudeMessages: clean(cM) })
+                body: JSON.stringify({
+                    id: chatId,
+                    derekMessages: clean(dM),
+                    claudeMessages: clean(cM),
+                    projectId: urlProjectId,
+                })
             })
             const data = await res.json()
-            if (data._id && !chatId) router.replace(`/dashboard?id=${data._id}`)
+            if (data._id && !chatId) {
+                if (urlProjectId) {
+                    // Stay on current page but update URL with chat id
+                    router.replace(`/dashboard?id=${data._id}&projectId=${urlProjectId}`)
+                } else {
+                    router.replace(`/dashboard?id=${data._id}`)
+                }
+            }
         } catch (e) { console.error("Failed to save chat", e) }
     }
 
@@ -440,7 +499,11 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
 
     const handleSendDerek = async () => {
         if (!derekInput.trim() || isDerekStreaming) return
-        if (!canSendNow(DEREK_TS_KEY)) { setShowLimitModal(true); return }
+        if (!canSendNow(DEREK_TS_KEY, FREE_LIMIT)) {
+            setLimitType(isAuthenticated ? "auth" : "guest")
+            setShowLimitModal(true)
+            return
+        }
 
         const userMsg = derekInput
         const newContext = [...derekMessages, { role: "user" as const, content: userMsg }]
@@ -483,7 +546,11 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
 
     const handleSendClaude = async () => {
         if (!claudeInput.trim() || isClaudeStreaming) return
-        if (!canSendNow(CLAUDE_TS_KEY)) { setShowLimitModal(true); return }
+        if (!canSendNow(CLAUDE_TS_KEY, FREE_LIMIT)) {
+            setLimitType(isAuthenticated ? "auth" : "guest")
+            setShowLimitModal(true)
+            return
+        }
         const fileToSend = claudeFile
         setClaudeFile(null)
         recordSend(CLAUDE_TS_KEY)
@@ -502,9 +569,9 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
         emptyText: string
     ) => {
         const isDerek = type === "derek"
-        const accentColor = isDerek ? DEREK_ACCENT : "#6c63ff"
-        const aiMsgBg = isDerek ? DEREK_ACCENT_SOFT : "rgba(108,99,255,0.07)"
-        const aiMsgBorder = isDerek ? DEREK_ACCENT_BORDER : "rgba(108,99,255,0.15)"
+        const accentColor = isDerek ? DEREK_ACCENT : "#D97757"
+        const aiMsgBg = isDerek ? DEREK_ACCENT_SOFT : "rgba(217,119,87,0.07)"
+        const aiMsgBorder = isDerek ? DEREK_ACCENT_BORDER : "rgba(217,119,87,0.15)"
 
         return (
             <div
@@ -561,12 +628,16 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
         )
     }
 
-    const derekBlocked = !canSendNow(DEREK_TS_KEY)
-    const claudeBlocked = !canSendNow(CLAUDE_TS_KEY)
+    const derekBlocked = !canSendNow(DEREK_TS_KEY, FREE_LIMIT)
+    const claudeBlocked = !canSendNow(CLAUDE_TS_KEY, FREE_LIMIT)
 
     return (
         <div className="flex flex-col md:flex-row w-full h-[600px] md:h-full border border-border rounded-xl overflow-hidden bg-bg-base">
-            <FreeTierModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
+            <FreeTierModal
+                isOpen={showLimitModal}
+                onClose={() => setShowLimitModal(false)}
+                isGuest={limitType === "guest"}
+            />
 
             {/* LEFT PANEL — DEREK (Prompt Engine) */}
             <div className="flex-1 flex flex-col border-b md:border-b-0 md:border-r relative min-w-0 overflow-hidden" style={{ borderColor: DEREK_BORDER_COLOR }}>
@@ -580,7 +651,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                     </span>
                 </PanelHeader>
 
-                {derekBlocked && <CooldownBanner tsKey={DEREK_TS_KEY} color={DEREK_ACCENT} />}
+                {derekBlocked && <CooldownBanner tsKey={DEREK_TS_KEY} color={DEREK_ACCENT} limit={FREE_LIMIT} isGuest={!isAuthenticated} />}
 
                 {renderMessages(
                     derekMessages,
@@ -625,7 +696,6 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                                 onKeyDown={(e) => { if (e.key === "Enter") handleSendDerek() }}
                                 disabled={derekBlocked}
                             />
-                            {/* Floating placeholder icon */}
                             {!derekInput && (
                                 <span className="pointer-events-none absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-40" style={{ color: DEREK_TEXT_DIM }}>
                                     <Cpu size={13} />
@@ -652,7 +722,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                         <span className={cn("text-xs font-medium px-2 py-1 rounded-full")}
                             style={claudeBlocked
                                 ? { background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)" }
-                                : { background: "rgba(108,99,255,0.1)", color: "#6c63ff", border: "1px solid rgba(108,99,255,0.3)" }
+                                : { background: "rgba(217,119,87,0.1)", color: "#D97757", border: "1px solid rgba(217,119,87,0.3)" }
                             }>
                             {claudeBlocked ? "Limit reached" : `${FREE_LIMIT - pruneOld(getTimestamps(CLAUDE_TS_KEY)).length} free left`}
                         </span>
@@ -668,7 +738,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                     </div>
                 </PanelHeader>
 
-                {claudeBlocked && <CooldownBanner tsKey={CLAUDE_TS_KEY} color="#6c63ff" />}
+                {claudeBlocked && <CooldownBanner tsKey={CLAUDE_TS_KEY} color="#D97757" limit={FREE_LIMIT} isGuest={!isAuthenticated} />}
 
                 {renderMessages(
                     claudeMessages,

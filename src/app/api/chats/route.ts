@@ -12,9 +12,12 @@ export async function GET() {
         }
 
         await connectToDatabase();
-        
-        // Fetch chats sorted by newest first, only select needed fields for sidebar
-        const chats = await Chat.find({ userId: (session.user as any).id })
+
+        // Only fetch global chats (no projectId) — project chats are separate
+        const chats = await Chat.find({
+            userId: (session.user as any).id,
+            projectId: { $exists: false } as any,
+        })
             .select("_id title updatedAt")
             .sort({ updatedAt: -1 })
             .lean();
@@ -39,7 +42,6 @@ function sanitizeMessages(messages: any[]) {
         .map((m) => ({
             role: m.role,
             content: m.content.trim(),
-            // Preserve timestamp if provided (e.g., when rehydrating from client)
             ...(m.timestamp ? { timestamp: new Date(m.timestamp) } : {}),
         }));
 }
@@ -52,8 +54,8 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { id, derekMessages, claudeMessages } = body;
-        
+        const { id, derekMessages, claudeMessages, projectId } = body;
+
         await connectToDatabase();
 
         const cleanDerekMessages = sanitizeMessages(derekMessages);
@@ -63,22 +65,21 @@ export async function POST(req: Request) {
             // Update existing chat
             const updatedChat = await Chat.findOneAndUpdate(
                 { _id: id, userId: (session.user as any).id },
-                { 
-                    $set: { 
+                {
+                    $set: {
                         derekMessages: cleanDerekMessages,
                         claudeMessages: cleanClaudeMessages,
-                    } 
+                    }
                 },
                 { new: true }
             );
-            
+
             if (!updatedChat) {
                 return NextResponse.json({ error: "Chat not found" }, { status: 404 });
             }
             return NextResponse.json(updatedChat);
         } else {
             // Create new chat
-            // Generate a title from the first true user message
             let title = "New Chat";
             const firstMsg = [...cleanDerekMessages, ...cleanClaudeMessages].find(
                 (m) => m.role === "user"
@@ -89,6 +90,7 @@ export async function POST(req: Request) {
 
             const newChat = new Chat({
                 userId: (session.user as any).id,
+                projectId: projectId || null,
                 title,
                 derekMessages: cleanDerekMessages,
                 claudeMessages: cleanClaudeMessages,

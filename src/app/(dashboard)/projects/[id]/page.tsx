@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ArrowLeft, Plus, Mic, BarChart2, Loader2, MessageSquare, ClipboardList, Trash2 } from "lucide-react"
+import { ArrowLeft, Plus, Mic, BarChart2, Loader2, MessageSquare, ClipboardList, Trash2, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -11,34 +11,58 @@ export const dynamic = 'force-dynamic'
 function PromptItem({
   prompt,
   onDelete,
+  onToggleSell,
 }: {
-  prompt: { label: string; promptText: string; order: number }
+  prompt: { label: string; promptText: string; order: number; wantsToSell?: boolean }
   onDelete: () => void
+  onToggleSell?: (val: boolean) => void
 }) {
   const [confirm, setConfirm] = React.useState(false)
 
   return (
-    <div className="group flex items-start gap-3 p-4 rounded-xl bg-bg-panel border border-border hover:border-[#6c63ff]/30 transition-colors">
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-        style={{ background: "rgba(108,99,255,0.12)" }}
-      >
-        <ClipboardList size={15} style={{ color: "#6c63ff" }} />
+    <div className="group flex flex-col gap-3 p-4 rounded-xl bg-bg-panel border border-border hover:border-[#6c63ff]/30 transition-colors">
+      <div className="flex items-start gap-3 w-full">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+          style={{ background: "rgba(108,99,255,0.12)" }}
+        >
+          <ClipboardList size={15} style={{ color: "#6c63ff" }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-text-primary truncate">{prompt.label}</p>
+          <p className="text-xs text-text-secondary mt-1 line-clamp-2 leading-relaxed">{prompt.promptText}</p>
+        </div>
+        <button
+          onClick={() => { if (!confirm) { setConfirm(true); return } onDelete() }}
+          className={`p-1.5 rounded-lg transition-colors shrink-0 ${
+            confirm
+              ? "bg-red-500/20 text-red-400"
+              : "opacity-0 group-hover:opacity-100 text-text-secondary hover:text-red-400 hover:bg-red-500/10"
+          }`}
+        >
+          <Trash2 size={13} />
+        </button>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary truncate">{prompt.label}</p>
-        <p className="text-xs text-text-secondary mt-1 line-clamp-2 leading-relaxed">{prompt.promptText}</p>
-      </div>
-      <button
-        onClick={() => { if (!confirm) { setConfirm(true); return } onDelete() }}
-        className={`p-1.5 rounded-lg transition-colors shrink-0 ${
-          confirm
-            ? "bg-red-500/20 text-red-400"
-            : "opacity-0 group-hover:opacity-100 text-text-secondary hover:text-red-400 hover:bg-red-500/10"
-        }`}
-      >
-        <Trash2 size={13} />
-      </button>
+
+      {onToggleSell && (
+        <div className="flex items-center justify-between pt-3 border-t border-border mt-1">
+          <span className="text-xs text-text-secondary font-medium">Want to sell this prompt?</span>
+          <div className="flex items-center gap-1 bg-[#161b22] border border-[#2a2a4a] p-1 rounded-md">
+            <button
+              onClick={() => onToggleSell(true)}
+              className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${prompt.wantsToSell ? "bg-[#34d399] text-black" : "text-text-secondary hover:text-white"}`}
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => onToggleSell(false)}
+              className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${!prompt.wantsToSell ? "bg-[#374151] text-white" : "text-text-secondary hover:text-white"}`}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -116,6 +140,11 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [showAddPrompt, setShowAddPrompt] = React.useState(false)
   const [savingPrompt, setSavingPrompt] = React.useState(false)
 
+  const [chats, setChats] = React.useState<any[]>([])
+  const [relatedPrompts, setRelatedPrompts] = React.useState<any[]>([])
+  const [loadingChats, setLoadingChats] = React.useState(true)
+  const [loadingRelated, setLoadingRelated] = React.useState(true)
+
   React.useEffect(() => {
     fetch(`/api/projects/${params.id}`)
       .then(res => {
@@ -127,10 +156,26 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       .finally(() => setLoading(false))
   }, [params.id])
 
+  React.useEffect(() => {
+    if (project) {
+       fetch(`/api/projects/${params.id}/chats`)
+        .then(res => res.json())
+        .then(data => setChats(Array.isArray(data) ? data : []))
+        .catch(console.error)
+        .finally(() => setLoadingChats(false))
+       
+       fetch(`/api/prompts/related?projectName=${encodeURIComponent(project.name)}`)
+        .then(res => res.json())
+        .then(data => setRelatedPrompts(Array.isArray(data) ? data : []))
+        .catch(console.error)
+        .finally(() => setLoadingRelated(false))
+    }
+  }, [project, params.id])
+
   const handleAddPrompt = async (label: string, promptText: string) => {
     setSavingPrompt(true)
     try {
-      const newPrompts = [...(project.prompts || []), { label, promptText, order: project.prompts?.length || 0 }]
+      const newPrompts = [...(project.prompts || []), { label, promptText, order: project.prompts?.length || 0, wantsToSell: false }]
       const res = await fetch(`/api/projects/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -155,10 +200,24 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     } catch (e) { console.error(e) }
   }
 
+  const handleToggleSell = async (index: number, val: boolean) => {
+    const newPrompts = [...project.prompts]
+    newPrompts[index].wantsToSell = val
+    try {
+      const res = await fetch(`/api/projects/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompts: newPrompts }),
+      })
+      const updated = await res.json()
+      setProject(updated)
+    } catch (e) { console.error(e) }
+  }
+
   const handleNewChat = () => {
     if (!newChatInput.trim()) return
     const text = encodeURIComponent(newChatInput)
-    router.push(`/dashboard?prefillDerek=${text}`)
+    router.push(`/dashboard?prefillDerek=${text}&projectId=${params.id}`)
   }
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -270,36 +329,61 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
         {/* ── CHATS TAB ── */}
         {activeTab === "chats" && (
-          <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
-            {/* Purple animated folder icon */}
-            <div className="relative">
-              <svg width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="22" cy="16" r="1.5" fill="#6c63ff" opacity="0.6" />
-                <circle cx="60" cy="20" r="1.5" fill="#6c63ff" opacity="0.6" />
-                <circle cx="14" cy="56" r="1" fill="#6c63ff" opacity="0.4" />
-                <circle cx="67" cy="52" r="1" fill="#6c63ff" opacity="0.4" />
-                <path d="M22 14 L23 17 L26 18 L23 19 L22 22 L21 19 L18 18 L21 17Z" fill="#6c63ff" opacity="0.6" />
-                <path d="M60 56 L61 59 L64 60 L61 61 L60 64 L59 61 L56 60 L59 59Z" fill="#6c63ff" opacity="0.5" />
-                <rect x="12" y="28" width="56" height="38" rx="6" fill="#6c63ff" opacity="0.12" />
-                <rect x="12" y="28" width="56" height="38" rx="6" stroke="#6c63ff" strokeWidth="1.8" />
-                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28Z" fill="#6c63ff" opacity="0.12" />
-                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28" stroke="#6c63ff" strokeWidth="1.8" strokeLinejoin="round" />
-                <rect x="26" y="37" width="28" height="20" rx="5" fill="#6c63ff" opacity="0.25" />
-                <circle cx="33" cy="47" r="2" fill="#6c63ff" />
-                <circle cx="40" cy="47" r="2" fill="#6c63ff" />
-                <circle cx="47" cy="47" r="2" fill="#6c63ff" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-text-primary font-semibold">No chats yet</p>
-              <p className="text-text-secondary text-sm mt-1">Chats in {project.name} will live here</p>
-            </div>
+          <div>
+            {loadingChats ? (
+              <div className="flex justify-center py-10"><Loader2 className="animate-spin text-[#6c63ff]" /></div>
+            ) : chats.length > 0 ? (
+              <div className="space-y-3">
+                {chats.map(chat => (
+                  <Link key={chat._id} href={`/dashboard?id=${chat._id}&projectId=${params.id}`}>
+                    <div className="group p-4 bg-bg-panel border border-border rounded-xl hover:border-[#6c63ff]/50 transition-colors flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-4">
+                         <div className="w-10 h-10 rounded-full bg-[#6c63ff]/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <MessageSquare size={18} className="text-[#6c63ff]" />
+                         </div>
+                         <div>
+                            <h3 className="font-semibold text-text-primary text-sm group-hover:text-[#6c63ff] transition-colors">{chat.title}</h3>
+                            <p className="text-xs text-text-secondary mt-1">{new Date(chat.updatedAt).toLocaleDateString()}</p>
+                         </div>
+                      </div>
+                      <ChevronRight size={18} className="text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+                {/* Purple animated folder icon */}
+                <div className="relative">
+                  <svg width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="22" cy="16" r="1.5" fill="#6c63ff" opacity="0.6" />
+                    <circle cx="60" cy="20" r="1.5" fill="#6c63ff" opacity="0.6" />
+                    <circle cx="14" cy="56" r="1" fill="#6c63ff" opacity="0.4" />
+                    <circle cx="67" cy="52" r="1" fill="#6c63ff" opacity="0.4" />
+                    <path d="M22 14 L23 17 L26 18 L23 19 L22 22 L21 19 L18 18 L21 17Z" fill="#6c63ff" opacity="0.6" />
+                    <path d="M60 56 L61 59 L64 60 L61 61 L60 64 L59 61 L56 60 L59 59Z" fill="#6c63ff" opacity="0.5" />
+                    <rect x="12" y="28" width="56" height="38" rx="6" fill="#6c63ff" opacity="0.12" />
+                    <rect x="12" y="28" width="56" height="38" rx="6" stroke="#6c63ff" strokeWidth="1.8" />
+                    <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28Z" fill="#6c63ff" opacity="0.12" />
+                    <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28" stroke="#6c63ff" strokeWidth="1.8" strokeLinejoin="round" />
+                    <rect x="26" y="37" width="28" height="20" rx="5" fill="#6c63ff" opacity="0.25" />
+                    <circle cx="33" cy="47" r="2" fill="#6c63ff" />
+                    <circle cx="40" cy="47" r="2" fill="#6c63ff" />
+                    <circle cx="47" cy="47" r="2" fill="#6c63ff" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-text-primary font-semibold">No chats yet</p>
+                  <p className="text-text-secondary text-sm mt-1">Chats in {project.name} will live here</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* ── PROMPTS TAB ── */}
         {activeTab === "prompts" && (
-          <div>
+          <div className="pb-10">
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-text-secondary">
                 {project.prompts?.length || 0} saved prompt{project.prompts?.length !== 1 ? "s" : ""}
@@ -319,6 +403,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     key={i}
                     prompt={p}
                     onDelete={() => handleDeletePrompt(i)}
+                    onToggleSell={(val) => handleToggleSell(i, val)}
                   />
                 ))}
               </div>
@@ -341,6 +426,33 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                 >
                   Add first prompt
                 </button>
+              </div>
+            )}
+
+            {/* Suggested Prompts Section */}
+            {relatedPrompts.length > 0 && (
+              <div className="mt-10 pt-8 border-t border-border">
+                 <h3 className="text-xs font-bold tracking-widest uppercase text-text-secondary mb-4">Suggested from Prompt Bank</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                   {relatedPrompts.map(p => (
+                     <div key={p._id} className="bg-bg-panel border border-border rounded-xl p-4 flex flex-col hover:border-[#6c63ff]/30 transition-colors">
+                        <div className="flex items-center gap-2 mb-2 text-sm">
+                           <span>{p.emoji}</span>
+                           <span className="font-semibold text-text-primary truncate">{p.title}</span>
+                        </div>
+                        <p className="text-xs text-text-secondary line-clamp-3 mb-4 flex-1">{p.promptText}</p>
+                        <button 
+                           onClick={() => {
+                               setNewChatInput(p.promptText)
+                               setActiveTab("chats")
+                           }}
+                           className="text-xs text-center font-semibold py-2 w-full bg-[#161b22] border border-[#2a2a4a] rounded-lg hover:bg-[#6c63ff] hover:text-white transition-colors"
+                        >
+                           Use in Chat
+                        </button>
+                     </div>
+                   ))}
+                 </div>
               </div>
             )}
           </div>
