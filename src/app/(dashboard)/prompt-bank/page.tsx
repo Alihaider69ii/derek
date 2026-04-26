@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, X, Copy, Send, Check } from "lucide-react"
+import { Search, X, Copy, Send, Check, Star } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PromptCard } from "@/components/shared/PromptCard"
@@ -19,6 +19,10 @@ export default function PromptBankPage() {
 
     const [selectedPrompt, setSelectedPrompt] = React.useState<any>(null)
     const [copied, setCopied] = React.useState(false)
+    const [showFavModal, setShowFavModal] = React.useState(false)
+    const [favTitle, setFavTitle] = React.useState("")
+    const [favSaved, setFavSaved] = React.useState(false)
+    const [favLoading, setFavLoading] = React.useState(false)
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -55,6 +59,26 @@ export default function PromptBankPage() {
         navigator.clipboard.writeText(selectedPrompt.promptText || selectedPrompt.body);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    }
+
+    const handleFavourite = async () => {
+        if (!selectedPrompt || !favTitle.trim()) return
+        setFavLoading(true)
+        try {
+            await fetch("/api/favourites", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: favTitle.trim(),
+                    promptText: selectedPrompt.promptText || selectedPrompt.body,
+                    source: "bank",
+                    sourceId: selectedPrompt._id,
+                }),
+            })
+            setFavSaved(true)
+            setTimeout(() => { setShowFavModal(false); setFavSaved(false); setFavTitle("") }, 900)
+        } catch { }
+        finally { setFavLoading(false) }
     }
 
     const sendToChat = (ai: "derek" | "claude") => {
@@ -199,6 +223,13 @@ export default function PromptBankPage() {
                                 {copied ? <Check size={16} className="mr-2 text-green-500" /> : <Copy size={16} className="mr-2" />}
                                 {copied ? "Copied!" : "Copy Prompt"}
                             </Button>
+                            <Button
+                                variant="outline"
+                                className="flex-1 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+                                onClick={() => { setFavTitle(selectedPrompt?.title || ""); setShowFavModal(true) }}
+                            >
+                                <Star size={16} className="mr-2" /> Add to Favourites
+                            </Button>
                             <Button 
                                 className="flex-1 bg-accent text-white hover:bg-accent-hover"
                                 onClick={() => sendToChat('derek')}
@@ -213,6 +244,31 @@ export default function PromptBankPage() {
                                 <Send size={16} className="mr-2" />
                                 Send to Claude
                             </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* FAVOURITE TITLE MODAL */}
+            {showFavModal && selectedPrompt && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={e => { if (e.target === e.currentTarget) setShowFavModal(false) }}>
+                    <div className="bg-[#1a1a2e] border border-[#2a2a4a] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#2a2a4a]">
+                            <h2 className="text-base font-bold text-white flex items-center gap-2"><Star size={15} className="text-yellow-400 fill-yellow-400" /> Add to Favourites</h2>
+                            <button onClick={() => setShowFavModal(false)} className="p-1.5 rounded-lg text-[#8b949e] hover:text-white hover:bg-white/10">✕</button>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            <input
+                                type="text" value={favTitle} onChange={e => setFavTitle(e.target.value)}
+                                onKeyDown={e => { if (e.key === "Enter") handleFavourite() }}
+                                placeholder="Give this prompt a title…" autoFocus
+                                className="w-full px-4 py-3 bg-[#0d0d1a] border border-[#2a2a4a] rounded-xl text-sm text-white placeholder:text-[#8b949e] focus:outline-none focus:border-[#6c63ff]"
+                            />
+                            <button onClick={handleFavourite} disabled={!favTitle.trim() || favLoading || favSaved}
+                                className="w-full py-3 rounded-full text-sm font-bold text-white disabled:opacity-40 hover:opacity-80"
+                                style={{ background: favSaved ? "linear-gradient(135deg,#22c55e,#16a34a)" : "linear-gradient(135deg,#6c63ff,#5a52e0)" }}>
+                                {favSaved ? "✓ Saved!" : favLoading ? "Saving..." : "Save to Favourites"}
+                            </button>
                         </div>
                     </div>
                 </div>

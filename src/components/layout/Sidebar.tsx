@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, LayoutGrid, Settings, HelpCircle, LogOut, Menu, X, BookOpen, FolderKanban } from "lucide-react"
+import { Plus, LayoutGrid, Settings, HelpCircle, LogOut, Menu, X, BookOpen, FolderKanban, Star, ShoppingBag } from "lucide-react"
 
 export function Sidebar() {
     const { data: session } = useSession()
@@ -47,8 +47,9 @@ export function Sidebar() {
 
     const navLinks = [
         { href: "/prompt-bank", icon: <LayoutGrid size={16} />, label: "Prompt Bank" },
-        { href: "/blog", icon: <BookOpen size={16} />, label: "Blog" },
         { href: "/projects", icon: <FolderKanban size={16} />, label: "My Projects" },
+        { href: "/favourites", icon: <Star size={16} />, label: "My Favourites" },
+        { href: "/marketplace", icon: <ShoppingBag size={16} />, label: "Marketplace" },
     ]
 
     const sidebarContent = (

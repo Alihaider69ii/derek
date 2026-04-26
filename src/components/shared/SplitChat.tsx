@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Copy, Check, Paperclip, Cpu, Sparkles } from "lucide-react"
+import { Copy, Check, Paperclip, Cpu, Sparkles, Star, BookmarkPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -141,6 +141,105 @@ function CopyButton({ text, color }: { text: string; color: string }) {
         >
             {copied ? <Check size={13} className="text-green-500" /> : <Copy size={13} />}
             {copied ? "Copied" : "Smart Copy"}
+        </button>
+    )
+}
+
+// ── Favourite Button (star) ───────────────────────────────────────────────────
+function FavouriteButton({ text }: { text: string }) {
+    const [showModal, setShowModal] = React.useState(false)
+    const [title, setTitle] = React.useState("")
+    const [saved, setSaved] = React.useState(false)
+    const [loading, setLoading] = React.useState(false)
+
+    const handleSave = async () => {
+        if (!title.trim()) return
+        setLoading(true)
+        try {
+            await fetch("/api/favourites", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: title.trim(), promptText: extractCopyableText(text), source: "generated" }),
+            })
+            setSaved(true)
+            setTimeout(() => { setShowModal(false); setSaved(false); setTitle("") }, 900)
+        } catch { }
+        finally { setLoading(false) }
+    }
+
+    return (
+        <>
+            <button
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-1 text-xs text-text-secondary hover:text-yellow-400 transition-colors mt-1 ml-1 select-none"
+                title="Add to Favourites"
+            >
+                <Star size={13} className={saved ? "fill-yellow-400 text-yellow-400" : ""} />
+                Favourite
+            </button>
+            {showModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
+                    <div className="bg-[#1a1a2e] border border-[#2a2a4a] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#2a2a4a]">
+                            <h2 className="text-base font-bold text-white flex items-center gap-2"><Star size={15} className="text-yellow-400 fill-yellow-400" /> Add to Favourites</h2>
+                            <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg text-[#8b949e] hover:text-white hover:bg-white/10">✕</button>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            <input
+                                type="text" value={title} onChange={e => setTitle(e.target.value)}
+                                onKeyDown={e => { if (e.key === "Enter") handleSave() }}
+                                placeholder="Give this prompt a title…" autoFocus
+                                className="w-full px-4 py-3 bg-[#0d0d1a] border border-[#2a2a4a] rounded-xl text-sm text-white placeholder:text-[#8b949e] focus:outline-none focus:border-[#6c63ff]"
+                            />
+                            <button onClick={handleSave} disabled={!title.trim() || loading || saved}
+                                className="w-full py-3 rounded-full text-sm font-bold text-white disabled:opacity-40 hover:opacity-80"
+                                style={{ background: saved ? "linear-gradient(135deg,#22c55e,#16a34a)" : "linear-gradient(135deg,#6c63ff,#5a52e0)" }}>
+                                {saved ? "✓ Saved!" : loading ? "Saving..." : "Save to Favourites"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    )
+}
+
+// ── Save to Project Button ────────────────────────────────────────────────────
+function SaveToProjectButton({ text, projectId }: { text: string; projectId: string }) {
+    const [saved, setSaved] = React.useState(false)
+    const [showLabel, setShowLabel] = React.useState(false)
+    const [loading, setLoading] = React.useState(false)
+
+    const handleSave = async () => {
+        setLoading(true)
+        try {
+            const res = await fetch(`/api/projects/${projectId}`)
+            const project = await res.json()
+            const existingPrompts = project.prompts || []
+            const promptText = extractCopyableText(text)
+            const label = promptText.slice(0, 60) + (promptText.length > 60 ? "..." : "")
+            const newPrompts = [...existingPrompts, { label, promptText, order: existingPrompts.length, source: "generated" }]
+            await fetch(`/api/projects/${projectId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompts: newPrompts }),
+            })
+            setSaved(true)
+            setShowLabel(true)
+            setTimeout(() => setShowLabel(false), 2500)
+        } catch { }
+        finally { setLoading(false) }
+    }
+
+    return (
+        <button
+            onClick={handleSave}
+            disabled={loading || saved}
+            className="flex items-center gap-1 text-xs text-text-secondary hover:text-[#6c63ff] transition-colors mt-1 ml-1 select-none disabled:opacity-60"
+            title="Save to Project"
+        >
+            <BookmarkPlus size={13} className={saved ? "text-[#6c63ff]" : ""} />
+            {showLabel ? "Saved to project!" : "Save to Project"}
         </button>
     )
 }
@@ -604,8 +703,10 @@ export function SplitChat({ guestMode = false, projectId }: SplitChatProps) {
                             </div>
                         </div>
                         {msg.role === "ai" && msg.content && !(isStreaming && idx === messages.length - 1) && (
-                            <div className="ml-11">
+                            <div className="ml-11 flex flex-wrap items-center gap-0">
                                 <CopyButton text={msg.content} color={accentColor} />
+                                {isDerek && <FavouriteButton text={msg.content} />}
+                                {isDerek && projectId && <SaveToProjectButton text={msg.content} projectId={projectId} />}
                             </div>
                         )}
                     </div>

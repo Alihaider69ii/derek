@@ -6,7 +6,7 @@ import { SplitChat } from "@/components/shared/SplitChat"
 import { PromptCard } from "@/components/shared/PromptCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, Twitter, Linkedin, Instagram, Zap, Eye, Target, TrendingUp } from "lucide-react"
+import { ChevronDown, Twitter, Linkedin, Instagram, Zap, Eye, Target, TrendingUp, BookOpen, Clock, Calendar } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -227,11 +227,71 @@ function LLMRatingShowcase() {
   )
 }
 
+// ── Blog Integration ──────────────────────────────────────────────────────────
+const CATEGORY_COLORS: Record<string, string> = {
+    "Prompt Engineering": "#6c63ff",
+    "AI Tips": "#e05252",
+    "Tutorials": "#f59e0b",
+    "Case Studies": "#3fb950",
+    "News": "#06b6d4",
+    "General": "#8b949e",
+}
+
+function BlogCard({ post }: { post: any }) {
+    const color = CATEGORY_COLORS[post.category] || CATEGORY_COLORS["General"]
+    const date = post.publishedAt
+        ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        : "—"
+
+    return (
+        <Link href={`/blog/${post.slug}`} className="group block">
+            <article className="h-full bg-bg-panel border border-border rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:border-[#6c63ff]/50 hover:shadow-[0_0_30px_rgba(108,99,255,0.1)] hover:-translate-y-1">
+                {post.coverImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={post.coverImage} alt={post.title} className="w-full h-44 object-cover" />
+                ) : (
+                    <div className="w-full h-44 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${color}18 0%, #161b22 100%)` }}>
+                        <BookOpen size={36} style={{ color: `${color}80` }} />
+                    </div>
+                )}
+                <div className="p-5 flex flex-col flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ background: `${color}18`, color, border: `1px solid ${color}30` }}>
+                            {post.category}
+                        </span>
+                        <span className="flex items-center gap-1 text-[0.65rem] text-text-secondary">
+                            <Clock size={10} /> {post.readTime || 5} min read
+                        </span>
+                    </div>
+                    <h2 className="text-base font-bold text-text-primary mb-2 leading-snug line-clamp-2 group-hover:text-accent transition-colors">
+                        {post.title}
+                    </h2>
+                    <p className="text-sm text-text-secondary leading-relaxed line-clamp-3 flex-1 mb-4">
+                        {post.excerpt}
+                    </p>
+                    <div className="flex items-center justify-between pt-3 border-t border-border">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-[0.6rem] font-bold text-accent">
+                                {post.author?.[0] || "D"}
+                            </div>
+                            <span className="text-xs text-text-secondary truncate max-w-[100px]">{post.author || "Derek Team"}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-text-secondary">
+                            <Calendar size={11} /> {date}
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </Link>
+    )
+}
+
 export default function LandingPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = React.useState('All')
   const [viralPrompts, setViralPrompts] = React.useState<any[]>([])
   const [popularPrompts, setPopularPrompts] = React.useState<any[]>([])
+  const [blogs, setBlogs] = React.useState<any[]>([])
   const tabs = ['All', 'Coding', 'Writing', 'Marketing', 'Image Generation', 'Copywriting']
 
   React.useEffect(() => {
@@ -241,6 +301,10 @@ export default function LandingPage() {
 
     fetch('/api/prompts/popular').then(res => res.json()).then(data => {
       if (Array.isArray(data)) setPopularPrompts(data)
+    }).catch(console.error)
+
+    fetch('/api/blog').then(res => res.json()).then(data => {
+      if (Array.isArray(data)) setBlogs(data.slice(0, 4)) // Show top 4 blogs
     }).catch(console.error)
   }, [])
 
@@ -349,6 +413,32 @@ export default function LandingPage() {
                 No prompts found for this category or loading.
               </div>
             )}
+          </div>
+        </section>
+
+        {/* BLOGS FEED */}
+        <section id="blogs" className="py-20 bg-bg-panel/30 border-y border-border">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-widest text-accent font-semibold mb-1">
+                  Insights & Updates
+                </p>
+                <h2 className="text-3xl font-bold text-text-primary">Latest from the Blog</h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {blogs.length > 0 ? (
+                blogs.map((post, i) => (
+                  <BlogCard key={i} post={post} />
+                ))
+              ) : (
+                <div className="col-span-full flex items-center justify-center text-text-secondary h-40">
+                  Loading articles...
+                </div>
+              )}
+            </div>
           </div>
         </section>
 

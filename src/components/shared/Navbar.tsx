@@ -1,10 +1,43 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Sun, Moon } from "lucide-react"
+
+// ── Theme Toggle Button ───────────────────────────────────────────────────────
+function ThemeToggle() {
+    const [theme, setTheme] = useState<"dark" | "light">("dark")
+    const toggleTheme = () => {
+        const newTheme = theme === "dark" ? "light" : "dark"
+        setTheme(newTheme)
+        if (newTheme === "light") {
+            document.documentElement.classList.add("light-theme")
+        } else {
+            document.documentElement.classList.remove("light-theme")
+        }
+    }
+    return (
+        <button 
+            onClick={toggleTheme} 
+            className="p-2 rounded-full border border-border text-text-secondary hover:text-text-primary hover:border-[#6c63ff]/30 transition-colors bg-bg-panel"
+            title="Toggle theme"
+        >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+    )
+}
 
 export function Navbar() {
+    const navLinks = [
+        { href: "/", label: "Home" },
+        { href: "/#about", label: "About Us" },
+        { href: "/blog", label: "Blogs" },
+        { href: "/marketplace", label: "Marketplace" },
+        { href: "/#contact", label: "Contact" },
+    ]
+
     return (
         <nav className="sticky top-0 z-50 w-full h-[60px] border-b border-border bg-bg-base/95 backdrop-blur supports-[backdrop-filter]:bg-bg-base/80">
             <div className="container mx-auto px-4 h-full flex items-center justify-between">
@@ -28,16 +61,20 @@ export function Navbar() {
 
                 {/* Center Links (Desktop) */}
                 <div className="hidden md:flex items-center gap-6">
-                    <Link href="/" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Home</Link>
-                    <Link href="/prompt-bank" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Prompt Bank</Link>
-                    <Link href="/blog" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Blog</Link>
-                    <Link href="/projects" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Projects</Link>
-                    <Link href="/#about" className="text-sm text-text-secondary hover:text-text-primary transition-colors">About</Link>
-                    <Link href="/#contact" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Contact</Link>
+                    {navLinks.map((link) => (
+                        <Link 
+                            key={link.href} 
+                            href={link.href} 
+                            className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
                 </div>
 
                 {/* Right Auth actions */}
                 <div className="flex items-center gap-3">
+                    <ThemeToggle />
                     <Link href="/login">
                         <Button variant="ghost" className="hidden sm:inline-flex">Login</Button>
                     </Link>
