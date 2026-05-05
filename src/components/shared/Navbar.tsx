@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -9,22 +9,46 @@ import { Sun, Moon } from "lucide-react"
 // ── Theme Toggle Button ───────────────────────────────────────────────────────
 function ThemeToggle() {
     const [theme, setTheme] = useState<"dark" | "light">("dark")
+
+    // On mount: read saved preference and apply it
+    useEffect(() => {
+        const saved = (localStorage.getItem("emp-theme") as "dark" | "light") || "dark"
+        setTheme(saved)
+        if (saved === "light") {
+            document.documentElement.classList.add("light-theme")
+        } else {
+            document.documentElement.classList.remove("light-theme")
+        }
+    }, [])
+
     const toggleTheme = () => {
-        const newTheme = theme === "dark" ? "light" : "dark"
-        setTheme(newTheme)
-        if (newTheme === "light") {
+        const next = theme === "dark" ? "light" : "dark"
+        setTheme(next)
+        localStorage.setItem("emp-theme", next)
+        if (next === "light") {
             document.documentElement.classList.add("light-theme")
         } else {
             document.documentElement.classList.remove("light-theme")
         }
     }
+
     return (
-        <button 
-            onClick={toggleTheme} 
-            className="p-2 rounded-full border border-border text-text-secondary hover:text-text-primary hover:border-[#6c63ff]/30 transition-colors bg-bg-panel"
-            title="Toggle theme"
+        <button
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="relative w-[52px] h-[28px] rounded-full border border-border bg-bg-panel transition-colors hover:border-[#6c63ff]/60 focus:outline-none focus:ring-2 focus:ring-[#6c63ff]/40"
+            aria-label="Toggle theme"
         >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            {/* sliding pill */}
+            <span
+                className={`absolute top-[3px] left-[3px] w-[22px] h-[22px] rounded-full flex items-center justify-center transition-transform duration-300 ${
+                    theme === "light"
+                        ? "translate-x-[24px] bg-[#6c63ff] text-white shadow-[0_0_8px_rgba(108,99,255,0.6)]"
+                        : "translate-x-0 bg-bg-hover text-text-secondary"
+                }`}
+            >
+                {theme === "dark" ? <Moon size={13} /> : <Sun size={13} />}
+            </span>
         </button>
     )
 }

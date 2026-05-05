@@ -30,6 +30,49 @@
   --font-chat: 'DM Sans', sans-serif;
 }
 
+/* ─── Light Theme Overrides ─── */
+.light-theme {
+  --bg-base:       #ffffff;
+  --bg-panel:      #f5f3ff;
+  --bg-input:      #ede9fe;
+  --bg-hover:      #ede9fe;
+  --accent:        #6c63ff;
+  --accent-hover:  #5a52e0;
+  --text-primary:  #1a1025;
+  --text-secondary:#6b7280;
+  --border:        #ddd6fe;
+  --gold:          #d97706;
+  --gold-text:     #ffffff;
+  --success:       #16a34a;
+  --danger:        #dc2626;
+}
+
+/* ─── Light theme: remap hardcoded dark Tailwind arbitrary classes ─── */
+/* These override the bg-[#xxxxxx] classes used directly in page components */
+.light-theme .bg-\[\#0a0f1c\]          { background-color: #f5f3ff !important; }
+.light-theme .bg-\[\#121629\]          { background-color: #ede9fe !important; }
+.light-theme .bg-\[\#121629\]\/50      { background-color: rgba(237,233,254,0.7) !important; }
+.light-theme .bg-\[\#121629\]\/80      { background-color: rgba(237,233,254,0.9) !important; }
+.light-theme .bg-\[\#161b22\]          { background-color: #e9e4ff !important; }
+.light-theme .bg-\[\#1c2128\]          { background-color: #ede9fe !important; }
+.light-theme .bg-\[\#21262d\]          { background-color: #e5e4f0 !important; }
+.light-theme .border-\[\#2a2a4a\]      { border-color: #c4b5fd !important; }
+.light-theme .text-\[\#e6edf3\]        { color: #1a1025 !important; }
+.light-theme .text-\[\#a0a5b5\]        { color: #374151 !important; }
+.light-theme .text-\[\#8a91a6\]        { color: #4b5563 !important; }
+
+/* Navbar backdrop in light mode */
+.light-theme nav {
+  background-color: rgba(255,255,255,0.92) !important;
+  border-color: #ddd6fe !important;
+  backdrop-filter: blur(12px);
+}
+
+/* Card/panel transitions when theme switches */
+.light-theme * {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
 body {
   background: var(--bg-base);
   color: var(--text-primary);
@@ -59,11 +102,12 @@ body {
   /* ─── Enhanced Animated Background ─── */
   .animated-bg {
     position: relative;
-    background-color: #0d1117;
+    background-color: var(--bg-base);
     overflow: hidden;
+    transition: background-color 0.3s ease;
   }
 
-  /* Dot-mesh grid overlay */
+  /* Dot-mesh grid overlay — dark theme */
   .animated-bg::before {
     content: '';
     position: fixed;
@@ -74,13 +118,13 @@ body {
     z-index: 0;
     mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 40%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 40%, transparent 100%);
+    transition: opacity 0.3s ease;
   }
 
-  /* Floating glow orbs — static gradient, animated via transform for GPU-smooth motion */
+  /* Floating glow orbs — dark theme */
   .animated-bg::after {
     content: '';
     position: fixed;
-    /* Oversized so orbs stay visible even when translated */
     inset: -20%;
     width: 140%;
     height: 140%;
@@ -100,7 +144,7 @@ body {
     z-index: 1;
   }
 
-  /* Smooth figure-8 drift using only transform — fully GPU composited */
+  /* Smooth figure-8 drift */
   @keyframes orbDrift {
     0%   { transform: translate(0%,    0%);   }
     25%  { transform: translate(4%,   -5%);   }
@@ -109,7 +153,7 @@ body {
     100% { transform: translate(0%,    0%);   }
   }
 
-  /* Mobile: same technique, smaller movement range */
+  /* Mobile */
   @media (max-width: 640px) {
     .animated-bg::before {
       background-size: 22px 22px;
@@ -128,4 +172,23 @@ body {
     66%  { transform: translate(-3%, -3%); }
     100% { transform: translate(0%,  0%);  }
   }
+
+  /* ─── Light theme: soft lavender orbs on white ─── */
+  .light-theme .animated-bg {
+    background-color: #ffffff;
+  }
+  .light-theme .animated-bg::before {
+    background-image: radial-gradient(circle, rgba(108, 99, 255, 0.08) 1px, transparent 1px);
+  }
+  .light-theme .animated-bg::after {
+    background:
+      radial-gradient(ellipse 55vw 55vw at 20% 25%, rgba(108, 99, 255, 0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50vw 50vw at 82% 78%, rgba(139, 92, 246, 0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 38vw 38vw at 78% 12%, rgba(167, 139, 250, 0.05) 0%, transparent 65%);
+  }
+
+  /* light-mode scrollbar */
+  .light-theme ::-webkit-scrollbar { width: 6px; }
+  .light-theme ::-webkit-scrollbar-track { background: #f5f3ff; }
+  .light-theme ::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 99px; }
 }
