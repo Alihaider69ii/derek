@@ -47,31 +47,72 @@
   --danger:        #dc2626;
 }
 
-/* ─── Light theme: remap hardcoded dark Tailwind arbitrary classes ─── */
-/* These override the bg-[#xxxxxx] classes used directly in page components */
-.light-theme .bg-\[\#0a0f1c\]          { background-color: #f5f3ff !important; }
-.light-theme .bg-\[\#121629\]          { background-color: #ede9fe !important; }
-.light-theme .bg-\[\#121629\]\/50      { background-color: rgba(237,233,254,0.7) !important; }
-.light-theme .bg-\[\#121629\]\/80      { background-color: rgba(237,233,254,0.9) !important; }
-.light-theme .bg-\[\#161b22\]          { background-color: #e9e4ff !important; }
-.light-theme .bg-\[\#1c2128\]          { background-color: #ede9fe !important; }
-.light-theme .bg-\[\#21262d\]          { background-color: #e5e4f0 !important; }
-.light-theme .border-\[\#2a2a4a\]      { border-color: #c4b5fd !important; }
-.light-theme .text-\[\#e6edf3\]        { color: #1a1025 !important; }
-.light-theme .text-\[\#a0a5b5\]        { color: #374151 !important; }
-.light-theme .text-\[\#8a91a6\]        { color: #4b5563 !important; }
+/* ── Smooth transitions on key elements only (NOT * which bleeds into chat) ── */
+.light-theme body,
+.light-theme section,
+.light-theme header,
+.light-theme footer,
+.light-theme nav,
+.light-theme .card,
+.light-theme .bg-bg-panel,
+.light-theme .bg-bg-base {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
 
-/* Navbar backdrop in light mode */
+/* ── theme-stable: SplitChat and other components that must stay dark ── */
+.light-theme .theme-stable,
+.light-theme .theme-stable * {
+  all: revert-layer; /* full reset so CSS vars don't bleed in */
+}
+/* Simpler approach — just block variable inheritance inside .theme-stable */
+.light-theme .theme-stable {
+  --bg-base:       #0d1117;
+  --bg-panel:      #161b22;
+  --bg-input:      #1c2128;
+  --bg-hover:      #21262d;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --border:        #30363d;
+}
+
+/* ── Navbar in light mode ── */
 .light-theme nav {
   background-color: rgba(255,255,255,0.92) !important;
   border-color: #ddd6fe !important;
   backdrop-filter: blur(12px);
 }
 
-/* Card/panel transitions when theme switches */
-.light-theme * {
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+/* ── Fix: text-white becomes invisible on white bg — use dark purple instead ── */
+.light-theme .text-white {
+  color: #1a1025 !important;
 }
+
+/* ── Fix: section headings that use text-white should be accent purple ── */
+.light-theme h1.text-white,
+.light-theme h2.text-white,
+.light-theme h3.text-white,
+.light-theme h4.text-white {
+  color: #4c3d9e !important;
+}
+
+/* ── Remap hardcoded dark Tailwind arbitrary-value bg classes ── */
+.light-theme .bg-\[\#0a0f1c\]     { background-color: #f5f3ff !important; }
+.light-theme .bg-\[\#121629\]     { background-color: #ede9fe !important; }
+.light-theme .bg-\[\#161b22\]     { background-color: #e9e4ff !important; }
+.light-theme .bg-\[\#1c2128\]     { background-color: #ede9fe !important; }
+.light-theme .bg-\[\#21262d\]     { background-color: #e5e4f0 !important; }
+.light-theme .border-\[\#2a2a4a\] { border-color: #c4b5fd !important; }
+
+/* ── Text colours that need correcting on light bg ── */
+.light-theme .text-\[\#e6edf3\]   { color: #1a1025 !important; }
+.light-theme .text-\[\#a0a5b5\]   { color: #374151 !important; }
+.light-theme .text-\[\#8a91a6\]   { color: #4b5563 !important; }
+
+/* ── Opaque variants (Tailwind bg-[#xxx]/80 etc) ── */
+.light-theme [class*="bg-\\[\\#121629\\]\\/"] { background-color: rgba(237,233,254,0.85) !important; }
+.light-theme [class*="bg-\\[\\#0a0f1c\\]\\/"] { background-color: rgba(245,243,255,0.85) !important; }
+
+
 
 body {
   background: var(--bg-base);

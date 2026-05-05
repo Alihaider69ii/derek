@@ -733,7 +733,7 @@ export function SplitChat({ guestMode = false, projectId }: SplitChatProps) {
     const claudeBlocked = !canSendNow(CLAUDE_TS_KEY, FREE_LIMIT)
 
     return (
-        <div className="flex flex-col md:flex-row w-full h-[600px] md:h-full border border-border rounded-xl overflow-hidden bg-bg-base">
+        <div className="theme-stable flex flex-col md:flex-row w-full h-[600px] md:h-full border border-border rounded-xl overflow-hidden bg-bg-base">
             <FreeTierModal
                 isOpen={showLimitModal}
                 onClose={() => setShowLimitModal(false)}
