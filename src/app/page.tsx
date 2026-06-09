@@ -126,14 +126,14 @@ function ContactForm() {
 // ── LLM Rating Showcase ───────────────────────────────────────────────────────
 function LLMRatingShowcase() {
   return (
-    <section className="py-20 bg-bg-base border-b border-border overflow-hidden relative">
+    <section className="py-20 bg-bg-panel/40 border-b border-border overflow-hidden relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent opacity-50" />
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <p className="text-xs uppercase tracking-widest text-[#6c63ff] font-semibold mb-2">
             Why It Works
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
             Not all prompts are created equal.
           </h2>
           <p className="text-text-secondary text-lg">
@@ -304,7 +304,11 @@ export default function LandingPage() {
     }).catch(console.error)
 
     fetch('/api/blog').then(res => res.json()).then(data => {
-      if (Array.isArray(data)) setBlogs(data.slice(0, 4)) // Show top 4 blogs
+      if (Array.isArray(data)) {
+        // Sort newest first, then take top 4
+        const sorted = [...data].sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime())
+        setBlogs(sorted.slice(0, 4))
+      }
     }).catch(console.error)
   }, [])
 
@@ -426,6 +430,13 @@ export default function LandingPage() {
                 </p>
                 <h2 className="text-3xl font-bold text-text-primary">Latest from the Blog</h2>
               </div>
+              <Link
+                href="/blog"
+                className="flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-hover transition-colors group shrink-0"
+              >
+                See all
+                <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -443,7 +454,7 @@ export default function LandingPage() {
         </section>
 
         {/* ABOUT US */}
-        <section id="about" className="py-24 bg-[#0a0f1c] relative overflow-hidden">
+        <section id="about" className="about-section py-24 relative overflow-hidden">
           {/* Circuit background overlay */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
           
