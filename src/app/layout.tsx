@@ -33,20 +33,6 @@ export default function RootLayout({
         }}
       >
         <AuthProvider>{children}</AuthProvider>
-        <div
-          style={{
-            position: "fixed",
-            bottom: "10px",
-            right: "10px",
-            fontSize: "12px",
-            opacity: 0.4,
-            zIndex: 9999,
-            pointerEvents: "none",
-            fontFamily: "inherit",
-          }}
-        >
-          Built by Aryan
-        </div>
       </body>
     </html>
   );
