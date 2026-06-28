@@ -252,21 +252,21 @@ export default function PromptBankPage() {
             {/* FAVOURITE TITLE MODAL */}
             {showFavModal && selectedPrompt && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={e => { if (e.target === e.currentTarget) setShowFavModal(false) }}>
-                    <div className="bg-[#1a1a2e] border border-[#2a2a4a] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#2a2a4a]">
-                            <h2 className="text-base font-bold text-white flex items-center gap-2"><Star size={15} className="text-yellow-400 fill-yellow-400" /> Add to Favourites</h2>
-                            <button onClick={() => setShowFavModal(false)} className="p-1.5 rounded-lg text-[#8b949e] hover:text-white hover:bg-white/10">✕</button>
+                    <div className="bg-bg-panel border border-border w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
+                            <h2 className="text-base font-bold text-text-primary flex items-center gap-2"><Star size={15} className="text-yellow-400 fill-yellow-400" /> Add to Favourites</h2>
+                            <button onClick={() => setShowFavModal(false)} className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover">✕</button>
                         </div>
                         <div className="p-5 space-y-4">
                             <input
                                 type="text" value={favTitle} onChange={e => setFavTitle(e.target.value)}
                                 onKeyDown={e => { if (e.key === "Enter") handleFavourite() }}
                                 placeholder="Give this prompt a title…" autoFocus
-                                className="w-full px-4 py-3 bg-[#0d0d1a] border border-[#2a2a4a] rounded-xl text-sm text-white placeholder:text-[#8b949e] focus:outline-none focus:border-[#6c63ff]"
+                                className="w-full px-4 py-3 bg-bg-input border border-border rounded-xl text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
                             />
                             <button onClick={handleFavourite} disabled={!favTitle.trim() || favLoading || favSaved}
                                 className="w-full py-3 rounded-full text-sm font-bold text-white disabled:opacity-40 hover:opacity-80"
-                                style={{ background: favSaved ? "linear-gradient(135deg,#22c55e,#16a34a)" : "linear-gradient(135deg,#6c63ff,#5a52e0)" }}>
+                                style={{ background: favSaved ? "linear-gradient(135deg,#22c55e,#16a34a)" : "linear-gradient(135deg,var(--accent),var(--accent-hover))" }}>
                                 {favSaved ? "✓ Saved!" : favLoading ? "Saving..." : "Save to Favourites"}
                             </button>
                         </div>

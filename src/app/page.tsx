@@ -1,655 +1,448 @@
 "use client"
 import * as React from "react"
 import { Suspense } from "react"
-import { Navbar } from "@/components/shared/Navbar"
-import { SplitChat } from "@/components/shared/SplitChat"
-import { PromptCard } from "@/components/shared/PromptCard"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ChevronDown, Twitter, Linkedin, Instagram, Zap, Eye, Target, TrendingUp, BookOpen, Clock, Calendar } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { SplitChat } from "@/components/shared/SplitChat"
+import styles from "./page.module.css"
+import {
+  ArrowRight,
+  Search,
+  CheckCircle2,
+  Upload,
+  TrendingUp,
+  FileText,
+} from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
-// ── Typing tagline animation ─────────────────────────────────────────────────
-const TAGLINE_FULL = "Stop guessing, start getting results — convert any idea into precision‑crafted AI prompts built for speed, quality, and impact."
-
-function TypingTagline() {
-  const [displayed, setDisplayed] = React.useState("")
-  const [phase, setPhase] = React.useState<"typing" | "hold" | "done">("typing")
-  const idx = React.useRef(0)
-
-  React.useEffect(() => {
-    if (phase === "typing") {
-      const id = setInterval(() => {
-        idx.current += 1
-        setDisplayed(TAGLINE_FULL.slice(0, idx.current))
-        if (idx.current >= TAGLINE_FULL.length) {
-          clearInterval(id)
-          setPhase("done")
-        }
-      }, 28)
-      return () => clearInterval(id)
-    }
-  }, [phase])
-
-  return (
-    <div className="relative py-12 px-4">
-      {/* Gradient shimmer background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent pointer-events-none" />
-      <div className="container mx-auto max-w-3xl text-center">
-        <p
-          className="text-xl md:text-2xl font-semibold leading-relaxed"
-          style={{
-            background: "linear-gradient(90deg, #94a3b8 0%, #e2e8f0 50%, #94a3b8 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            minHeight: "3em",
-          }}
-        >
-          {displayed}
-          {phase !== "done" && (
-            <span style={{ WebkitTextFillColor: "#3b82f6", animation: "blink 1s step-end infinite" }}>|</span>
-          )}
-        </p>
-      </div>
-      <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
-    </div>
-  )
+interface PromptItem {
+  _id: string
+  title: string
+  category: string
+  promptText: string
+  sampleOutput?: string
+  emoji?: string
+  isMega?: boolean
 }
 
-// ── Contact form ─────────────────────────────────────────────────────────────
-function ContactForm() {
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [message, setMessage] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
-  const [success, setSuccess] = React.useState("");
-  const [error, setError] = React.useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setSuccess("");
-    setError("");
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSuccess("Thank you for reaching out! We'll get back to you soon.");
-        setName(""); setEmail(""); setMessage("");
-      } else {
-        setError(data.error || "Something went wrong.");
-      }
-    } catch {
-      setError("Failed to send message.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form className="space-y-5 flex flex-col pt-2" onSubmit={handleSubmit}>
-      <div className="grid md:grid-cols-2 gap-5">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-text-primary">Full Name</label>
-          <Input placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-text-primary">Email</label>
-          <Input type="email" placeholder="john@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
-        </div>
-      </div>
-      <div className="space-y-2 pb-2">
-        <label className="text-sm font-medium text-text-primary">Message</label>
-        <textarea
-          className="w-full min-h-[120px] rounded-btn border border-border bg-bg-input px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-[150ms_ease] resize-y"
-          placeholder="How can we help?"
-          value={message}
-          onChange={e => setMessage(e.target.value)}
-          required
-        />
-      </div>
-      {success && <div className="text-green-600 text-sm text-center">{success}</div>}
-      {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-      <Button type="submit" className="w-full h-12 text-md" disabled={loading}>{loading ? "Sending..." : "Send Message"}</Button>
-    </form>
-  );
+interface CategoryItem {
+  _id: string
+  name: string
+  emoji: string
 }
 
-// ── LLM Rating Showcase ───────────────────────────────────────────────────────
-function LLMRatingShowcase() {
-  return (
-    <section className="py-20 bg-bg-panel/40 border-b border-border overflow-hidden relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent opacity-50" />
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-xs uppercase tracking-widest text-[#6c63ff] font-semibold mb-2">
-            Why It Works
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            Not all prompts are created equal.
-          </h2>
-          <p className="text-text-secondary text-lg">
-            See the difference between generic human thoughts and Derek's precision engineering.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {/* Generic Prompt */}
-          <div className="bg-[#121629]/50 border border-border rounded-xl p-6 md:p-8 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500/50 to-orange-500/50" />
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="text-xl font-bold text-white">Your Raw Idea</h3>
-                <p className="text-text-secondary text-sm">Typical human input</p>
-              </div>
-              <div className="w-12 h-12 rounded-full border border-red-500/30 flex items-center justify-center bg-red-500/10">
-                <span className="text-red-400 font-bold text-lg">4<span className="text-xs text-red-400/70">/10</span></span>
-              </div>
-            </div>
-            <div className="bg-bg-panel/50 p-4 rounded-lg border border-border/50 text-text-secondary mb-6 italic text-sm">
-              "Write a cold email to sell my marketing services to dentists."
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Structure</span>
-                <span className="text-red-400">Poor</span>
-              </div>
-              <div className="w-full bg-bg-panel rounded-full h-1.5"><div className="bg-red-500 h-1.5 rounded-full" style={{ width: "30%" }}></div></div>
-              
-              <div className="flex justify-between text-sm pt-2">
-                <span className="text-text-secondary">Context</span>
-                <span className="text-orange-400">Basic</span>
-              </div>
-              <div className="w-full bg-bg-panel rounded-full h-1.5"><div className="bg-orange-500 h-1.5 rounded-full" style={{ width: "45%" }}></div></div>
-              
-              <div className="flex justify-between text-sm pt-2">
-                <span className="text-text-secondary">AI Output Quality</span>
-                <span className="text-orange-400">Generic</span>
-              </div>
-              <div className="w-full bg-bg-panel rounded-full h-1.5"><div className="bg-orange-500 h-1.5 rounded-full" style={{ width: "40%" }}></div></div>
-            </div>
-          </div>
-
-          {/* Derek's Prompt */}
-          <div className="bg-[#121629] border border-[#6c63ff]/30 rounded-xl p-6 md:p-8 relative shadow-[0_0_30px_rgba(108,99,255,0.15)] overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6c63ff] to-[#a09cff]" />
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  Engineered by Derek <Zap size={18} className="text-[#6c63ff]" />
-                </h3>
-                <p className="text-[#6c63ff]/70 text-sm">Precision AI framework</p>
-              </div>
-              <div className="w-12 h-12 rounded-full border border-[#6c63ff]/50 flex items-center justify-center bg-[#6c63ff]/10 shadow-[0_0_15px_rgba(108,99,255,0.3)]">
-                <span className="text-[#6c63ff] font-bold text-lg drop-shadow-md">9.8<span className="text-xs text-[#6c63ff]/70 drop-shadow-none">/10</span></span>
-              </div>
-            </div>
-            
-            <div className="bg-[#161b22] p-4 rounded-lg border border-[#6c63ff]/20 text-[#e6edf3] mb-6 text-sm font-mono leading-relaxed h-[85px] overflow-hidden relative">
-               [ROLE]: Expert B2B Copywriter<br/>
-               [TASK]: Draft a 3-part cold email sequence.<br/>
-               [TARGET]: Dental practice owners...
-               <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-[#161b22] to-transparent"></div>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-[#a09cff]">Structure</span>
-                <span className="text-[#6c63ff] font-medium">Optimal</span>
-              </div>
-              <div className="w-full bg-bg-panel rounded-full h-1.5"><div className="bg-[#6c63ff] h-1.5 rounded-full shadow-[0_0_10px_rgba(108,99,255,0.8)]" style={{ width: "98%" }}></div></div>
-              
-              <div className="flex justify-between text-sm pt-2">
-                <span className="text-[#a09cff]">Context</span>
-                <span className="text-[#6c63ff] font-medium">Comprehensive</span>
-              </div>
-              <div className="w-full bg-bg-panel rounded-full h-1.5"><div className="bg-[#6c63ff] h-1.5 rounded-full shadow-[0_0_10px_rgba(108,99,255,0.8)]" style={{ width: "95%" }}></div></div>
-              
-              <div className="flex justify-between text-sm pt-2">
-                <span className="text-[#a09cff]">AI Output Quality</span>
-                <span className="text-[#6c63ff] font-medium">Outstanding</span>
-              </div>
-              <div className="w-full bg-bg-panel rounded-full h-1.5"><div className="bg-[#6c63ff] h-1.5 rounded-full shadow-[0_0_10px_rgba(108,99,255,0.8)]" style={{ width: "99%" }}></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ── Blog Integration ──────────────────────────────────────────────────────────
-const CATEGORY_COLORS: Record<string, string> = {
-    "Prompt Engineering": "#6c63ff",
-    "AI Tips": "#e05252",
-    "Tutorials": "#f59e0b",
-    "Case Studies": "#3fb950",
-    "News": "#06b6d4",
-    "General": "#8b949e",
-}
-
-function BlogCard({ post }: { post: any }) {
-    const color = CATEGORY_COLORS[post.category] || CATEGORY_COLORS["General"]
-    const date = post.publishedAt
-        ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-        : "—"
-
-    return (
-        <Link href={`/blog/${post.slug}`} className="group block">
-            <article className="h-full bg-bg-panel border border-border rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:border-[#6c63ff]/50 hover:shadow-[0_0_30px_rgba(108,99,255,0.1)] hover:-translate-y-1">
-                {post.coverImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.coverImage} alt={post.title} className="w-full h-44 object-cover" />
-                ) : (
-                    <div className="w-full h-44 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${color}18 0%, #161b22 100%)` }}>
-                        <BookOpen size={36} style={{ color: `${color}80` }} />
-                    </div>
-                )}
-                <div className="p-5 flex flex-col flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ background: `${color}18`, color, border: `1px solid ${color}30` }}>
-                            {post.category}
-                        </span>
-                        <span className="flex items-center gap-1 text-[0.65rem] text-text-secondary">
-                            <Clock size={10} /> {post.readTime || 5} min read
-                        </span>
-                    </div>
-                    <h2 className="text-base font-bold text-text-primary mb-2 leading-snug line-clamp-2 group-hover:text-accent transition-colors">
-                        {post.title}
-                    </h2>
-                    <p className="text-sm text-text-secondary leading-relaxed line-clamp-3 flex-1 mb-4">
-                        {post.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                        <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-[0.6rem] font-bold text-accent">
-                                {post.author?.[0] || "D"}
-                            </div>
-                            <span className="text-xs text-text-secondary truncate max-w-[100px]">{post.author || "Derek Team"}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-text-secondary">
-                            <Calendar size={11} /> {date}
-                        </div>
-                    </div>
-                </div>
-            </article>
-        </Link>
-    )
+function preview(text: string, len = 130) {
+  if (!text) return ""
+  return text.length > len ? text.slice(0, len).trim() + "…" : text
 }
 
 export default function LandingPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = React.useState('All')
-  const [viralPrompts, setViralPrompts] = React.useState<any[]>([])
-  const [popularPrompts, setPopularPrompts] = React.useState<any[]>([])
-  const [blogs, setBlogs] = React.useState<any[]>([])
-  const tabs = ['All', 'Coding', 'Writing', 'Marketing', 'Image Generation', 'Copywriting']
+  const [activeTab, setActiveTab] = React.useState("All")
+  const [prompts, setPrompts] = React.useState<PromptItem[]>([])
+  const [categories, setCategories] = React.useState<CategoryItem[]>([])
 
   React.useEffect(() => {
-    fetch('/api/prompts/viral').then(res => res.json()).then(data => {
-      if (Array.isArray(data)) setViralPrompts(data)
+    fetch("/api/prompts/popular").then(res => res.json()).then(data => {
+      if (Array.isArray(data)) setPrompts(data)
     }).catch(console.error)
 
-    fetch('/api/prompts/popular').then(res => res.json()).then(data => {
-      if (Array.isArray(data)) setPopularPrompts(data)
-    }).catch(console.error)
-
-    fetch('/api/blog').then(res => res.json()).then(data => {
-      if (Array.isArray(data)) {
-        // Sort newest first, then take top 4
-        const sorted = [...data].sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime())
-        setBlogs(sorted.slice(0, 4))
-      }
+    fetch("/api/categories").then(res => res.json()).then(data => {
+      if (Array.isArray(data)) setCategories(data)
     }).catch(console.error)
   }, [])
 
   const handlePromptClick = () => {
     if (confirm("Please login to access the prompt. Go to login?")) {
-      router.push('/login')
+      router.push("/login")
     }
   }
 
-  const filteredPrompts = popularPrompts.filter(prompt =>
-    activeTab === 'All' ? true : prompt.category === activeTab
-  )
+  const tabs = ["All", ...categories.map(c => c.name)]
+  const filteredPrompts = activeTab === "All" ? prompts : prompts.filter(p => p.category === activeTab)
+  const heroPrompts = prompts.slice(0, 3)
 
   return (
-    <div className="min-h-screen animated-bg flex flex-col">
-      <Navbar />
+    <div className={styles.empHome}>
+      <div className={styles.scanline} />
 
-      <main className="flex-1">
-        {/* HERO SECTION */}
-        <section className="py-16 md:py-24 px-4">
-          <div className="container mx-auto">
-            <div className="text-center max-w-3xl mx-auto mb-12 animate-in slide-in-from-bottom-5 fade-in duration-500">
-              <h1 className="mb-6 text-text-primary text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-balance">
-                Engineer Prompts <span className="text-accent text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover">Like a Pro</span>. Test Them Instantly.
+      {/* NAV */}
+      <nav className={styles.nav}>
+        <Link href="/" className={styles.navLogo}>EaseMyPrompt<span>.ai</span></Link>
+        <ul className={styles.navLinks}>
+          <li><a href="#marketplace">Marketplace</a></li>
+          <li><a href="#derek">Ask Derek <span className={styles.navBadge}>AI</span></a></li>
+          <li><a href="#earn">Sell Prompts</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+        <div className={styles.navActions}>
+          <Link href="/login" className={styles.btnGhost}>Log in</Link>
+          <Link href="/marketplace" className={styles.btnPrimary}>
+            Browse Marketplace
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section className={styles.hero}>
+        <div className={styles.heroGlowCenter} />
+        <div className={styles.heroGlowAmber} />
+        <div className={styles.heroInner}>
+          <div className={styles.heroTop}>
+            <div>
+              <div className={styles.heroEyebrow}><span className={styles.eyebrowDot} />The Prompt Marketplace</div>
+              <h1 className={styles.heroHeadline}>
+                The world&apos;s best<br />prompts. <em>All in</em><br />one place.
               </h1>
-              <p className="text-text-secondary text-lg md:text-xl">
-                Tell Derek your casual idea. He turns it into a structured, world-class prompt. Then paste it to Claude and see the magic happen.
+              <p className={styles.heroSub}>
+                Browse and buy proven, community-built prompts for any AI tool. Or ask Derek to engineer one for you — then sell it in the marketplace.
               </p>
-            </div>
+              <div className={styles.heroActions}>
+                <a href="#marketplace" className={styles.btnHero}>
+                  <Search size={18} />
+                  Browse Prompts
+                </a>
+                <a href="#derek" className={styles.btnOutlineHero}>Ask Derek instead →</a>
+              </div>
 
-            <div className="w-full max-w-6xl mx-auto animate-in slide-in-from-bottom-10 fade-in duration-700 delay-150 fill-mode-both">
-              <Suspense fallback={<div>Loading...</div>}>
-                <SplitChat guestMode />
-              </Suspense>
-            </div>
-          </div>
-        </section>
-
-        {/* DYNAMIC TYPING TAGLINE */}
-        <section className="border-y border-border bg-bg-panel/30">
-          <TypingTagline />
-        </section>
-
-        {/* LLM RATING SHOWCASE */}
-        <LLMRatingShowcase />
-
-        {/* VIRAL PROMPTS CAROUSEL */}
-        <section className="py-16 bg-bg-panel/50 border-b border-border overflow-hidden">
-          <div className="container mx-auto px-4 mb-4">
-            {/* Above-prompts headline */}
-            <p className="text-xs uppercase tracking-widest text-accent font-semibold mb-2 text-center">
-              Unlock AI&apos;s Full Potential with Perfect Prompts by Derek
-            </p>
-            <h2 className="text-2xl font-bold text-text-primary flex items-center gap-3">
-              <div className="w-1.5 h-6 bg-accent rounded-full" />
-              Viral Prompts
-            </h2>
-          </div>
-
-          <div className="relative overflow-hidden hide-scrollbar pb-4">
-            {/* Edge fade gradients */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-12 md:w-24 bg-gradient-to-r from-[#0d1117] to-transparent z-10"></div>
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-12 md:w-24 bg-gradient-to-l from-[#0d1117] to-transparent z-10"></div>
-
-            <div className="flex gap-4 animate-marquee w-max hover:[animation-play-state:paused] px-4">
-              {viralPrompts.length > 0 ? [...viralPrompts, ...viralPrompts, ...viralPrompts, ...viralPrompts].map((prompt, i) => (
-                <div key={i} className="shrink-0 w-[280px] md:w-[350px]">
-                  <PromptCard {...prompt} onClick={handlePromptClick} />
+              <div className={styles.heroStats}>
+                <div className={styles.statItem}>
+                  <div className={styles.statNum}>2,400<span>+</span></div>
+                  <div className={styles.statLabel}>Prompts in marketplace</div>
                 </div>
-              )) : (
-                <div className="text-text-secondary h-20 flex items-center justify-center w-full px-8">Loading viral prompts...</div>
+                <div className={styles.statItem}>
+                  <div className={styles.statNum}>18k<span>+</span></div>
+                  <div className={styles.statLabel}>Active users</div>
+                </div>
+                <div className={styles.statItem}>
+                  <div className={styles.statNum}>₹84k<span>+</span></div>
+                  <div className={styles.statLabel}>Paid to creators</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Hero card stack — real prompts */}
+            <div className={styles.heroCards}>
+              {heroPrompts[2] && (
+                <div className={`${styles.heroCard} ${styles.heroCard3}`}>
+                  <div className={styles.hcardTitle}>{heroPrompts[2].title}</div>
+                </div>
+              )}
+              {heroPrompts[1] && (
+                <div className={`${styles.heroCard} ${styles.heroCard2}`}>
+                  <div className={styles.hcardTitle}>{heroPrompts[1].title}</div>
+                </div>
+              )}
+              {heroPrompts[0] && (
+                <div className={`${styles.heroCard} ${styles.heroCard1}`} onClick={handlePromptClick}>
+                  <div className={styles.hcardTop}>
+                    <span className={styles.hcardCat}>{heroPrompts[0].category}</span>
+                  </div>
+                  <div className={styles.hcardTitle}>{heroPrompts[0].title}</div>
+                  <div className={styles.hcardPreview}>
+                    <span className={styles.promptSym}>&gt;_</span> {preview(heroPrompts[0].promptText)}
+                  </div>
+                  <div className={styles.hcardFooter}>
+                    <button className={styles.hcardBtn} onClick={handlePromptClick}>Open prompt</button>
+                  </div>
+                </div>
+              )}
+              {heroPrompts.length === 0 && (
+                <div className={`${styles.heroCard} ${styles.heroCard1}`}>
+                  <div className={styles.hcardTitle}>Loading prompts…</div>
+                </div>
               )}
             </div>
           </div>
-        </section>
 
-        {/* POPULAR PROMPTS GRID */}
-        <section className="py-20 px-4 container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-accent font-semibold mb-1">
-                Unlock AI&apos;s Full Potential with Perfect Prompts by Derek
-              </p>
-              <h2 className="text-3xl font-bold text-text-primary">Popular Prompts</h2>
-            </div>
-            <div className="flex overflow-x-auto gap-2 pb-2 w-full md:w-auto hide-scrollbar">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab ? 'bg-accent text-white' : 'bg-bg-hover text-text-secondary hover:bg-bg-panel hover:text-text-primary'}`}
-                >
-                  {tab}
-                </button>
-              ))}
+          {/* Compat bar */}
+          <div className={styles.compatBar}>
+            <span className={styles.compatLabel}>Paste into any AI →</span>
+            <div className={styles.compatChips}>
+              <span className={styles.compatChip}>ChatGPT</span>
+              <span className={styles.compatChip}>Claude</span>
+              <span className={styles.compatChip}>Gemini</span>
+              <span className={styles.compatChip}>Grok</span>
+              <span className={styles.compatChip}>Copilot</span>
+              <span className={styles.compatChip}>Perplexity</span>
+              <span className={styles.compatChip}>+ any AI tool</span>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-[400px]">
-            {filteredPrompts.length > 0 ? (
-              filteredPrompts.map((prompt, i) => (
-                <PromptCard key={i} {...prompt} className="w-full" onClick={handlePromptClick} />
-              ))
-            ) : (
-              <div className="col-span-full flex items-center justify-center text-text-secondary h-40">
-                No prompts found for this category or loading.
+      {/* MARKETPLACE */}
+      <section className={`${styles.section} ${styles.marketplaceSection}`} id="marketplace">
+        <div className={styles.sectionInner}>
+          <p className={styles.sectionEyebrow}>Marketplace</p>
+          <h2 className={styles.sectionHeading}>Proven prompts.<br /><em>Ready to use.</em></h2>
+          <p className={styles.sectionSub}>Browse the Prompt Bank — community-built, ready to copy into any AI tool.</p>
+
+          <div className={styles.categoryTabs}>
+            {tabs.map(tab => (
+              <button
+                key={tab}
+                className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ""}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.promptGrid}>
+            {filteredPrompts.length > 0 ? filteredPrompts.map((prompt) => (
+              <div key={prompt._id} className={styles.promptCard} onClick={handlePromptClick}>
+                <div className={styles.cardTop}>
+                  <span className={styles.cardCategory}>{prompt.category}</span>
+                  {prompt.isMega && <span className={styles.cardBadge}>MEGA</span>}
+                </div>
+                <div className={styles.cardTitle}>{prompt.title}</div>
+                <div className={styles.cardPreview}>
+                  <span className={styles.ps}>&gt;_</span> {preview(prompt.promptText)}
+                </div>
+                <div className={styles.cardFooter}>
+                  <button className={styles.cardOpen} onClick={handlePromptClick}>Open prompt</button>
+                </div>
+              </div>
+            )) : (
+              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
+                Loading prompts…
               </div>
             )}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* BLOGS FEED */}
-        <section id="blogs" className="py-20 bg-bg-panel/30 border-y border-border">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-widest text-accent font-semibold mb-1">
-                  Insights & Updates
-                </p>
-                <h2 className="text-3xl font-bold text-text-primary">Latest from the Blog</h2>
-              </div>
-              <Link
-                href="/blog"
-                className="flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-hover transition-colors group shrink-0"
-              >
-                See all
-                <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
-              </Link>
-            </div>
+      {/* DEREK */}
+      <section className={`${styles.section} ${styles.derekSection}`} id="derek">
+        <div className={styles.sectionInner}>
+          <div className={styles.derekGrid}>
+            <div>
+              <p className={styles.sectionEyebrow}>Ask Derek</p>
+              <h2 className={styles.sectionHeading}>Can&apos;t find it?<br /><em>Derek builds it.</em></h2>
+              <p className={styles.sectionSub}>Tell Derek what you need in plain words. He engineers a precision prompt in seconds. Then copy it into any AI — or publish it to the marketplace and earn.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {blogs.length > 0 ? (
-                blogs.map((post, i) => (
-                  <BlogCard key={i} post={post} />
-                ))
-              ) : (
-                <div className="col-span-full flex items-center justify-center text-text-secondary h-40">
-                  Loading articles...
+              <div className={styles.derekFeatures}>
+                <div className={styles.derekFeature}>
+                  <div className={styles.derekFeatureIcon}><CheckCircle2 size={14} color="var(--violet)" /></div>
+                  <div>
+                    <p className={styles.derekFeatureTitle}>No prompt experience needed</p>
+                    <p className={styles.derekFeatureDesc}>Just describe your idea. Derek handles the engineering.</p>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* ABOUT US */}
-        <section id="about" className="about-section py-24 relative overflow-hidden">
-          {/* Circuit background overlay */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
-          
-          <div className="container mx-auto max-w-6xl relative z-10 px-4">
-            <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-              
-              {/* Left Column: Text Content */}
-              <div className="space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#161b22] border border-[#2a2a4a]">
-                   <span className="w-2 h-2 rounded-full bg-[#6c63ff] animate-pulse" />
-                   <span className="text-xs font-semibold text-[#a09cff] uppercase tracking-wider">About Us</span>
+                <div className={styles.derekFeature}>
+                  <div className={styles.derekFeatureIcon}><CheckCircle2 size={14} color="var(--violet)" /></div>
+                  <div>
+                    <p className={styles.derekFeatureTitle}>Use it or sell it</p>
+                    <p className={styles.derekFeatureDesc}>Every prompt Derek makes can be published to the marketplace to earn.</p>
+                  </div>
                 </div>
-                
-                <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-                  Turning ideas into <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6c63ff] to-[#a09cff]">precision tools.</span>
-                </h2>
-                
-                <div className="space-y-4 text-[#a0a5b5] text-lg leading-relaxed">
-                  <p>
-                    EaseMyPrompt.ai is built for people who want clarity, speed, and impact.
-                    No guesswork. No generic outputs. Just smart, tailored prompts that unlock scroll‑stopping captions, viral scripts, and high‑performing hooks — every time.
-                  </p>
-                  <p>
-                    Our platform is designed to turn simple ideas into powerful prompts that work with any AI tool. Whether you want to create an Instagram caption, viral hooks, write a message, generate content, plan a project, or simply get help with everyday tasks, EaseMyPrompt.ai helps you generate the perfect prompt in seconds.
-                  </p>
-                  <p>
-                    EaseMyPrompt.ai is built for everyone. From social media ideas to daily hustles, work tasks, learning, and creative thinking, we help transform your thoughts into clear, effective prompts that unlock better results from AI.
-                  </p>
-                  <p>
-                    Instead of struggling to figure out what to type into AI, you simply share your idea. Our system transforms that idea into a structured, optimized prompt that you can copy and paste into any AI platform to get better, clearer, and more impactful results.
-                  </p>
-                  <p className="text-[#6c63ff] font-semibold text-xl pt-2">
-                    Because a great idea shouldn&apos;t start with confusion — it should start with the right prompt.
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Column: Globe/Network Graphic */}
-              <div className="relative h-[400px] lg:h-[600px] w-full flex items-center justify-center perspective-[1000px]">
-                {/* Glowing orb center */}
-                <div className="absolute w-64 h-64 bg-[#6c63ff] rounded-full blur-[100px] opacity-20 animate-pulse" />
-                
-                {/* CSS Globe Rings */}
-                <div className="absolute w-[280px] h-[280px] md:w-[380px] md:h-[380px] border border-[#2a2a4a] rounded-full [transform:rotateX(60deg)_rotateY(0deg)] animate-[spin_20s_linear_infinite]" />
-                <div className="absolute w-[280px] h-[280px] md:w-[380px] md:h-[380px] border border-[#2a2a4a] rounded-full [transform:rotateX(60deg)_rotateY(60deg)] animate-[spin_20s_linear_infinite]" />
-                <div className="absolute w-[280px] h-[280px] md:w-[380px] md:h-[380px] border border-[#2a2a4a] rounded-full [transform:rotateX(60deg)_rotateY(120deg)] animate-[spin_20s_linear_infinite]" />
-                
-                <div className="relative z-10 w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-[#161b22] to-[#0a0f1c] border border-[#2a2a4a] shadow-[0_0_40px_rgba(108,99,255,0.3)] flex items-center justify-center overflow-hidden">
-                  <div className="absolute inset-0 bg-[#6c63ff]/10 mix-blend-overlay" />
-                  <span className="text-4xl text-transparent text-shadow-sm" style={{ textShadow: "0 0 0 #6c63ff" }}>🌍</span>
-                </div>
-
-                {/* Floating Pills */}
-                <div className="absolute top-1/4 left-0 md:-left-10 bg-[#161b22] border border-[#2a2a4a] text-white px-4 py-2 rounded-full text-sm font-medium shadow-xl hover:-translate-y-1 transition-transform duration-300">
-                  <span className="text-[#6c63ff] mr-2">✦</span> Our Vision
-                </div>
-                <div className="absolute bottom-1/4 right-0 md:-right-10 bg-[#161b22] border border-[#2a2a4a] text-white px-4 py-2 rounded-full text-sm font-medium shadow-xl hover:-translate-y-1 transition-transform duration-300">
-                  <span className="text-[#6c63ff] mr-2">✦</span> Our Mission
-                </div>
-                <div className="absolute top-1/3 right-10 md:right-0 bg-[#161b22] border border-[#2a2a4a] text-white px-4 py-2 rounded-full text-sm font-medium shadow-xl hover:-translate-y-1 transition-transform duration-300">
-                  <span className="text-[#6c63ff] mr-2">✦</span> Innovation
+                <div className={styles.derekFeature}>
+                  <div className={styles.derekFeatureIcon}><CheckCircle2 size={14} color="var(--violet)" /></div>
+                  <div>
+                    <p className={styles.derekFeatureTitle}>Works with any AI tool</p>
+                    <p className={styles.derekFeatureDesc}>Paste into ChatGPT, Claude, Gemini — whatever you use.</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Cards: Vision + Mission + Evolution */}
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Vision */}
-              <div className="bg-[#121629]/80 backdrop-blur border border-[#2a2a4a] rounded-2xl p-8 hover:border-[#6c63ff]/50 transition-colors group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#6c63ff]/20 to-transparent border border-[#6c63ff]/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Eye size={24} className="text-[#a09cff]" />
+            <div className={styles.derekChatFrame}>
+              <div className={styles.derekChatHeader}>
+                <div className={styles.derekAvatar}>D</div>
+                <div>
+                  <div className={styles.derekChatName}>Derek — Prompt Engineer</div>
+                  <div className={styles.derekChatStatus}><span className={styles.statusDot} />Online · ready to build</div>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-wide">Our Vision</h3>
-                <p className="text-[#8a91a6] text-sm leading-relaxed mb-3">
-                  To become the world&apos;s most trusted platform for thinking clearly with AI — where prompts are not guesses, but strategic tools that drive impact, creativity, and income.
-                </p>
-                <p className="text-[#8a91a6] text-sm leading-relaxed">
-                  We envision a future where anyone can turn ideas into results using AI, without technical barriers, noise, or confusion.
-                </p>
               </div>
-
-              {/* Mission */}
-              <div className="bg-[#121629]/80 backdrop-blur border border-[#2a2a4a] rounded-2xl p-8 hover:border-[#6c63ff]/50 transition-colors group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#6c63ff]/20 to-transparent border border-[#6c63ff]/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Target size={24} className="text-[#a09cff]" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-wide">Our Mission</h3>
-                <p className="text-[#8a91a6] text-sm leading-relaxed mb-3">
-                  Our mission is to simplify, structure, and elevate AI usage by providing:
-                </p>
-                <ul className="text-[#8a91a6] text-sm space-y-2 list-none mb-4">
-                  <li className="flex items-start gap-3"><Zap size={15} className="text-[#6c63ff] mt-0.5 shrink-0" /> A powerful Prompt Bank built on performance, not randomness</li>
-                  <li className="flex items-start gap-3"><Zap size={15} className="text-[#6c63ff] mt-0.5 shrink-0" /> Text-based AI coaching through Derek that teaches users how to think, not just what to type</li>
-                  <li className="flex items-start gap-3"><Zap size={15} className="text-[#6c63ff] mt-0.5 shrink-0" /> Clear pathways to create, optimize, and monetize AI-generated content</li>
-                </ul>
-                <p className="text-[#8a91a6] text-sm leading-relaxed">
-                  We exist to help creators, entrepreneurs, and businesses use AI with intention, confidence, and results.
-                </p>
-              </div>
-
-              {/* Continuous Evolution */}
-              <div className="bg-[#121629]/80 backdrop-blur border border-[#2a2a4a] rounded-2xl p-8 hover:border-[#6c63ff]/50 transition-colors group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#6c63ff]/20 to-transparent border border-[#6c63ff]/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <TrendingUp size={24} className="text-[#a09cff]" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-wide">Continuous Evolution</h3>
-                <p className="text-[#8a91a6] text-sm leading-relaxed">
-                  EaseMyPrompt.ai grows smarter every day. By learning from real usage patterns, trends, and feedback, our platform continuously improves to deliver faster, sharper, and more effective prompts — so users always get better results with AI.
-                </p>
+              <div className={styles.derekChatBody}>
+                <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
+                  <SplitChat guestMode />
+                </Suspense>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* FAQ SECTION */}
-        <section className="py-20 px-4 container mx-auto max-w-3xl">
-          <h2 className="text-3xl font-bold text-text-primary text-center mb-10">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            {[
-              { q: "Is it really free?", a: "Yes — you get 3 free chats with Derek and 3 free chats with Claude every 3 hours without signing up. The Free Plan gives you access to a limited prompt bank." },
-              { q: "What models are supported?", a: "Currently, we proxy directly to Anthropic's Claude Sonnet 4.6, Claude 3 Opus, and Claude 3 Haiku." },
-              { q: "What is a Mega Prompt?", a: "Mega Prompts are heavily engineered, highly structured prompts designed to tackle very complex multi-step workflows. They are marked with a gold badge." }
-            ].map((faq, i) => (
-              <details key={i} className="bg-bg-panel border border-border rounded-lg group overflow-hidden">
-                <summary className="p-5 font-medium text-text-primary cursor-pointer list-none flex justify-between items-center transition-colors hover:bg-bg-hover">
-                  {faq.q}
-                  <ChevronDown className="text-text-secondary group-open:rotate-180 transition-transform duration-200" size={20} />
-                </summary>
-                <div className="px-5 pb-5 text-text-secondary text-sm border-t border-border mt-1 pt-4 bg-bg-panel/50">
-                  {faq.a}
+      {/* BRIDGE: Derek -> Marketplace publish flow */}
+      <section className={`${styles.section} ${styles.bridgeSection}`} id="earn">
+        <div className={styles.sectionInner}>
+          <div className={styles.bridgeInner}>
+            <div>
+              <p className={`${styles.sectionEyebrow} ${styles.amberText}`}>For Creators</p>
+              <h2 className={styles.sectionHeading}>Derek engineers it.<br />You <span className={styles.amber}>sell it.</span></h2>
+              <p className={styles.sectionSub}>Save a prompt Derek built to your Favourites, then list it in the marketplace. You set the price — every buyer pays you directly.</p>
+
+              <div className={styles.bridgeFlow}>
+                <div className={styles.flowStep}>
+                  <div className={`${styles.flowNum} ${styles.flowNumViolet}`}>1</div>
+                  <div>
+                    <div className={styles.flowTitle}>Ask <em>Derek</em> to engineer your prompt</div>
+                    <div className={styles.flowDesc}>Share your idea in plain language. Derek structures, optimises, and precision-engineers it into a prompt that performs.</div>
+                  </div>
                 </div>
-              </details>
-            ))}
-          </div>
-        </section>
+                <div className={styles.flowConnector} />
+                <div className={styles.flowStep}>
+                  <div className={`${styles.flowNum} ${styles.flowNumViolet}`}>2</div>
+                  <div>
+                    <div className={styles.flowTitle}>Save it to your <em>Favourites</em></div>
+                    <div className={styles.flowDesc}>Test it in any AI tool. Happy with the output? Save it so you can list it.</div>
+                  </div>
+                </div>
+                <div className={styles.flowConnector} />
+                <div className={styles.flowStep}>
+                  <div className={`${styles.flowNum} ${styles.flowNumAmber}`}>3</div>
+                  <div>
+                    <div className={styles.flowTitle}>Publish to the <span className={styles.amber}>marketplace</span></div>
+                    <div className={styles.flowDesc}>Set your price (₹1–₹1000). Add a title. One click to list. Your prompt is live and earning.</div>
+                  </div>
+                </div>
+                <div className={styles.flowConnector} />
+                <div className={styles.flowStep}>
+                  <div className={`${styles.flowNum} ${styles.flowNumGreen}`}>4</div>
+                  <div>
+                    <div className={styles.flowTitle}>Earn every time someone buys</div>
+                    <div className={styles.flowDesc}>Buyers see the prompt blurred until they purchase. Build a library of prompts and earn passively while Derek keeps building new ones for you.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        {/* CONTACT FORM */}
-        <section id="contact" className="py-24 bg-bg-panel/30 border-t border-border px-4">
-          <div className="container mx-auto max-w-2xl bg-bg-panel border border-border p-8 rounded-card shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-accent-hover" />
-            <h2 className="text-2xl font-bold text-text-primary mb-2 text-center mt-2">Get in Touch</h2>
-            <p className="text-text-secondary text-sm text-center mb-8">Have a question or feedback? We&apos;d love to hear from you.</p>
-
-            <ContactForm />
-            <div className="flex flex-col items-center gap-4 mt-8">
-              <div className="text-text-secondary text-sm mb-2">Connect with us:</div>
-              <div className="flex gap-4">
-                <a href="#" aria-label="Twitter" className="w-10 h-10 rounded-full bg-bg-panel border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-accent hover:text-accent transition-all group">
-                  <Twitter size={18} className="group-hover:scale-110 transition-transform" />
-                </a>
-                <a href="#" aria-label="LinkedIn" className="w-10 h-10 rounded-full bg-bg-panel border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-accent hover:text-accent transition-all group">
-                  <Linkedin size={18} className="group-hover:scale-110 transition-transform" />
-                </a>
-                <a href="#" aria-label="Instagram" className="w-10 h-10 rounded-full bg-bg-panel border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-accent hover:text-accent transition-all group">
-                  <Instagram size={18} className="group-hover:scale-110 transition-transform" />
-                </a>
+            {/* Earnings card — illustrative example */}
+            <div className={styles.earningsCard}>
+              <div className={styles.earningsHeader}>
+                <div className={styles.earningsTitle}>Example prompt earnings</div>
+                <div className={styles.earningsLive}><span className={styles.liveDot} />Live</div>
+              </div>
+              <div className={styles.earningsBody}>
+                <div className={styles.earningRow}>
+                  <div className={`${styles.earningIcon} ${styles.earningIconViolet}`}>
+                    <FileText size={16} color="var(--violet)" />
+                  </div>
+                  <div className={styles.earningInfo}>
+                    <div className={styles.earningName}>Viral Instagram Caption Pack</div>
+                    <div className={styles.earningMeta}>48 sales · ₹49 each</div>
+                  </div>
+                  <div className={styles.earningAmount}>₹2,352</div>
+                </div>
+                <div className={styles.earningRow}>
+                  <div className={`${styles.earningIcon} ${styles.earningIconAmber}`}>
+                    <TrendingUp size={16} color="var(--amber)" />
+                  </div>
+                  <div className={styles.earningInfo}>
+                    <div className={styles.earningName}>Hook Generator — 10 Formats</div>
+                    <div className={styles.earningMeta}>31 sales · ₹79 each</div>
+                  </div>
+                  <div className={styles.earningAmount}>₹2,449</div>
+                </div>
+                <div className={styles.earningRow}>
+                  <div className={`${styles.earningIcon} ${styles.earningIconViolet}`}>
+                    <Upload size={16} color="var(--violet)" />
+                  </div>
+                  <div className={styles.earningInfo}>
+                    <div className={styles.earningName}>Cold Email Pack — B2B</div>
+                    <div className={styles.earningMeta}>22 sales · ₹99 each</div>
+                  </div>
+                  <div className={styles.earningAmount}>₹2,178</div>
+                </div>
+                <div className={styles.earningsTotal}>
+                  <div className={styles.earningsTotalLabel}>This month</div>
+                  <div className={styles.earningsTotalNum}>₹6,979</div>
+                </div>
               </div>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section className={`${styles.section} ${styles.aboutSection}`} id="about">
+        <div className={styles.sectionInner}>
+          <div className={styles.aboutInner}>
+            <div className={styles.aboutLeft}>
+              <p className={styles.sectionEyebrow}>Our story</p>
+
+              <div className={styles.aboutPull}>
+                <p className={styles.aboutPullText}>
+                  The answer wasn&apos;t a <em>smarter AI.</em><br />
+                  It was a better <span className={styles.amber}>prompt.</span>
+                </p>
+              </div>
+
+              <div className={styles.aboutBody}>
+                <p className={styles.aboutPara}>
+                  EaseMyPrompt.ai is built for people who want clarity, speed, and impact. No guesswork. No generic outputs. Just smart, tailored prompts that unlock scroll-stopping captions, viral scripts, and high-performing hooks — every time.
+                </p>
+                <p className={styles.aboutPara}>
+                  Our platform is designed to turn simple ideas into powerful prompts that work with any AI tool. Whether you want to create an Instagram caption, viral hooks, write a message, generate content, plan a project, or simply get help with everyday tasks, EaseMyPrompt.ai helps you generate the perfect prompt in seconds.
+                </p>
+                <p className={styles.aboutPara}>
+                  At the heart of the platform is <strong>Derek</strong> — a built-in AI prompt engineer who helps you go from half-formed idea to precision prompt in seconds. No technical background required. Just tell Derek what you need, and he engineers it. <span className={styles.highlight}>If it&apos;s good enough to sell, publish it to the marketplace</span> and start earning every time someone buys it.
+                </p>
+                <p className={styles.aboutPara}>
+                  Instead of struggling to figure out what to type into AI, you simply share your idea. Our system transforms that idea into a structured, optimized prompt that you can copy and paste into any AI platform to get better, clearer, and more impactful results.
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.aboutRight}>
+              <div className={styles.originCard}>
+                <div className={styles.originTag}>The origin</div>
+                <div className={styles.originQuote}>
+                  &quot;Hours of tinkering. The same ideas rewritten over and over.{" "}
+                  <em>Why does the AI keep missing the point?</em>&quot;
+                </div>
+                <p className={styles.originBody}>
+                  That frustration became the foundation. The marketplace exists so no one has to start from scratch. Derek exists so anyone can create a prompt worth selling. Together, they turn a painful problem into a platform — and a platform into a business.
+                </p>
+              </div>
+
+              <div className={styles.aboutStats}>
+                <div className={styles.aboutStat}>
+                  <div className={styles.aboutStatNum}>2,400<span>+</span></div>
+                  <div className={styles.aboutStatLabel}>Prompts in marketplace</div>
+                </div>
+                <div className={styles.aboutStat}>
+                  <div className={styles.aboutStatNum}>18k<span>+</span></div>
+                  <div className={styles.aboutStatLabel}>Active users worldwide</div>
+                </div>
+                <div className={styles.aboutStat}>
+                  <div className={styles.aboutStatNum}>₹84k<span>+</span></div>
+                  <div className={styles.aboutStatLabel}>Paid to prompt creators</div>
+                </div>
+                <div className={styles.aboutStat}>
+                  <div className={styles.aboutStatNum}>4.9<span>★</span></div>
+                  <div className={styles.aboutStatLabel}>Average prompt rating</div>
+                </div>
+              </div>
+
+              <div className={styles.derekCallout}>
+                <div className={styles.derekCalloutAv}>D</div>
+                <div className={styles.derekCalloutText}>
+                  <strong>Meet Derek — your built-in prompt engineer</strong>
+                  <p>Turn any half-formed idea into a precision prompt in seconds — then publish it to the marketplace and earn. No technical knowledge needed.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* FOOTER */}
-      <footer className="bg-bg-panel/80 backdrop-blur-sm border-t border-border pt-16 pb-8 px-4">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 mb-12">
-            <div className="text-center md:text-left">
-              <Link href="/" className="inline-flex items-center gap-1 font-bold text-xl mb-2">
-                <span><span className="text-text-primary">easemyprompt</span><span className="text-accent">.ai</span></span>
-              </Link>
-              <p className="text-text-secondary text-sm max-w-xs mt-2 leading-relaxed">Democratizing prompt engineering for a human-centric AI future.</p>
-            </div>
-
-            <div className="flex gap-8 text-sm font-medium text-text-secondary">
-              <Link href="/" className="hover:text-text-primary transition-colors">Home</Link>
-              <Link href="/prompt-bank" className="hover:text-text-primary transition-colors">Prompt Bank</Link>
-              <Link href="#about" className="hover:text-text-primary transition-colors">About</Link>
-              <Link href="#contact" className="hover:text-text-primary transition-colors">Contact</Link>
-            </div>
-
-            <div className="flex gap-4">
-              <a href="#" aria-label="Twitter" className="w-10 h-10 rounded-full bg-bg-panel border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-accent hover:text-accent transition-all group">
-                <Twitter size={18} className="group-hover:scale-110 transition-transform" />
-              </a>
-              <a href="#" aria-label="LinkedIn" className="w-10 h-10 rounded-full bg-bg-panel border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-accent hover:text-accent transition-all group">
-                <Linkedin size={18} className="group-hover:scale-110 transition-transform" />
-              </a>
-              <a href="#" aria-label="Instagram" className="w-10 h-10 rounded-full bg-bg-panel border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-accent hover:text-accent transition-all group">
-                <Instagram size={18} className="group-hover:scale-110 transition-transform" />
-              </a>
-            </div>
-          </div>
-          <div className="text-center text-xs text-text-secondary border-t border-border pt-8 font-medium">
-            © {new Date().getFullYear()} easemyprompt.ai. All rights reserved.
-          </div>
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <Link href="/" className={styles.footerLogo}>EaseMyPrompt<span>.ai</span></Link>
+          <ul className={styles.footerLinks}>
+            <li><Link href="/marketplace">Marketplace</Link></li>
+            <li><a href="#derek">Ask Derek</a></li>
+            <li><a href="#earn">Sell Prompts</a></li>
+            <li><a href="#about">About</a></li>
+          </ul>
+          <p className={styles.footerCopy}>© {new Date().getFullYear()} easemyprompt.ai</p>
         </div>
       </footer>
     </div>

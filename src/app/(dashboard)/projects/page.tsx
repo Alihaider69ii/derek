@@ -65,18 +65,18 @@ function CreateProjectModal({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-[#1a1a2e] border border-[#2a2a4a] w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
+      <div className="bg-bg-panel border border-border w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-2">
-          <h2 className="text-lg font-semibold text-white">Create project</h2>
+          <h2 className="text-lg font-semibold text-text-primary">Create project</h2>
           <div className="flex items-center gap-2">
-            <button className="p-1.5 rounded-lg text-text-secondary hover:text-white hover:bg-white/10 transition-colors">
+            <button className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors">
               <Settings size={18} />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-text-secondary hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
             >
               <X size={18} />
             </button>
@@ -95,7 +95,7 @@ function CreateProjectModal({
                 onChange={e => setName(e.target.value)}
                 placeholder="Enter project name (e.g., AI Study Buddy)"
                 autoFocus
-                className="w-full pl-10 pr-4 py-3 bg-[#0d0d1a] border border-[#2a2a4a] rounded-xl text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-[#6c63ff] transition-colors"
+                className="w-full pl-10 pr-4 py-3 bg-bg-input border border-border rounded-xl text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
               />
             </div>
           </div>
@@ -109,8 +109,8 @@ function CreateProjectModal({
                 onClick={() => applyPreset(preset)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-all ${
                   name === preset.label
-                    ? "border-[#6c63ff] bg-[#6c63ff]/15 text-white"
-                    : "border-[#2a2a4a] text-text-secondary hover:border-[#4a4a6a] hover:text-white"
+                    ? "border-accent bg-accent/15 text-text-primary"
+                    : "border-border text-text-secondary hover:border-accent/40 hover:text-text-primary"
                 }`}
                 style={name === preset.label ? { borderColor: preset.color, color: preset.color, background: `${preset.color}15` } : {}}
               >
@@ -121,8 +121,8 @@ function CreateProjectModal({
           </div>
 
           {/* Info box */}
-          <div className="flex gap-3 bg-[#0d0d1a] border border-[#2a2a4a] rounded-xl p-4">
-            <Lightbulb size={20} className="shrink-0 mt-0.5" style={{ color: "#f59e0b" }} />
+          <div className="flex gap-3 bg-bg-input border border-border rounded-xl p-4">
+            <Lightbulb size={20} className="shrink-0 mt-0.5" style={{ color: "#D97706" }} />
             <p className="text-xs text-text-secondary leading-relaxed">
               Projects keep chats, files, and custom instructions in one place. Use them for ongoing work, or just to keep things tidy.
             </p>
@@ -136,7 +136,7 @@ function CreateProjectModal({
               type="submit"
               disabled={!name.trim() || loading}
               className="px-6 py-2.5 rounded-full text-sm font-semibold text-white transition-all disabled:opacity-40"
-              style={{ background: "linear-gradient(135deg, #6c63ff, #5a52e0)" }}
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))" }}
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : "Create project"}
             </button>
@@ -174,7 +174,7 @@ function ProjectItem({ project, onDelete }: { project: any; onDelete: (id: strin
       {/* Emoji icon */}
       <div
         className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-        style={{ background: "rgba(108,99,255,0.12)", border: "1px solid rgba(108,99,255,0.2)" }}
+        style={{ background: "rgba(255,77,0,0.10)", border: "1px solid rgba(255,77,0,0.20)" }}
       >
         {project.emoji || "📁"}
       </div>
@@ -242,7 +242,7 @@ export default function ProjectsPage() {
           <Link href="/login">
             <button
               className="px-8 py-2.5 rounded-full text-sm font-semibold text-white"
-              style={{ background: "linear-gradient(135deg, #6c63ff, #5a52e0)" }}
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))" }}
             >
               Sign In
             </button>
@@ -265,7 +265,7 @@ export default function ProjectsPage() {
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-80"
-          style={{ background: "linear-gradient(135deg, #6c63ff, #5a52e0)" }}
+          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))" }}
         >
           <Plus size={16} /> New Project
         </button>
@@ -292,24 +292,24 @@ export default function ProjectsPage() {
             <div className="relative">
               <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* Sparkles */}
-                <circle cx="18" cy="20" r="1.5" fill="#6c63ff" opacity="0.6" />
-                <circle cx="62" cy="18" r="1.5" fill="#6c63ff" opacity="0.6" />
-                <circle cx="14" cy="55" r="1" fill="#6c63ff" opacity="0.4" />
-                <circle cx="67" cy="52" r="1" fill="#6c63ff" opacity="0.4" />
+                <circle cx="18" cy="20" r="1.5" fill="#FF4D00" opacity="0.6" />
+                <circle cx="62" cy="18" r="1.5" fill="#FF4D00" opacity="0.6" />
+                <circle cx="14" cy="55" r="1" fill="#FF4D00" opacity="0.4" />
+                <circle cx="67" cy="52" r="1" fill="#FF4D00" opacity="0.4" />
                 {/* Stars */}
-                <path d="M22 14 L23 17 L26 18 L23 19 L22 22 L21 19 L18 18 L21 17Z" fill="#6c63ff" opacity="0.5" />
-                <path d="M58 58 L59 61 L62 62 L59 63 L58 66 L57 63 L54 62 L57 61Z" fill="#6c63ff" opacity="0.5" />
+                <path d="M22 14 L23 17 L26 18 L23 19 L22 22 L21 19 L18 18 L21 17Z" fill="#FF4D00" opacity="0.5" />
+                <path d="M58 58 L59 61 L62 62 L59 63 L58 66 L57 63 L54 62 L57 61Z" fill="#FF4D00" opacity="0.5" />
                 {/* Folder body */}
-                <rect x="12" y="28" width="56" height="38" rx="6" fill="#6c63ff" opacity="0.15" />
-                <rect x="12" y="28" width="56" height="38" rx="6" stroke="#6c63ff" strokeWidth="2" />
+                <rect x="12" y="28" width="56" height="38" rx="6" fill="#FF4D00" opacity="0.15" />
+                <rect x="12" y="28" width="56" height="38" rx="6" stroke="#FF4D00" strokeWidth="2" />
                 {/* Folder tab */}
-                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28Z" fill="#6c63ff" opacity="0.15" />
-                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28" stroke="#6c63ff" strokeWidth="2" strokeLinejoin="round" />
+                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28Z" fill="#FF4D00" opacity="0.15" />
+                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28" stroke="#FF4D00" strokeWidth="2" strokeLinejoin="round" />
                 {/* Chat bubble */}
-                <rect x="26" y="38" width="28" height="18" rx="5" fill="#6c63ff" opacity="0.30" />
-                <circle cx="33" cy="47" r="2" fill="#6c63ff" />
-                <circle cx="40" cy="47" r="2" fill="#6c63ff" />
-                <circle cx="47" cy="47" r="2" fill="#6c63ff" />
+                <rect x="26" y="38" width="28" height="18" rx="5" fill="#FF4D00" opacity="0.30" />
+                <circle cx="33" cy="47" r="2" fill="#FF4D00" />
+                <circle cx="40" cy="47" r="2" fill="#FF4D00" />
+                <circle cx="47" cy="47" r="2" fill="#FF4D00" />
               </svg>
             </div>
             <div>
@@ -319,7 +319,7 @@ export default function ProjectsPage() {
             <button
               onClick={() => setShowCreate(true)}
               className="mt-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-80"
-              style={{ background: "linear-gradient(135deg, #6c63ff, #5a52e0)" }}
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))" }}
             >
               Create project
             </button>

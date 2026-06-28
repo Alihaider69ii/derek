@@ -22,6 +22,9 @@ const config: Config = {
           DEFAULT: "var(--accent)",
           hover: "var(--accent-hover)",
         },
+        accent2: {
+          DEFAULT: "var(--accent-2)",
+        },
         text: {
           primary: "var(--text-primary)",
           secondary: "var(--text-secondary)",

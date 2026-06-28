@@ -7,18 +7,6 @@ export const metadata: Metadata = {
   description: "Turn any idea into a precision-crafted AI prompt in seconds. Derek is your always-on AI prompt engineer.",
 };
 
-// Script runs synchronously before paint — applies saved theme preference, defaults to light
-const themeScript = `
-  try {
-    var t = localStorage.getItem('emp-theme');
-    if (t === 'dark') {
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.documentElement.classList.remove('dark-theme');
-    }
-  } catch(e) {}
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,9 +21,11 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap"
           rel="stylesheet"
         />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      {/* Blocking script prevents FOUC */}
-      <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       <body
         style={{
           fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

@@ -60,15 +60,15 @@ function formatCountdown(ms: number): string {
 }
 
 // ── Derek color theme ────────────────────────────────────────────────────────
-const DEREK_GRADIENT_BG = "linear-gradient(135deg, #070d1f 0%, #0f1e3d 100%)"
-const DEREK_BORDER_COLOR = "#1e3a6e"
-const DEREK_ACCENT = "#3b82f6"       // blue-500
-const DEREK_ACCENT_SOFT = "rgba(59,130,246,0.10)"
-const DEREK_ACCENT_BORDER = "rgba(59,130,246,0.20)"
-const DEREK_FOOTER_BG = "#060c1a"
-const DEREK_INPUT_BG = "#0a1428"
-const DEREK_INPUT_BORDER = "#1e3a6e"
-const DEREK_TEXT_DIM = "#5a7ab0"
+const DEREK_GRADIENT_BG = "linear-gradient(135deg, #FFF5F0 0%, #FFEDE3 100%)"
+const DEREK_BORDER_COLOR = "rgba(255,77,0,0.25)"
+const DEREK_ACCENT = "#FF4D00"        // orange — primary brand accent
+const DEREK_ACCENT_SOFT = "rgba(255,77,0,0.08)"
+const DEREK_ACCENT_BORDER = "rgba(255,77,0,0.22)"
+const DEREK_FOOTER_BG = "#F1EDE4"
+const DEREK_INPUT_BG = "#FFFFFF"
+const DEREK_INPUT_BORDER = "rgba(0,0,0,0.10)"
+const DEREK_TEXT_DIM = "#7A6F62"
 
 const ALLOWED_TYPES = [
     "application/pdf",
@@ -179,21 +179,21 @@ function FavouriteButton({ text }: { text: string }) {
             </button>
             {showModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
-                    <div className="bg-[#1a1a2e] border border-[#2a2a4a] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#2a2a4a]">
-                            <h2 className="text-base font-bold text-white flex items-center gap-2"><Star size={15} className="text-yellow-400 fill-yellow-400" /> Add to Favourites</h2>
-                            <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg text-[#8b949e] hover:text-white hover:bg-white/10">✕</button>
+                    <div className="bg-bg-panel border border-border w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
+                            <h2 className="text-base font-bold text-text-primary flex items-center gap-2"><Star size={15} className="text-yellow-400 fill-yellow-400" /> Add to Favourites</h2>
+                            <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover">✕</button>
                         </div>
                         <div className="p-5 space-y-4">
                             <input
                                 type="text" value={title} onChange={e => setTitle(e.target.value)}
                                 onKeyDown={e => { if (e.key === "Enter") handleSave() }}
                                 placeholder="Give this prompt a title…" autoFocus
-                                className="w-full px-4 py-3 bg-[#0d0d1a] border border-[#2a2a4a] rounded-xl text-sm text-white placeholder:text-[#8b949e] focus:outline-none focus:border-[#6c63ff]"
+                                className="w-full px-4 py-3 bg-bg-input border border-border rounded-xl text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent"
                             />
                             <button onClick={handleSave} disabled={!title.trim() || loading || saved}
                                 className="w-full py-3 rounded-full text-sm font-bold text-white disabled:opacity-40 hover:opacity-80"
-                                style={{ background: saved ? "linear-gradient(135deg,#22c55e,#16a34a)" : "linear-gradient(135deg,#6c63ff,#5a52e0)" }}>
+                                style={{ background: saved ? "linear-gradient(135deg,#22c55e,#16a34a)" : "linear-gradient(135deg,var(--accent),var(--accent-hover))" }}>
                                 {saved ? "✓ Saved!" : loading ? "Saving..." : "Save to Favourites"}
                             </button>
                         </div>
@@ -235,10 +235,10 @@ function SaveToProjectButton({ text, projectId }: { text: string; projectId: str
         <button
             onClick={handleSave}
             disabled={loading || saved}
-            className="flex items-center gap-1 text-xs text-text-secondary hover:text-[#6c63ff] transition-colors mt-1 ml-1 select-none disabled:opacity-60"
+            className="flex items-center gap-1 text-xs text-text-secondary hover:text-accent2 transition-colors mt-1 ml-1 select-none disabled:opacity-60"
             title="Save to Project"
         >
-            <BookmarkPlus size={13} className={saved ? "text-[#6c63ff]" : ""} />
+            <BookmarkPlus size={13} className={saved ? "text-accent2" : ""} />
             {showLabel ? "Saved to project!" : "Save to Project"}
         </button>
     )
@@ -300,7 +300,7 @@ function DerekAvatar({ size = 32 }: { size?: number }) {
         return (
             <div style={{
                 width: size, height: size, borderRadius: "50%",
-                background: `linear-gradient(135deg, #1e3a6e, ${DEREK_ACCENT})`,
+                background: `linear-gradient(135deg, #FF8A4D, ${DEREK_ACCENT})`,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontWeight: 700, fontSize: size * 0.4, color: "white", flexShrink: 0
             }}>D</div>
@@ -335,7 +335,7 @@ function ClaudeAvatar({ size = 32 }: { size?: number }) {
     return (
         <div style={{
             width: s, height: s, borderRadius: "50%",
-            background: "linear-gradient(135deg, #2d1a0e, #3d2010)",
+            background: "linear-gradient(135deg, #FDEDE6, #FBDFD3)",
             display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0,
             border: `2px solid ${CLAUDE_CORAL}40`,
@@ -392,8 +392,8 @@ function PanelHeader({
             style={{
                 background: isDerek
                     ? DEREK_GRADIENT_BG
-                    : "linear-gradient(135deg, #0d1117 0%, #0f1824 100%)",
-                borderColor: isDerek ? DEREK_BORDER_COLOR : "#1e2d40",
+                    : "linear-gradient(135deg, #F2F5FF 0%, #E8EDFF 100%)",
+                borderColor: isDerek ? DEREK_BORDER_COLOR : "rgba(0,71,255,0.20)",
             }}
         >
             <div className="flex items-center gap-3">
@@ -418,7 +418,7 @@ function PanelHeader({
                             {badge}
                         </span>
                     </div>
-                    <p className="text-[0.7rem] mt-0.5" style={{ color: isDerek ? DEREK_TEXT_DIM : "#8a6a5a" }}>
+                    <p className="text-[0.7rem] mt-0.5" style={{ color: isDerek ? DEREK_TEXT_DIM : "#7A6F62" }}>
                         {subtitle}
                     </p>
                 </div>
@@ -790,7 +790,7 @@ export function SplitChat({ guestMode = false, projectId }: SplitChatProps) {
                         <div className="relative flex-1">
                             <Input
                                 className="pl-10 pr-12 w-full"
-                                style={{ background: DEREK_INPUT_BG, borderColor: DEREK_INPUT_BORDER, color: "#e6edf3" }}
+                                style={{ background: DEREK_INPUT_BG, borderColor: DEREK_INPUT_BORDER, color: "#0E0C0A" }}
                                 placeholder={derekInput ? "" : "Ask me anything here, I'll generate customized prompt in seconds…"}
                                 value={derekInput}
                                 onChange={(e) => setDerekInput(e.target.value)}

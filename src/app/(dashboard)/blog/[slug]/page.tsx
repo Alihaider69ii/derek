@@ -61,7 +61,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             {/* Hero */}
             <div
                 className="w-full px-6 py-16 border-b border-border"
-                style={{ background: "linear-gradient(180deg, #161b22 0%, #0d1117 100%)" }}
+                style={{ background: "linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-base) 100%)" }}
             >
                 <div className="max-w-3xl mx-auto">
                     <Link href="/blog" className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors mb-8">

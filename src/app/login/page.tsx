@@ -24,7 +24,7 @@ export default function LoginPage() {
                 setMessage("Invalid email or password.")
             } else {
                 setMessage("Success! Redirecting...")
-                window.location.href = "/dashboard"
+                window.location.href = "/marketplace"
             }
         } catch (err) {
             setMessage("An unexpected error occurred.")
@@ -34,7 +34,7 @@ export default function LoginPage() {
     }
 
     const handleGoogleSignIn = () => {
-        signIn("google", { callbackUrl: "/dashboard" })
+        signIn("google", { callbackUrl: "/marketplace" })
     }
 
     return (

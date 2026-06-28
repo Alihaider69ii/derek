@@ -38,7 +38,7 @@ export default function SignupPage() {
                 return
             }
 
-            const res = await signIn("email", { email, redirect: false, callbackUrl: "/dashboard?verified=true" })
+            const res = await signIn("email", { email, redirect: false, callbackUrl: "/marketplace" })
             if (res?.error) {
                 setMessage("Failed to send magic link. Please try again.")
             } else {
@@ -57,7 +57,7 @@ export default function SignupPage() {
     }
 
     const handleGoogleSignUp = () => {
-        signIn("google", { callbackUrl: "/dashboard" })
+        signIn("google", { callbackUrl: "/marketplace" })
     }
 
     return (

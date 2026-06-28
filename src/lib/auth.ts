@@ -48,7 +48,7 @@ export const authOptions: NextAuthOptions = {
       <td align="center" style="padding: 20px 0;">
         <table border="0" cellspacing="0" cellpadding="0">
           <tr>
-            <td align="center" style="border-radius: 5px;" bgcolor="#6c63ff"><a href="${url}" target="_blank" style="font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 5px; padding: 10px 20px; display: inline-block; font-weight: bold;">Sign in</a></td>
+            <td align="center" style="border-radius: 5px;" bgcolor="#FF4D00"><a href="${url}" target="_blank" style="font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 5px; padding: 10px 20px; display: inline-block; font-weight: bold;">Sign in</a></td>
           </tr>
         </table>
       </td>

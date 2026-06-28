@@ -49,7 +49,6 @@ export function Sidebar() {
         { href: "/prompt-bank", icon: <LayoutGrid size={16} />, label: "Prompt Bank" },
         { href: "/projects", icon: <FolderKanban size={16} />, label: "My Projects" },
         { href: "/favourites", icon: <Star size={16} />, label: "My Favourites" },
-        { href: "/marketplace", icon: <ShoppingBag size={16} />, label: "Marketplace" },
     ]
 
     const sidebarContent = (
@@ -87,6 +86,20 @@ export function Sidebar() {
                 >
                     <Plus size={16} /> New Chat
                 </Button>
+
+                {/* Marketplace — promoted, hero feature */}
+                <Link href="/marketplace" onClick={() => setIsOpen(false)}>
+                    <button
+                        className={`w-full mt-2 flex items-center gap-3 px-3 py-2.5 rounded-btn border transition-colors ${pathname === "/marketplace"
+                            ? "bg-accent/10 border-accent/40 text-accent"
+                            : "bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 hover:border-accent/40"
+                            }`}
+                    >
+                        <ShoppingBag size={16} />
+                        <span className="flex-1 text-left text-sm font-semibold">Marketplace</span>
+                        <span className="text-[0.65rem] text-accent2 font-medium">Buy & sell</span>
+                    </button>
+                </Link>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-6 hide-scrollbar">

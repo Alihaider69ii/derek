@@ -10,12 +10,12 @@ export const dynamic = 'force-dynamic'
 
 // ── Category colours ──────────────────────────────────────────────────────────
 const CATEGORY_COLORS: Record<string, string> = {
-    "Prompt Engineering": "#6c63ff",
+    "Prompt Engineering": "#FF4D00",
     "AI Tips":            "#e05252",
     "Tutorials":          "#f59e0b",
-    "Case Studies":       "#3fb950",
-    "News":               "#06b6d4",
-    "General":            "#8b949e",
+    "Case Studies":       "#00A67E",
+    "News":               "#0047FF",
+    "General":            "#7A6F62",
 }
 
 // ── Blog Card ─────────────────────────────────────────────────────────────────
@@ -34,9 +34,9 @@ function BlogCard({ post, index }: { post: any; index: number }) {
         // First post gets a wide feature card
         return (
             <Link href={`/blog/${post.slug}`} className="group block col-span-full">
-                <article className="relative bg-bg-panel border border-border rounded-2xl overflow-hidden flex flex-col md:flex-row transition-all duration-300 hover:border-[#6c63ff]/50 hover:shadow-[0_8px_40px_rgba(108,99,255,0.12)] hover:-translate-y-0.5">
+                <article className="relative bg-bg-panel border border-border rounded-2xl overflow-hidden flex flex-col md:flex-row transition-all duration-300 hover:border-accent/50 hover:shadow-[0_8px_40px_rgba(255,77,0,0.12)] hover:-translate-y-0.5">
                     {/* Accent bar */}
-                    <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#6c63ff] to-[#a09cff]" />
+                    <div className="absolute top-0 left-0 w-full h-[3px]" style={{ background: "linear-gradient(90deg, var(--accent), var(--accent-2))" }} />
 
                     {/* Image / placeholder */}
                     {post.coverImage ? (
@@ -94,7 +94,7 @@ function BlogCard({ post, index }: { post: any; index: number }) {
 
     return (
         <Link href={`/blog/${post.slug}`} className="group block">
-            <article className="h-full bg-bg-panel border border-border rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:border-[#6c63ff]/50 hover:shadow-[0_6px_30px_rgba(108,99,255,0.10)] hover:-translate-y-1">
+            <article className="h-full bg-bg-panel border border-border rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:border-accent/50 hover:shadow-[0_6px_30px_rgba(255,77,0,0.10)] hover:-translate-y-1">
                 {post.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={post.coverImage} alt={post.title} className="w-full h-44 object-cover" />
