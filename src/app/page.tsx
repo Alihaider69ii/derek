@@ -73,6 +73,7 @@ export default function LandingPage() {
         <Link href="/" className={styles.navLogo}>EaseMyPrompt<span>.ai</span></Link>
         <ul className={styles.navLinks}>
           <li><a href="#marketplace">Marketplace</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
           <li><a href="#derek">Ask Derek <span className={styles.navBadge}>AI</span></a></li>
           <li><a href="#earn">Sell Prompts</a></li>
           <li><a href="#about">About</a></li>
@@ -214,6 +215,113 @@ export default function LandingPage() {
               </div>
             )}
           </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className={`${styles.section} ${styles.hiwSection}`} id="how-it-works">
+        <div className={styles.sectionInner}>
+
+          {/* ── Hero row ── */}
+          <div className={styles.hiwHeroRow}>
+            <div>
+              <p className={styles.sectionEyebrow}>How It Works</p>
+              <div className={styles.hiwLabelPill}>
+                <span className={styles.hiwLabelDot} />
+                Simple. Fast. Powerful.
+              </div>
+              <h2 className={styles.sectionHeading}>From idea to<br /><em>perfect prompt.</em></h2>
+              <p className={styles.sectionSub}>Three steps. Derek handles the hard part — you just share what you need.</p>
+              <a href="#derek" className={styles.btnPrimary}>
+                Ask Derek now <ArrowRight size={16} />
+              </a>
+            </div>
+
+            {/* Derek hero photo */}
+            <div className={styles.hiwHeroIllust}>
+              <div className={styles.hiwHeroGlow} />
+              <div className={styles.hiwOrbit} />
+              <div className={styles.hiwOrbitInner} />
+              <div className={styles.hiwHeroPhoto}>
+                <Image src="/derek/derek2.jpeg" alt="Derek" fill style={{ objectFit: "cover", objectPosition: "center 15%" }} />
+              </div>
+              <div className={styles.hiwFloatCard}>
+                <span className={styles.hiwTPrompt}>&gt;_</span>
+                Write me a viral Instagram caption...
+              </div>
+            </div>
+          </div>
+
+          {/* ── Step cards ── */}
+          <div className={styles.hiwSteps}>
+
+            {/* Step 1 — Share your idea */}
+            <div className={styles.hiwStep}>
+              <span className={styles.hiwStepNum}>1</span>
+              <div className={styles.hiwStepTop}>
+                <div className={styles.hiwStepAvatar}>
+                  <Image src="/derek/derek3.jpeg" alt="Derek" fill style={{ objectFit: "cover", objectPosition: "center 15%" }} />
+                </div>
+                <span className={styles.hiwStepBadge}>01</span>
+              </div>
+              <div className={styles.hiwTerminal}>
+                <span className={styles.hiwTPrompt}>&gt;</span>
+                <span className={styles.hiwTText}>your idea here...</span>
+                <span className={styles.hiwTCursor} />
+              </div>
+              <h3 className={styles.hiwStepTitle}>Share your <em>idea</em></h3>
+              <p className={styles.hiwStepBody}>Tell Derek what you want in plain words. A caption, a hook, a message, a plan — anything. No experience needed.</p>
+              <span className={styles.hiwStepTag}>you type</span>
+            </div>
+
+            {/* Step 2 — Ask Derek to engineer it */}
+            <div className={`${styles.hiwStep} ${styles.hiwStep2}`}>
+              <span className={styles.hiwStepNum}>2</span>
+              <div className={styles.hiwStepTop}>
+                <div className={styles.hiwStepAvatar}>
+                  <Image src="/derek/derek1.jpeg" alt="Derek" fill style={{ objectFit: "cover", objectPosition: "center 15%" }} />
+                </div>
+                <span className={styles.hiwStepBadge}>02</span>
+              </div>
+              <div className={`${styles.hiwTerminal} ${styles.hiwTerminal2}`}>
+                <span className={styles.hiwTPrompt}>#</span>
+                <span className={styles.hiwTText}>ask derek to engineer it...</span>
+                <span className={styles.hiwTCursor} />
+              </div>
+              <h3 className={styles.hiwStepTitle}><em>Ask Derek</em> to engineer it</h3>
+              <p className={styles.hiwStepBody}>Derek structures and optimises your idea into a precision prompt in seconds. No jargon. No struggle. He does the engineering.</p>
+              <span className={styles.hiwStepTag}>derek works</span>
+            </div>
+
+            {/* Step 3 — Paste and get results */}
+            <div className={styles.hiwStep}>
+              <span className={styles.hiwStepNum}>3</span>
+              <div className={styles.hiwStepTop}>
+                <div className={styles.hiwStepAvatar}>
+                  <Image src="/derek/derek4.jpeg" alt="Derek" fill style={{ objectFit: "cover", objectPosition: "center 15%" }} />
+                </div>
+                <span className={styles.hiwStepBadge}>03</span>
+              </div>
+              <div className={styles.hiwTerminal}>
+                <span className={styles.hiwTCheck}>✓</span>
+                <span className={styles.hiwTText}>prompt ready — copy &amp; paste</span>
+              </div>
+              <h3 className={styles.hiwStepTitle}>Paste. <em>Get results.</em></h3>
+              <p className={styles.hiwStepBody}>Copy your prompt into ChatGPT, Claude, Gemini, anything — and get scroll-stopping, impactful output. Instantly.</p>
+              <span className={styles.hiwStepTag}>you win</span>
+            </div>
+
+          </div>
+
+          {/* ── Bottom quote ── */}
+          <div className={styles.hiwBottom}>
+            <div className={styles.hiwBottomLine} />
+            <p className={styles.hiwBottomQuote}>
+              A great idea shouldn&apos;t start with confusion — it should start with <strong>the right prompt.</strong>
+            </p>
+            <div className={styles.hiwBottomLine} />
+          </div>
+
         </div>
       </section>
 
