@@ -300,19 +300,19 @@ function DerekAvatar({ size = 32 }: { size?: number }) {
         return (
             <div style={{
                 width: size, height: size, borderRadius: "50%",
-                background: `linear-gradient(135deg, #FF8A4D, ${DEREK_ACCENT})`,
+                background: `linear-gradient(135deg, #1a3a8f, ${DEREK_ACCENT})`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 700, fontSize: size * 0.4, color: "white", flexShrink: 0
+                fontWeight: 600, fontSize: size * 0.4, color: "white", flexShrink: 0
             }}>D</div>
         )
     }
     return (
         <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
             <Image
-                src="/derek-logo.png"
+                src="/derek/derek1.jpeg"
                 alt="Derek"
                 fill
-                style={{ objectFit: "cover", borderRadius: "50%", border: `2px solid ${DEREK_ACCENT}50` }}
+                style={{ objectFit: "cover", objectPosition: "center 15%", borderRadius: "50%", border: `2px solid ${DEREK_ACCENT}60` }}
                 onError={() => setImgErr(true)}
             />
         </div>

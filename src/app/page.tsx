@@ -2,6 +2,7 @@
 import * as React from "react"
 import { Suspense } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { SplitChat } from "@/components/shared/SplitChat"
 import styles from "./page.module.css"
@@ -252,7 +253,15 @@ export default function LandingPage() {
 
             <div className={styles.derekChatFrame}>
               <div className={styles.derekChatHeader}>
-                <div className={styles.derekAvatar}>D</div>
+                <div className={styles.derekAvatar}>
+                  <Image
+                    src="/derek/derek1.jpeg"
+                    alt="Derek"
+                    fill
+                    style={{ objectFit: "cover", objectPosition: "center 15%", borderRadius: "50%" }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                  />
+                </div>
                 <div>
                   <div className={styles.derekChatName}>Derek — Prompt Engineer</div>
                   <div className={styles.derekChatStatus}><span className={styles.statusDot} />Online · ready to build</div>
@@ -421,7 +430,15 @@ export default function LandingPage() {
               </div>
 
               <div className={styles.derekCallout}>
-                <div className={styles.derekCalloutAv}>D</div>
+                <div className={styles.derekCalloutAv}>
+                  <Image
+                    src="/derek/derek1.jpeg"
+                    alt="Derek"
+                    fill
+                    style={{ objectFit: "cover", objectPosition: "center 15%", borderRadius: "50%" }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                  />
+                </div>
                 <div className={styles.derekCalloutText}>
                   <strong>Meet Derek — your built-in prompt engineer</strong>
                   <p>Turn any half-formed idea into a precision prompt in seconds — then publish it to the marketplace and earn. No technical knowledge needed.</p>
