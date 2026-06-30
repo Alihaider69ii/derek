@@ -29,7 +29,7 @@ function ListingCard({ listing, onBuy }: { listing: any; onBuy: (id: string) => 
   return (
     <>
       <div
-        className="relative flex flex-col gap-4 p-5 rounded-2xl border border-border bg-bg-panel hover:border-accent/40 transition-all duration-200 hover:shadow-[0_0_24px_rgba(255,77,0,0.10)] cursor-pointer overflow-hidden"
+        className="relative flex flex-col gap-4 p-5 rounded-2xl border border-border bg-bg-panel hover:border-accent/40 transition-all duration-200 hover:shadow-[0_0_24px_rgba(46,91,255,0.10)] cursor-pointer overflow-hidden"
         onClick={() => listing.purchased && setShowDetail(true)}
       >
         <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(90deg, var(--accent), var(--accent-2))" }} />
@@ -171,7 +171,7 @@ export default function MarketplacePage() {
       {/* Header */}
       <div className="px-6 pt-8 pb-6">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,77,0,0.10)", border: "1px solid rgba(255,77,0,0.25)" }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(46,91,255,0.10)", border: "1px solid rgba(46,91,255,0.25)" }}>
             <ShoppingBag size={20} style={{ color: "var(--accent)" }} />
           </div>
           <div>
@@ -217,7 +217,7 @@ export default function MarketplacePage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "rgba(255,77,0,0.10)", border: "1px solid rgba(255,77,0,0.20)" }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "rgba(46,91,255,0.10)", border: "1px solid rgba(46,91,255,0.20)" }}>
               <ShoppingBag size={28} style={{ color: "var(--accent)" }} />
             </div>
             <div>

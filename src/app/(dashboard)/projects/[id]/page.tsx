@@ -27,10 +27,10 @@ function PromptItem({
   }
 
   return (
-    <div className="group flex flex-col gap-3 p-4 rounded-xl bg-bg-panel border border-border hover:border-[#FF4D00]/30 transition-colors">
+    <div className="group flex flex-col gap-3 p-4 rounded-xl bg-bg-panel border border-border hover:border-[#2E5BFF]/30 transition-colors">
       <div className="flex items-start gap-3 w-full">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(255,77,0,0.12)" }}>
-          <ClipboardList size={15} style={{ color: "#FF4D00" }} />
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(46,91,255,0.12)" }}>
+          <ClipboardList size={15} style={{ color: "#2E5BFF" }} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-text-primary truncate">{prompt.label}</p>
@@ -152,7 +152,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     router.push(`/dashboard?prefillDerek=${encodeURIComponent(newChatInput)}&projectId=${params.id}`)
   }
 
-  if (loading) return <div className="flex h-full bg-bg-base items-center justify-center"><Loader2 size={24} className="animate-spin text-[#FF4D00]" /></div>
+  if (loading) return <div className="flex h-full bg-bg-base items-center justify-center"><Loader2 size={24} className="animate-spin text-[#2E5BFF]" /></div>
 
   if (notFound || !project) {
     return (
@@ -178,7 +178,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
       {/* Project hero */}
       <div className="flex flex-col items-center pt-8 pb-6 px-4">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 border" style={{ background: "rgba(255,77,0,0.12)", borderColor: "rgba(255,77,0,0.25)" }}>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 border" style={{ background: "rgba(46,91,255,0.12)", borderColor: "rgba(46,91,255,0.25)" }}>
           {project.emoji || "📁"}
         </div>
         <h1 className="text-2xl font-bold text-text-primary text-center">{project.name}</h1>
@@ -188,8 +188,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       {/* New chat bar */}
       <div className="px-4 pb-5">
         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border" style={{ background: "var(--bg-panel)", borderColor: "var(--border)" }}>
-          <button onClick={handleNewChat} className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 hover:opacity-80" style={{ background: "rgba(255,77,0,0.2)", border: "1px solid rgba(255,77,0,0.3)" }}>
-            <span style={{ color: "#FF4D00", fontSize: 18, lineHeight: 1 }}>+</span>
+          <button onClick={handleNewChat} className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 hover:opacity-80" style={{ background: "rgba(46,91,255,0.2)", border: "1px solid rgba(46,91,255,0.3)" }}>
+            <span style={{ color: "#2E5BFF", fontSize: 18, lineHeight: 1 }}>+</span>
           </button>
           <input type="text" value={newChatInput} onChange={e => setNewChatInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") handleNewChat() }}
@@ -217,18 +217,18 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         {activeTab === "chats" && (
           <div>
             {loadingChats ? (
-              <div className="flex justify-center py-10"><Loader2 className="animate-spin text-[#FF4D00]" /></div>
+              <div className="flex justify-center py-10"><Loader2 className="animate-spin text-[#2E5BFF]" /></div>
             ) : chats.length > 0 ? (
               <div className="space-y-3">
                 {chats.map(chat => (
                   <Link key={chat._id} href={`/dashboard?id=${chat._id}&projectId=${params.id}`}>
-                    <div className="group p-4 bg-bg-panel border border-border rounded-xl hover:border-[#FF4D00]/50 transition-colors flex items-center justify-between mb-3">
+                    <div className="group p-4 bg-bg-panel border border-border rounded-xl hover:border-[#2E5BFF]/50 transition-colors flex items-center justify-between mb-3">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-[#FF4D00]/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                          <MessageSquare size={18} className="text-[#FF4D00]" />
+                        <div className="w-10 h-10 rounded-full bg-[#2E5BFF]/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <MessageSquare size={18} className="text-[#2E5BFF]" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-text-primary text-sm group-hover:text-[#FF4D00] transition-colors">{chat.title}</h3>
+                          <h3 className="font-semibold text-text-primary text-sm group-hover:text-[#2E5BFF] transition-colors">{chat.title}</h3>
                           <p className="text-xs text-text-secondary mt-1">{new Date(chat.updatedAt).toLocaleDateString()}</p>
                         </div>
                       </div>
@@ -240,10 +240,10 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             ) : (
               <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
                 <svg width="72" height="72" viewBox="0 0 80 80" fill="none">
-                  <circle cx="22" cy="16" r="1.5" fill="#FF4D00" opacity="0.6" /><circle cx="60" cy="20" r="1.5" fill="#FF4D00" opacity="0.6" />
-                  <rect x="12" y="28" width="56" height="38" rx="6" fill="#FF4D00" opacity="0.12" />
-                  <rect x="12" y="28" width="56" height="38" rx="6" stroke="#FF4D00" strokeWidth="1.8" />
-                  <circle cx="33" cy="47" r="2" fill="#FF4D00" /><circle cx="40" cy="47" r="2" fill="#FF4D00" /><circle cx="47" cy="47" r="2" fill="#FF4D00" />
+                  <circle cx="22" cy="16" r="1.5" fill="#2E5BFF" opacity="0.6" /><circle cx="60" cy="20" r="1.5" fill="#2E5BFF" opacity="0.6" />
+                  <rect x="12" y="28" width="56" height="38" rx="6" fill="#2E5BFF" opacity="0.12" />
+                  <rect x="12" y="28" width="56" height="38" rx="6" stroke="#2E5BFF" strokeWidth="1.8" />
+                  <circle cx="33" cy="47" r="2" fill="#2E5BFF" /><circle cx="40" cy="47" r="2" fill="#2E5BFF" /><circle cx="47" cy="47" r="2" fill="#2E5BFF" />
                 </svg>
                 <div><p className="text-text-primary font-semibold">No chats yet</p><p className="text-text-secondary text-sm mt-1">Chats in {project.name} will live here</p></div>
               </div>
@@ -277,8 +277,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(255,77,0,0.12)", border: "1px solid rgba(255,77,0,0.2)" }}>
-                  <ClipboardList size={22} style={{ color: "#FF4D00" }} />
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(46,91,255,0.12)", border: "1px solid rgba(46,91,255,0.2)" }}>
+                  <ClipboardList size={22} style={{ color: "#2E5BFF" }} />
                 </div>
                 <div>
                   <p className="text-text-primary font-semibold text-sm">No prompts yet</p>

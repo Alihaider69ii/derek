@@ -60,15 +60,15 @@ function formatCountdown(ms: number): string {
 }
 
 // ── Derek color theme ────────────────────────────────────────────────────────
-const DEREK_GRADIENT_BG = "linear-gradient(135deg, #FFF5F0 0%, #FFEDE3 100%)"
-const DEREK_BORDER_COLOR = "rgba(255,77,0,0.25)"
-const DEREK_ACCENT = "#FF4D00"        // orange — primary brand accent
-const DEREK_ACCENT_SOFT = "rgba(255,77,0,0.08)"
-const DEREK_ACCENT_BORDER = "rgba(255,77,0,0.22)"
-const DEREK_FOOTER_BG = "#F1EDE4"
+const DEREK_GRADIENT_BG = "linear-gradient(135deg, #F0F3FF 0%, #E3E8FF 100%)"
+const DEREK_BORDER_COLOR = "rgba(46,91,255,0.25)"
+const DEREK_ACCENT = "#2E5BFF"
+const DEREK_ACCENT_SOFT = "rgba(46,91,255,0.08)"
+const DEREK_ACCENT_BORDER = "rgba(46,91,255,0.22)"
+const DEREK_FOOTER_BG = "#ECEEF1"
 const DEREK_INPUT_BG = "#FFFFFF"
 const DEREK_INPUT_BORDER = "rgba(0,0,0,0.10)"
-const DEREK_TEXT_DIM = "#7A6F62"
+const DEREK_TEXT_DIM = "#6B7280"
 
 const ALLOWED_TYPES = [
     "application/pdf",
@@ -418,7 +418,7 @@ function PanelHeader({
                             {badge}
                         </span>
                     </div>
-                    <p className="text-[0.7rem] mt-0.5" style={{ color: isDerek ? DEREK_TEXT_DIM : "#7A6F62" }}>
+                    <p className="text-[0.7rem] mt-0.5" style={{ color: isDerek ? DEREK_TEXT_DIM : "#6B7280" }}>
                         {subtitle}
                     </p>
                 </div>
@@ -790,7 +790,7 @@ export function SplitChat({ guestMode = false, projectId }: SplitChatProps) {
                         <div className="relative flex-1">
                             <Input
                                 className="pl-10 pr-12 w-full"
-                                style={{ background: DEREK_INPUT_BG, borderColor: DEREK_INPUT_BORDER, color: "#0E0C0A" }}
+                                style={{ background: DEREK_INPUT_BG, borderColor: DEREK_INPUT_BORDER, color: "#1A1D24" }}
                                 placeholder={derekInput ? "" : "Ask me anything here, I'll generate customized prompt in seconds…"}
                                 value={derekInput}
                                 onChange={(e) => setDerekInput(e.target.value)}

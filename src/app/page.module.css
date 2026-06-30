@@ -1,28 +1,28 @@
-/* ── ROOT — scoped theme vars, never leaks into app's global :root/.dark-theme ── */
+/* ── ROOT — scoped theme vars ── */
 .empHome {
-  --ink:       #F7F4EF;
-  --ink-2:     #EEEBE4;
-  --ink-3:     #E6E3DB;
-  --ink-4:     #DEDAD0;
-  --ink-5:     #D4D0C5;
-  --violet:    #FF4D00;
-  --violet-mid:#D93D00;
-  --violet-dim: rgba(255,77,0,0.07);
-  --violet-bdr: rgba(255,77,0,0.25);
-  --violet-glow: rgba(255,77,0,0.12);
+  --ink:       #F4F5F7;
+  --ink-2:     #ECEEF1;
+  --ink-3:     #E4E7EB;
+  --ink-4:     #D8DCE3;
+  --ink-5:     #CDD2DB;
+  --violet:    #2E5BFF;
+  --violet-mid:#1a4aef;
+  --violet-dim: rgba(46,91,255,0.07);
+  --violet-bdr: rgba(46,91,255,0.25);
+  --violet-glow: rgba(46,91,255,0.12);
   --amber:     #0047FF;
   --amber-dim: rgba(0,71,255,0.07);
   --amber-bdr: rgba(0,71,255,0.22);
   --rose:      #00C896;
-  --white:     #0E0C0A;
-  --off:       #2A2520;
-  --muted:     #7A6F62;
-  --muted-2:   #B5AFA5;
+  --white:     #1A1D24;
+  --off:       #2A2D35;
+  --muted:     #6B7280;
+  --muted-2:   #9CA3AF;
   --border:    rgba(0,0,0,0.10);
   --green:     #00A67E;
 
   position: relative;
-  font-family: 'Inter', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   background: var(--ink);
   color: var(--white);
   -webkit-font-smoothing: antialiased;
@@ -45,21 +45,21 @@
   position: sticky; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 48px; height: 64px;
-  background: rgba(247,244,239,0.92);
+  background: rgba(244,245,247,0.92);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
 }
 
 .navLogo {
-  font-family: 'Inter', sans-serif;
-  font-size: 17px; font-weight: 800;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 17px; font-weight: 500;
   color: var(--white); text-decoration: none; letter-spacing: -0.5px;
 }
 .navLogo span { color: var(--violet); }
 
 .navLinks { display: flex; align-items: center; gap: 32px; list-style: none; margin: 0; padding: 0; }
 .navLinks a {
-  font-size: 14px; font-weight: 400; color: var(--muted);
+  font-size: 15px; font-weight: 400; color: var(--muted);
   text-decoration: none; transition: color 0.2s;
 }
 .navLinks a:hover { color: var(--violet); }
@@ -77,20 +77,22 @@
 .btnGhost {
   padding: 8px 18px; border: 1px solid var(--border); border-radius: 8px;
   background: transparent; color: var(--white);
-  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 15px; font-weight: 500;
   cursor: pointer; text-decoration: none; transition: border-color 0.2s, background 0.2s;
 }
-.btnGhost:hover { border-color: rgba(255,77,0,0.25); background: var(--violet-dim); }
+.btnGhost:hover { border-color: rgba(46,91,255,0.25); background: var(--violet-dim); }
 
 .btnPrimary {
   padding: 9px 22px; border-radius: 8px; background: var(--violet); border: none;
-  color: var(--white); font-family: 'Inter', sans-serif; font-size: 14px;
-  font-weight: 700; cursor: pointer; text-decoration: none;
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s; display: inline-flex; align-items: center; gap: 8px;
+  color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 15px; font-weight: 500; cursor: pointer; text-decoration: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
 }
 .btnPrimary:hover {
   background: var(--violet-mid); transform: translateY(-1px);
-  box-shadow: 0 0 24px rgba(255,77,0,0.20), 0 4px 16px rgba(255,77,0,0.12);
+  box-shadow: 0 0 24px rgba(46,91,255,0.20), 0 4px 16px rgba(46,91,255,0.12);
 }
 
 /* ── HERO ────────────────────────────────────────── */
@@ -106,7 +108,7 @@
 .heroGlowCenter {
   position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
   width: 800px; height: 500px; border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(255,77,0,0.06) 0%, transparent 65%);
+  background: radial-gradient(ellipse, rgba(46,91,255,0.06) 0%, transparent 65%);
   pointer-events: none;
 }
 .heroGlowAmber {
@@ -137,15 +139,15 @@
 @keyframes bpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
 
 .heroHeadline {
-  font-family: 'Inter', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   font-size: clamp(48px, 6.5vw, 82px);
-  font-weight: 800; line-height: 0.95; letter-spacing: -2.5px; margin: 0 0 24px;
+  font-weight: 500; line-height: 0.95; letter-spacing: -2.5px; margin: 0 0 24px;
 }
 .heroHeadline em { font-style: normal; color: var(--violet); }
 .amber { color: var(--amber); }
 
 .heroSub {
-  font-size: 17px; font-weight: 300; color: var(--muted); line-height: 1.75;
+  font-size: 18px; font-weight: 300; color: var(--muted); line-height: 1.75;
   max-width: 460px; margin: 0 0 36px;
 }
 
@@ -153,32 +155,35 @@
 
 .btnHero {
   padding: 13px 28px; border-radius: 10px; background: var(--violet); border: none;
-  color: var(--white); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
+  color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 15px; font-weight: 500;
   cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 }
 .btnHero:hover {
   background: var(--violet-mid); transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(255,77,0,0.28);
+  box-shadow: 0 12px 32px rgba(46,91,255,0.28);
 }
 .btnHero svg { width: 18px; height: 18px; }
 
 .btnOutlineHero {
   padding: 12px 24px; border-radius: 10px; border: 1px solid var(--border);
   background: transparent; color: var(--muted);
-  font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 15px; font-weight: 400;
   cursor: pointer; text-decoration: none; transition: border-color 0.2s, color 0.2s;
 }
-.btnOutlineHero:hover { border-color: rgba(255,77,0,0.25); color: var(--white); }
+.btnOutlineHero:hover { border-color: rgba(46,91,255,0.25); color: var(--white); }
 
 .heroStats { display: flex; gap: 32px; margin-top: 48px; flex-wrap: wrap; }
 .statItem { display: flex; flex-direction: column; gap: 4px; }
 .statNum {
-  font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 800;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 28px; font-weight: 500;
   color: var(--white); letter-spacing: -0.5px;
 }
 .statNum span { color: var(--violet); }
-.statLabel { font-size: 12px; color: var(--muted); font-weight: 300; }
+.statLabel { font-size: 13px; color: var(--muted); font-weight: 300; }
 
 /* hero card stack */
 .heroCards { position: relative; height: 380px; }
@@ -190,7 +195,7 @@
 }
 .heroCard3 { top: 24px; left: 12px; right: -12px; opacity: 0.35; transform: rotate(2deg); z-index: 1; }
 .heroCard2 { top: 12px; left: 6px; right: -6px; opacity: 0.6; transform: rotate(1deg); z-index: 2; }
-.heroCard1 { top: 0; left: 0; right: 0; z-index: 3; border-color: rgba(255,77,0,0.25); cursor: pointer; }
+.heroCard1 { top: 0; left: 0; right: 0; z-index: 3; border-color: rgba(46,91,255,0.25); cursor: pointer; }
 .heroCard1::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: linear-gradient(90deg, var(--violet), var(--amber)); border-radius: 16px 16px 0 0;
@@ -202,20 +207,22 @@
   text-transform: uppercase; letter-spacing: 0.06em;
 }
 .hcardTitle {
-  font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 17px; font-weight: 500;
   color: var(--white); margin: 0 0 12px; line-height: 1.3;
 }
 .hcardPreview {
   background: #FFFFFF; border: 1px solid var(--border); border-radius: 8px;
   padding: 10px 12px; font-family: 'Space Mono', monospace;
-  font-size: 10.5px; color: var(--muted); line-height: 1.65; margin-bottom: 14px;
+  font-size: 11.5px; color: var(--muted); line-height: 1.65; margin-bottom: 14px;
 }
 .promptSym { color: var(--violet); }
 
 .hcardFooter { display: flex; align-items: center; justify-content: flex-end; }
 .hcardBtn {
   padding: 7px 16px; background: var(--violet); border: none; border-radius: 7px;
-  color: var(--white); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
+  color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 12px; font-weight: 500;
   cursor: pointer;
 }
 .hcardBtn:hover { box-shadow: 0 0 16px rgba(0,71,255,0.25); background: var(--amber); }
@@ -236,7 +243,7 @@
   padding: 4px 14px; font-size: 12px; color: var(--muted);
   transition: border-color 0.2s, color 0.2s;
 }
-.compatChip:hover { border-color: rgba(255,77,0,0.25); color: var(--white); }
+.compatChip:hover { border-color: rgba(46,91,255,0.25); color: var(--white); }
 
 /* ── SECTION COMMONS ─────────────────────────────── */
 .section { padding: 100px 48px; }
@@ -249,14 +256,14 @@
 .sectionEyebrow.amberText { color: var(--amber); }
 
 .sectionHeading {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(30px, 4vw, 50px); font-weight: 800;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: clamp(30px, 4vw, 50px); font-weight: 500;
   letter-spacing: -0.5px; line-height: 1.05; margin: 0 0 14px;
 }
 .sectionHeading em { font-style: normal; color: var(--violet); }
 
 .sectionSub {
-  font-size: 16px; font-weight: 300; color: var(--muted); line-height: 1.75;
+  font-size: 17px; font-weight: 300; color: var(--muted); line-height: 1.75;
   max-width: 480px; margin: 0 0 52px;
 }
 
@@ -266,11 +273,11 @@
 .categoryTabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
 .tab {
   padding: 7px 18px; border-radius: 100px; border: 1px solid var(--border);
-  background: transparent; font-family: 'Inter', sans-serif; font-size: 13px;
-  color: var(--muted); cursor: pointer; transition: all 0.2s;
+  background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px; color: var(--muted); cursor: pointer; transition: all 0.2s;
 }
 .tabActive, .tab:hover {
-  background: var(--violet-dim); border-color: rgba(255,77,0,0.25); color: var(--white);
+  background: var(--violet-dim); border-color: rgba(46,91,255,0.25); color: var(--white);
 }
 
 .promptGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -278,11 +285,12 @@
 .promptCard {
   background: var(--ink-3); border: 1px solid var(--border);
   border-radius: 14px; padding: 22px; display: flex; flex-direction: column;
-  gap: 11px; transition: border-color 0.25s, transform 0.25s, box-shadow .25s; cursor: pointer; position: relative; overflow: hidden;
+  gap: 11px; transition: border-color 0.25s, transform 0.25s, box-shadow .25s;
+  cursor: pointer; position: relative; overflow: hidden;
 }
 .promptCard:hover {
-  border-color: rgba(255,77,0,0.25); transform: translateY(-4px);
-  box-shadow: 0 0 0 1px rgba(255,77,0,0.2), 0 20px 60px rgba(255,77,0,0.06);
+  border-color: rgba(46,91,255,0.25); transform: translateY(-4px);
+  box-shadow: 0 0 0 1px rgba(46,91,255,0.2), 0 20px 60px rgba(46,91,255,0.06);
 }
 .promptCard::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
@@ -303,11 +311,12 @@
 }
 
 .cardTitle {
-  font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px; font-weight: 500;
   color: var(--white); line-height: 1.3; margin: 0;
 }
 .cardPreview {
-  font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--muted);
+  font-family: 'Space Mono', monospace; font-size: 11.5px; color: var(--muted);
   line-height: 1.65; background: #FFFFFF; border-radius: 8px;
   padding: 10px 12px; border: 1px solid var(--border);
 }
@@ -316,8 +325,8 @@
 .cardFooter { display: flex; align-items: center; justify-content: flex-end; margin-top: 4px; }
 .cardOpen {
   padding: 7px 16px; background: var(--violet); border: none; border-radius: 7px;
-  color: var(--white); font-family: 'Inter', sans-serif; font-size: 12px;
-  font-weight: 700; cursor: pointer; transition: background 0.2s;
+  color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: background 0.2s;
 }
 .cardOpen:hover { background: var(--violet-mid); }
 
@@ -331,10 +340,16 @@
   width: 30px; height: 30px; border-radius: 50%; background: var(--violet-dim);
   border: 1px solid var(--violet-bdr); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.derekFeatureTitle { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: var(--white); margin: 0 0 2px; }
-.derekFeatureDesc { font-size: 13px; color: var(--muted); font-weight: 300; margin: 0; }
+.derekFeatureTitle {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px; font-weight: 500; color: var(--white); margin: 0 0 2px;
+}
+.derekFeatureDesc { font-size: 14px; color: var(--muted); font-weight: 300; margin: 0; }
 
-.derekChatFrame { background: var(--ink-3); border: 1px solid rgba(255,77,0,0.25); border-radius: 20px; overflow: hidden; position: relative; }
+.derekChatFrame {
+  background: var(--ink-3); border: 1px solid rgba(46,91,255,0.25);
+  border-radius: 20px; overflow: hidden; position: relative;
+}
 .derekChatFrame::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: linear-gradient(90deg, var(--violet), var(--amber)); z-index: 2;
@@ -347,10 +362,14 @@
   width: 38px; height: 38px; border-radius: 50%;
   background: var(--violet-dim); border: 1.5px solid var(--violet-bdr);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 800; color: var(--violet);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 15px; font-weight: 500; color: var(--violet);
 }
-.derekChatName { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: var(--white); }
-.derekChatStatus { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.derekChatName {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px; font-weight: 500; color: var(--white);
+}
+.derekChatStatus { font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
 .statusDot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 .derekChatBody { background: #fff; }
 
@@ -364,37 +383,53 @@
 .flowNum {
   width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px; font-weight: 500;
 }
 .flowNumViolet { background: var(--violet-dim); border: 1px solid var(--violet-bdr); color: var(--violet); }
 .flowNumAmber  { background: var(--amber-dim);  border: 1px solid var(--amber-bdr);  color: var(--amber); }
 .flowNumGreen  { background: rgba(0,166,126,0.10); border: 1px solid rgba(0,166,126,0.28); color: var(--green); }
 
-.flowTitle { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); margin: 0 0 4px; }
+.flowTitle {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px; font-weight: 500; color: var(--white); margin: 0 0 4px;
+}
 .flowTitle em { font-style: normal; color: var(--violet); }
-.flowDesc { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.65; margin: 0; }
+.flowDesc { font-size: 14px; font-weight: 300; color: var(--muted); line-height: 1.65; margin: 0; }
 .flowConnector { width: 1px; height: 20px; background: var(--border); margin-left: 37px; }
 
 .earningsCard { background: var(--ink-2); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
 .earningsHeader {
   padding: 20px 24px; border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(0,71,255,0.05), rgba(255,77,0,0.04));
+  background: linear-gradient(135deg, rgba(0,71,255,0.05), rgba(46,91,255,0.04));
   display: flex; align-items: center; justify-content: space-between;
 }
-.earningsTitle { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); }
+.earningsTitle {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px; font-weight: 500; color: var(--white);
+}
 .earningsLive { display: flex; align-items: center; gap: 6px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--green); }
 .liveDot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: bpulse 2s ease-in-out infinite; }
 
 .earningsBody { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
-.earningRow { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--ink-3); border: 1px solid var(--border); border-radius: 10px; }
+.earningRow {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  background: var(--ink-3); border: 1px solid var(--border); border-radius: 10px;
+}
 .earningIcon { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .earningIconViolet { background: var(--violet-dim); border: 1px solid var(--violet-bdr); }
 .earningIconAmber  { background: var(--amber-dim);  border: 1px solid var(--amber-bdr); }
 .earningIcon svg { width: 16px; height: 16px; }
 .earningInfo { flex: 1; }
-.earningName { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: var(--white); }
-.earningMeta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.earningAmount { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 800; color: var(--amber); }
+.earningName {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px; font-weight: 500; color: var(--white);
+}
+.earningMeta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.earningAmount {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px; font-weight: 500; color: var(--amber);
+}
 
 .earningsTotal {
   display: flex; align-items: center; justify-content: space-between;
@@ -403,7 +438,10 @@
   background: linear-gradient(90deg, rgba(0,71,255,0.06), transparent);
 }
 .earningsTotalLabel { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.earningsTotalNum { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 800; color: var(--amber); }
+.earningsTotalNum {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 24px; font-weight: 500; color: var(--amber);
+}
 
 /* ── ABOUT SECTION ───────────────────────────────── */
 .aboutSection { background: var(--ink-2); border-top: 1px solid var(--border); }
@@ -411,11 +449,15 @@
 .aboutLeft { position: relative; }
 
 .aboutPull { border-left: 4px solid var(--violet); padding: 4px 0 4px 28px; margin-bottom: 36px; }
-.aboutPullText { font-family: 'Inter', sans-serif; font-size: clamp(22px, 3vw, 32px); font-weight: 700; line-height: 1.2; letter-spacing: -0.8px; color: var(--white); margin: 0; }
+.aboutPullText {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: clamp(22px, 3vw, 32px); font-weight: 500; line-height: 1.2;
+  letter-spacing: -0.8px; color: var(--white); margin: 0;
+}
 .aboutPullText em { font-style: normal; color: var(--violet); }
 
 .aboutBody { display: flex; flex-direction: column; gap: 20px; max-height: 380px; overflow-y: auto; padding-right: 8px; }
-.aboutPara { font-size: 15px; font-weight: 300; color: var(--muted); line-height: 1.85; margin: 0; }
+.aboutPara { font-size: 16px; font-weight: 300; color: var(--muted); line-height: 1.85; margin: 0; }
 .aboutPara strong { font-weight: 500; color: var(--off); }
 .highlight { color: var(--violet); font-weight: 500; }
 
@@ -423,33 +465,46 @@
 .originCard { background: #FFFFFF; border: 1px solid var(--border); border-radius: 16px; padding: 28px; position: relative; overflow: hidden; }
 .originCard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--violet), var(--amber)); }
 .originTag { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--violet); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
-.originQuote { font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 700; color: var(--white); line-height: 1.4; margin-bottom: 14px; letter-spacing: -0.3px; }
+.originQuote {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 17px; font-weight: 500; color: var(--white); line-height: 1.4; margin-bottom: 14px; letter-spacing: -0.3px;
+}
 .originQuote em { font-style: italic; color: var(--violet); font-weight: 400; }
-.originBody { font-size: 13.5px; font-weight: 300; color: var(--muted); line-height: 1.75; margin: 0; }
+.originBody { font-size: 14.5px; font-weight: 300; color: var(--muted); line-height: 1.75; margin: 0; }
 
 .aboutStats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .aboutStat { background: #FFFFFF; border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; transition: border-color 0.2s; }
-.aboutStat:hover { border-color: rgba(255,77,0,0.25); }
-.aboutStatNum { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 800; color: var(--white); letter-spacing: -0.5px; margin-bottom: 4px; }
+.aboutStat:hover { border-color: rgba(46,91,255,0.25); }
+.aboutStatNum {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 26px; font-weight: 500; color: var(--white); letter-spacing: -0.5px; margin-bottom: 4px;
+}
 .aboutStatNum span { color: var(--amber); }
-.aboutStatLabel { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.4; }
+.aboutStatLabel { font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.4; }
 
 .derekCallout { display: flex; align-items: center; gap: 14px; background: var(--violet-dim); border: 1px solid var(--violet-bdr); border-radius: 12px; padding: 16px 20px; }
 .derekCalloutAv {
   width: 40px; height: 40px; border-radius: 50%; background: var(--violet-dim);
   border: 1.5px solid var(--violet-bdr); display: flex; align-items: center; justify-content: center;
-  font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 800; color: var(--violet); flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px; font-weight: 500; color: var(--violet); flex-shrink: 0;
 }
-.derekCalloutText p { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.5; margin: 0; }
-.derekCalloutText strong { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: var(--off); display: block; margin-bottom: 2px; }
+.derekCalloutText p { font-size: 14px; font-weight: 300; color: var(--muted); line-height: 1.5; margin: 0; }
+.derekCalloutText strong {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px; font-weight: 500; color: var(--off); display: block; margin-bottom: 2px;
+}
 
 /* ── FOOTER ──────────────────────────────────────── */
 .footer { padding: 48px; background: var(--ink-3); border-top: 1px solid var(--border); }
 .footerInner { max-width: 1140px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
-.footerLogo { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 800; color: var(--white); text-decoration: none; letter-spacing: -0.3px; }
+.footerLogo {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px; font-weight: 500; color: var(--white); text-decoration: none; letter-spacing: -0.3px;
+}
 .footerLogo span { color: var(--violet); }
 .footerLinks { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
-.footerLinks a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footerLinks a { font-size: 14px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
 .footerLinks a:hover { color: var(--violet); }
 .footerCopy { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted-2); }
 

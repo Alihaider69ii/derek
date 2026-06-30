@@ -28,7 +28,7 @@ export default function RootLayout({
       </head>
       <body
         style={{
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
           transition: "background-color 0.3s ease, color 0.3s ease",
         }}
       >

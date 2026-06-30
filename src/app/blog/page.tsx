@@ -10,12 +10,12 @@ export const dynamic = 'force-dynamic'
 
 // ── Category colours ──────────────────────────────────────────────────────────
 const CATEGORY_COLORS: Record<string, string> = {
-    "Prompt Engineering": "#FF4D00",
-    "AI Tips":            "#e05252",
+    "Prompt Engineering": "#2E5BFF",
+    "AI Tips":            "#6366f1",
     "Tutorials":          "#f59e0b",
     "Case Studies":       "#00A67E",
     "News":               "#0047FF",
-    "General":            "#7A6F62",
+    "General":            "#6B7280",
 }
 
 // ── Blog Card ─────────────────────────────────────────────────────────────────

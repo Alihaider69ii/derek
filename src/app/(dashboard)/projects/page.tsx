@@ -174,7 +174,7 @@ function ProjectItem({ project, onDelete }: { project: any; onDelete: (id: strin
       {/* Emoji icon */}
       <div
         className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-        style={{ background: "rgba(255,77,0,0.10)", border: "1px solid rgba(255,77,0,0.20)" }}
+        style={{ background: "rgba(46,91,255,0.10)", border: "1px solid rgba(46,91,255,0.20)" }}
       >
         {project.emoji || "📁"}
       </div>
@@ -292,24 +292,24 @@ export default function ProjectsPage() {
             <div className="relative">
               <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* Sparkles */}
-                <circle cx="18" cy="20" r="1.5" fill="#FF4D00" opacity="0.6" />
-                <circle cx="62" cy="18" r="1.5" fill="#FF4D00" opacity="0.6" />
-                <circle cx="14" cy="55" r="1" fill="#FF4D00" opacity="0.4" />
-                <circle cx="67" cy="52" r="1" fill="#FF4D00" opacity="0.4" />
+                <circle cx="18" cy="20" r="1.5" fill="#2E5BFF" opacity="0.6" />
+                <circle cx="62" cy="18" r="1.5" fill="#2E5BFF" opacity="0.6" />
+                <circle cx="14" cy="55" r="1" fill="#2E5BFF" opacity="0.4" />
+                <circle cx="67" cy="52" r="1" fill="#2E5BFF" opacity="0.4" />
                 {/* Stars */}
-                <path d="M22 14 L23 17 L26 18 L23 19 L22 22 L21 19 L18 18 L21 17Z" fill="#FF4D00" opacity="0.5" />
-                <path d="M58 58 L59 61 L62 62 L59 63 L58 66 L57 63 L54 62 L57 61Z" fill="#FF4D00" opacity="0.5" />
+                <path d="M22 14 L23 17 L26 18 L23 19 L22 22 L21 19 L18 18 L21 17Z" fill="#2E5BFF" opacity="0.5" />
+                <path d="M58 58 L59 61 L62 62 L59 63 L58 66 L57 63 L54 62 L57 61Z" fill="#2E5BFF" opacity="0.5" />
                 {/* Folder body */}
-                <rect x="12" y="28" width="56" height="38" rx="6" fill="#FF4D00" opacity="0.15" />
-                <rect x="12" y="28" width="56" height="38" rx="6" stroke="#FF4D00" strokeWidth="2" />
+                <rect x="12" y="28" width="56" height="38" rx="6" fill="#2E5BFF" opacity="0.15" />
+                <rect x="12" y="28" width="56" height="38" rx="6" stroke="#2E5BFF" strokeWidth="2" />
                 {/* Folder tab */}
-                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28Z" fill="#FF4D00" opacity="0.15" />
-                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28" stroke="#FF4D00" strokeWidth="2" strokeLinejoin="round" />
+                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28Z" fill="#2E5BFF" opacity="0.15" />
+                <path d="M12 28 Q12 23 17 23 L32 23 Q35 23 37 26 L39 28" stroke="#2E5BFF" strokeWidth="2" strokeLinejoin="round" />
                 {/* Chat bubble */}
-                <rect x="26" y="38" width="28" height="18" rx="5" fill="#FF4D00" opacity="0.30" />
-                <circle cx="33" cy="47" r="2" fill="#FF4D00" />
-                <circle cx="40" cy="47" r="2" fill="#FF4D00" />
-                <circle cx="47" cy="47" r="2" fill="#FF4D00" />
+                <rect x="26" y="38" width="28" height="18" rx="5" fill="#2E5BFF" opacity="0.30" />
+                <circle cx="33" cy="47" r="2" fill="#2E5BFF" />
+                <circle cx="40" cy="47" r="2" fill="#2E5BFF" />
+                <circle cx="47" cy="47" r="2" fill="#2E5BFF" />
               </svg>
             </div>
             <div>
