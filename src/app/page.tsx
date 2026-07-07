@@ -38,9 +38,63 @@ function preview(text: string, len = 130) {
   return text.length > len ? text.slice(0, len).trim() + "…" : text
 }
 
+/**
+ * A single auto-scrolling (marquee) carousel row.
+ * - Pure CSS animation (no JS ticking) — pauses on hover.
+ * - The card list is rendered twice so the -50% translate loops seamlessly.
+ * - `reverse` flips the scroll direction for alternating rows.
+ */
+function MarqueeRow({
+  items,
+  reverse,
+  onCardClick,
+}: {
+  items: PromptItem[]
+  reverse?: boolean
+  onCardClick: () => void
+}) {
+  // Pad short lists so the track is wide enough to fill the row seamlessly.
+  const MIN = 6
+  let base = items
+  if (items.length > 0 && items.length < MIN) {
+    base = []
+    while (base.length < MIN) base = base.concat(items)
+    base = base.slice(0, MIN)
+  }
+  // Duplicate the list — the animation translates by exactly -50%, so the
+  // second copy sits where the first started and the loop is invisible.
+  const track = [...base, ...base]
+
+  return (
+    <div className={styles.marquee}>
+      <div className={`${styles.marqueeTrack} ${reverse ? styles.marqueeReverse : ""}`}>
+        {track.map((prompt, i) => (
+          <div
+            key={`${prompt._id}-${i}`}
+            className={styles.promptCard}
+            onClick={onCardClick}
+            aria-hidden={i >= base.length ? true : undefined}
+          >
+            <div className={styles.cardTop}>
+              <span className={styles.cardCategory}>{prompt.category}</span>
+              {prompt.isMega && <span className={styles.cardBadge}>MEGA</span>}
+            </div>
+            <div className={styles.cardTitle}>{prompt.title}</div>
+            <div className={styles.cardPreview}>
+              <span className={styles.ps}>&gt;_</span> {preview(prompt.promptText)}
+            </div>
+            <div className={styles.cardFooter}>
+              <button className={styles.cardOpen} onClick={onCardClick}>Open prompt</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = React.useState("All")
   const [prompts, setPrompts] = React.useState<PromptItem[]>([])
   const [categories, setCategories] = React.useState<CategoryItem[]>([])
 
@@ -60,9 +114,32 @@ export default function LandingPage() {
     }
   }
 
-  const tabs = ["All", ...categories.map(c => c.name)]
-  const filteredPrompts = activeTab === "All" ? prompts : prompts.filter(p => p.category === activeTab)
   const heroPrompts = prompts.slice(0, 3)
+
+  // Group prompts into one carousel row per category. Categories from the API
+  // set the display order/emoji; any leftover categories found only on prompts
+  // are appended so nothing is dropped.
+  const rows = React.useMemo(() => {
+    const byCat = new Map<string, PromptItem[]>()
+    for (const p of prompts) {
+      const key = p.category || "Popular"
+      if (!byCat.has(key)) byCat.set(key, [])
+      byCat.get(key)!.push(p)
+    }
+    const ordered: { name: string; emoji?: string; items: PromptItem[] }[] = []
+    const seen = new Set<string>()
+    for (const c of categories) {
+      const items = byCat.get(c.name)
+      if (items && items.length) {
+        ordered.push({ name: c.name, emoji: c.emoji, items })
+        seen.add(c.name)
+      }
+    }
+    for (const [name, items] of Array.from(byCat.entries())) {
+      if (!seen.has(name)) ordered.push({ name, items })
+    }
+    return ordered
+  }, [prompts, categories])
 
   return (
     <div className={styles.empHome}>
@@ -182,35 +259,21 @@ export default function LandingPage() {
           <h2 className={styles.sectionHeading}>Proven prompts.<br /><em>Ready to use.</em></h2>
           <p className={styles.sectionSub}>Browse the Prompt Bank — community-built, ready to copy into any AI tool.</p>
 
-          <div className={styles.categoryTabs}>
-            {tabs.map(tab => (
-              <button
-                key={tab}
-                className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ""}`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.promptGrid}>
-            {filteredPrompts.length > 0 ? filteredPrompts.map((prompt) => (
-              <div key={prompt._id} className={styles.promptCard} onClick={handlePromptClick}>
-                <div className={styles.cardTop}>
-                  <span className={styles.cardCategory}>{prompt.category}</span>
-                  {prompt.isMega && <span className={styles.cardBadge}>MEGA</span>}
+          <div className={styles.marqueeRows}>
+            {rows.length > 0 ? rows.map((row, idx) => (
+              <div className={styles.marqueeRow} key={row.name}>
+                <div className={styles.marqueeHeader}>
+                  {row.emoji && <span className={styles.marqueeEmoji}>{row.emoji}</span>}
+                  <span className={styles.marqueeCat}>{row.name}</span>
                 </div>
-                <div className={styles.cardTitle}>{prompt.title}</div>
-                <div className={styles.cardPreview}>
-                  <span className={styles.ps}>&gt;_</span> {preview(prompt.promptText)}
-                </div>
-                <div className={styles.cardFooter}>
-                  <button className={styles.cardOpen} onClick={handlePromptClick}>Open prompt</button>
-                </div>
+                <MarqueeRow
+                  items={row.items}
+                  reverse={idx % 2 === 1}
+                  onCardClick={handlePromptClick}
+                />
               </div>
             )) : (
-              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
+              <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
                 Loading prompts…
               </div>
             )}
