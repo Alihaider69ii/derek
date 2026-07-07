@@ -382,6 +382,146 @@
 }
 .cardOpen:hover { background: var(--violet-mid); }
 
+/* ── DEREK DEMO — "See it in action" 4-stage looping demo ── */
+.demoSection { background: var(--ink); }
+
+.demoProgress { display: flex; gap: 6px; margin-top: 32px; }
+.demoProgressSeg {
+  flex: 1; height: 4px; border-radius: 100px; overflow: hidden;
+  background: var(--ink-4);
+}
+.demoProgressFillDone { width: 100%; height: 100%; background: var(--violet); }
+.demoProgressFillActive {
+  width: 0%; height: 100%; background: var(--violet);
+  animation-name: demoFill; animation-timing-function: linear; animation-fill-mode: forwards;
+}
+@keyframes demoFill { from { width: 0%; } to { width: 100%; } }
+
+.demoStageLabel {
+  font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted);
+  margin-top: 10px; letter-spacing: 0.02em;
+}
+
+.demoStage {
+  margin-top: 28px; min-height: 340px;
+  display: flex; align-items: center; justify-content: center;
+}
+.demoPanel {
+  width: 100%; max-width: 520px; display: flex; flex-direction: column;
+  align-items: center; gap: 18px; position: relative;
+}
+
+/* Shared reveal animation used across all four stages */
+.demoFadeIn { opacity: 0; animation-name: demoFadeInUp; animation-duration: 0.45s; animation-timing-function: ease; animation-fill-mode: forwards; }
+@keyframes demoFadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.demoSlideOutLeft { animation-name: demoSlideOutLeft; animation-duration: 0.6s; animation-timing-function: ease; animation-fill-mode: forwards; }
+@keyframes demoSlideOutLeft { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-60px); } }
+
+.demoSlideInRight { opacity: 0; animation-name: demoSlideInRight; animation-duration: 0.6s; animation-delay: 0.3s; animation-timing-function: ease; animation-fill-mode: forwards; }
+@keyframes demoSlideInRight { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+
+.demoPopIn { opacity: 0; animation-name: demoPopIn; animation-duration: 0.45s; animation-timing-function: cubic-bezier(.2,.8,.3,1.2); animation-fill-mode: forwards; }
+@keyframes demoPopIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+
+/* Typewriter — reveals a single line of text via a width animation to var(--tw) */
+.typedText {
+  --tw: 0ch;
+  display: inline-block; max-width: var(--tw); width: 0; overflow: hidden;
+  white-space: nowrap; vertical-align: bottom;
+  border-right: 2px solid var(--violet); padding-right: 2px;
+  animation-name: demoType; animation-fill-mode: forwards; animation-timing-function: steps(30, end);
+}
+@keyframes demoType { from { width: 0; } to { width: var(--tw); } }
+
+/* Chat card shell (stages 1 & 3) */
+.demoChatCard {
+  width: 100%; background: var(--ink-3); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+.demoChatHead {
+  display: flex; align-items: center; gap: 6px; padding: 10px 14px;
+  border-bottom: 1px solid var(--border); background: var(--ink-2);
+}
+.demoChatDot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-5); }
+.demoChatTitle {
+  font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted);
+  margin-left: 6px;
+}
+.demoDerekAvatarSm { position: relative; width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.demoChatBody { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+.demoBubbleUser {
+  align-self: flex-end; max-width: 90%;
+  background: var(--violet); color: #fff; border-radius: 12px 12px 2px 12px;
+  padding: 9px 13px; font-family: 'Space Mono', monospace; font-size: 12.5px;
+}
+.demoBubbleBad {
+  align-self: flex-start; max-width: 90%;
+  background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.25); color: #E0342A;
+  border-radius: 2px 12px 12px 12px; padding: 8px 13px;
+  font-family: 'Space Mono', monospace; font-size: 12px;
+}
+
+.demoReaction { font-size: 30px; line-height: 1; }
+
+/* Prompt breakdown (stage 3 — Derek's structured response) */
+.demoPromptBlock {
+  align-self: flex-start; width: 100%; margin-top: 2px;
+  background: var(--ink-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+}
+.demoPromptLine { font-size: 12.5px; color: var(--white); line-height: 1.55; }
+.demoPromptTag {
+  font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--violet);
+  font-weight: 700; letter-spacing: 0.03em; margin-right: 4px;
+}
+.demoBadgeGood {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Space Mono', monospace; font-size: 12px; color: var(--green);
+  background: rgba(0,166,126,0.08); border: 1px solid rgba(0,166,126,0.25);
+  border-radius: 100px; padding: 6px 14px;
+}
+
+/* Ghost card (stage 2 — old chat sliding away) */
+.demoGhostCard { padding: 16px; display: flex; flex-direction: column; gap: 8px; opacity: 0.6; }
+.demoGhostLine { height: 8px; border-radius: 4px; background: var(--ink-4); width: 85%; }
+
+.demoDerekIntro { display: flex; justify-content: center; }
+.demoDerekPhoto {
+  position: relative; width: 96px; height: 96px; border-radius: 50%;
+  overflow: hidden; border: 3px solid var(--violet-dim); box-shadow: 0 0 0 1px var(--violet-bdr);
+}
+.demoIntroText {
+  font-size: 16px; color: var(--white); text-align: center; margin: 0;
+}
+.demoIntroText strong { color: var(--violet); }
+
+/* Result (stage 4) */
+.demoPasteRow { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.demoPasteLabel {
+  font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.demoPasteChips { display: flex; gap: 8px; }
+
+.demoOutputCard {
+  width: 100%; background: var(--ink-3); border: 1px solid var(--violet-bdr);
+  border-radius: 14px; padding: 18px 20px;
+  box-shadow: 0 0 0 1px rgba(46,91,255,0.1), 0 16px 40px rgba(46,91,255,0.08);
+}
+.demoOutputHead {
+  display: flex; align-items: center; gap: 7px; margin-bottom: 10px;
+  font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.demoOutputDot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.demoOutputText { font-size: 15px; color: var(--white); line-height: 1.5; margin: 0 0 8px; }
+.demoOutputTags { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--violet); }
+
+.demoReactionRow { display: flex; align-items: center; gap: 10px; }
+.demoResultText { font-size: 16px; font-weight: 500; color: var(--white); }
+
 /* ── DEREK SECTION ───────────────────────────────── */
 .derekSection { background: var(--ink-2); border-top: 1px solid var(--border); }
 .derekGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
@@ -743,6 +883,7 @@
   .hiwHeroIllust { height: 240px; order: -1; }
   .hiwSteps { grid-template-columns: 1fr; }
   .hiwBottomQuote { white-space: normal; }
+  .demoStage { min-height: 300px; }
 }
 @media (max-width: 600px) {
   .promptGrid { grid-template-columns: 1fr; }
@@ -754,4 +895,12 @@
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
   }
+  .demoStage { min-height: 280px; margin-top: 20px; }
+  .demoPanel { gap: 14px; }
+  .demoBubbleUser, .demoBubbleBad { font-size: 11.5px; }
+  .demoDerekPhoto { width: 72px; height: 72px; }
+  .demoIntroText { font-size: 14px; }
+  .demoPromptLine { font-size: 11.5px; }
+  .demoOutputText { font-size: 14px; }
+  .demoPasteChips { flex-wrap: wrap; justify-content: center; }
 }

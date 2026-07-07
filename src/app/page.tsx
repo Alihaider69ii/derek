@@ -93,6 +93,207 @@ function MarqueeRow({
   )
 }
 
+/** Reveals `text` on a single line, character by character, via a CSS width animation. */
+function TypedText({ text, delay = 0, duration = 800 }: { text: string; delay?: number; duration?: number }) {
+  return (
+    <span
+      className={styles.typedText}
+      style={{
+        ["--tw" as string]: `${text.length}ch`,
+        animationDelay: `${delay}ms`,
+        animationDuration: `${duration}ms`,
+        animationTimingFunction: `steps(${Math.max(text.length, 1)}, end)`,
+      } as React.CSSProperties}
+    >
+      {text}
+    </span>
+  )
+}
+
+const DEMO_STAGES = [
+  { name: "The Struggle", duration: 3000 },
+  { name: "They find Derek", duration: 2000 },
+  { name: "Derek works his magic", duration: 4000 },
+  { name: "The result", duration: 3000 },
+] as const
+
+function DemoStruggle() {
+  return (
+    <div className={styles.demoPanel}>
+      <div className={`${styles.demoChatCard} ${styles.demoFadeIn}`}>
+        <div className={styles.demoChatHead}>
+          <span className={styles.demoChatDot} />
+          <span className={styles.demoChatDot} />
+          <span className={styles.demoChatDot} />
+          <span className={styles.demoChatTitle}>Any AI tool</span>
+        </div>
+        <div className={styles.demoChatBody}>
+          <div className={`${styles.demoBubbleUser} ${styles.demoFadeIn}`} style={{ animationDelay: "100ms" }}>
+            <TypedText text="write me something for instagram" delay={150} duration={700} />
+          </div>
+          <div className={`${styles.demoBubbleBad} ${styles.demoFadeIn}`} style={{ animationDelay: "900ms" }}>
+            ❌ Generic result
+          </div>
+          <div className={`${styles.demoBubbleUser} ${styles.demoFadeIn}`} style={{ animationDelay: "1400ms" }}>
+            <TypedText text="make it better" delay={1450} duration={350} />
+          </div>
+          <div className={`${styles.demoBubbleBad} ${styles.demoFadeIn}`} style={{ animationDelay: "1900ms" }}>
+            ❌ Still generic
+          </div>
+        </div>
+      </div>
+      <div className={`${styles.demoReaction} ${styles.demoFadeIn}`} style={{ animationDelay: "2300ms" }}>😤</div>
+    </div>
+  )
+}
+
+function DemoMeetDerek() {
+  return (
+    <div className={styles.demoPanel}>
+      <div className={`${styles.demoChatCard} ${styles.demoGhostCard} ${styles.demoSlideOutLeft}`}>
+        <div className={styles.demoGhostLine} />
+        <div className={styles.demoGhostLine} style={{ width: "60%" }} />
+      </div>
+      <div className={`${styles.demoDerekIntro} ${styles.demoSlideInRight}`}>
+        <div className={styles.demoDerekPhoto}>
+          <Image src="/derek/derek2.jpeg" alt="Derek" fill style={{ objectFit: "cover", objectPosition: "center 15%" }} />
+        </div>
+      </div>
+      <p className={`${styles.demoIntroText} ${styles.demoFadeIn}`} style={{ animationDelay: "900ms" }}>
+        Meet <strong>Derek</strong>. Your AI prompt engineer.
+      </p>
+    </div>
+  )
+}
+
+function DemoMagic() {
+  return (
+    <div className={styles.demoPanel}>
+      <div className={`${styles.demoChatCard} ${styles.demoFadeIn}`}>
+        <div className={styles.demoChatHead}>
+          <div className={styles.demoDerekAvatarSm}>
+            <Image src="/derek/derek3.jpeg" alt="Derek" fill style={{ objectFit: "cover", objectPosition: "center 15%" }} />
+          </div>
+          <span className={styles.demoChatTitle}>Derek — Prompt Engineer</span>
+        </div>
+        <div className={styles.demoChatBody}>
+          <div className={`${styles.demoBubbleUser} ${styles.demoFadeIn}`} style={{ animationDelay: "150ms" }}>
+            <TypedText text="I sell handmade jewellery. Want Instagram caption." delay={200} duration={1100} />
+          </div>
+
+          <div className={styles.demoPromptBlock}>
+            <div className={`${styles.demoPromptLine} ${styles.demoFadeIn}`} style={{ animationDelay: "1500ms" }}>
+              <span className={styles.demoPromptTag}>[ROLE]</span> You are a viral social media copywriter specialising in handmade jewellery brands.
+            </div>
+            <div className={`${styles.demoPromptLine} ${styles.demoFadeIn}`} style={{ animationDelay: "1900ms" }}>
+              <span className={styles.demoPromptTag}>[CONTEXT]</span> Small handmade jewellery business, Instagram audience, warm and elegant brand tone.
+            </div>
+            <div className={`${styles.demoPromptLine} ${styles.demoFadeIn}`} style={{ animationDelay: "2300ms" }}>
+              <span className={styles.demoPromptTag}>[TASK]</span> Write a scroll-stopping caption for a new jewellery piece launch.
+            </div>
+            <div className={`${styles.demoPromptLine} ${styles.demoFadeIn}`} style={{ animationDelay: "2700ms" }}>
+              <span className={styles.demoPromptTag}>[FORMAT]</span> Hook line + 2-3 sentence story + call-to-action + 5 relevant hashtags.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className={`${styles.demoBadgeGood} ${styles.demoFadeIn}`} style={{ animationDelay: "3200ms" }}>
+        ✅ Precision prompt — ready to use
+      </div>
+    </div>
+  )
+}
+
+function DemoResult() {
+  return (
+    <div className={styles.demoPanel}>
+      <div className={`${styles.demoPasteRow} ${styles.demoFadeIn}`}>
+        <span className={styles.demoPasteLabel}>Pasted into any AI tool</span>
+        <div className={styles.demoPasteChips}>
+          <span className={styles.compatChip}>ChatGPT</span>
+          <span className={styles.compatChip}>Claude</span>
+          <span className={styles.compatChip}>Gemini</span>
+        </div>
+      </div>
+
+      <div className={`${styles.demoOutputCard} ${styles.demoPopIn}`} style={{ animationDelay: "400ms" }}>
+        <div className={styles.demoOutputHead}>
+          <span className={styles.demoOutputDot} />
+          Generated caption
+        </div>
+        <p className={styles.demoOutputText}>
+          &quot;Handcrafted with love, worn with pride. ✨ Every piece tells a story — what will yours say? 🤍&quot;
+        </p>
+        <div className={styles.demoOutputTags}>#HandmadeJewellery #ShopSmall #WearYourStory</div>
+      </div>
+
+      <div className={`${styles.demoReactionRow} ${styles.demoFadeIn}`} style={{ animationDelay: "1400ms" }}>
+        <span className={styles.demoReaction}>👏</span>
+        <span className={styles.demoResultText}>10x better output. Every time.</span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * "See Derek in action" — a 4-stage animated demo that loops automatically.
+ * Stage switching is driven by React state (useState + useEffect timers);
+ * everything inside a stage animates via pure CSS so it stays smooth and
+ * needs no per-frame JS work.
+ */
+function DerekDemo() {
+  const [stage, setStage] = React.useState(1)
+  const [cycle, setCycle] = React.useState(0)
+
+  React.useEffect(() => {
+    const duration = DEMO_STAGES[stage - 1].duration
+    const timer = setTimeout(() => {
+      setStage(prev => {
+        const next = prev === DEMO_STAGES.length ? 1 : prev + 1
+        if (next === 1) setCycle(c => c + 1)
+        return next
+      })
+    }, duration)
+    return () => clearTimeout(timer)
+  }, [stage])
+
+  return (
+    <section className={`${styles.section} ${styles.demoSection}`} id="demo">
+      <div className={styles.sectionInner}>
+        <p className={styles.sectionEyebrow}>See It In Action</p>
+        <h2 className={styles.sectionHeading}>Struggle to <em>10x results.</em></h2>
+        <p className={styles.sectionSub}>Watch how Derek turns a vague idea into a precision prompt — in seconds.</p>
+
+        <div className={styles.demoProgress} role="progressbar" aria-valuenow={stage} aria-valuemin={1} aria-valuemax={4}>
+          {DEMO_STAGES.map((s, i) => {
+            const idx = i + 1
+            return (
+              <div className={styles.demoProgressSeg} key={s.name}>
+                {idx < stage && <div className={styles.demoProgressFillDone} />}
+                {idx === stage && (
+                  <div
+                    key={`${idx}-${cycle}`}
+                    className={styles.demoProgressFillActive}
+                    style={{ animationDuration: `${s.duration}ms` }}
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <div className={styles.demoStageLabel}>Stage {stage} of {DEMO_STAGES.length} — {DEMO_STAGES[stage - 1].name}</div>
+
+        <div className={styles.demoStage}>
+          {stage === 1 && <DemoStruggle key={`s1-${cycle}`} />}
+          {stage === 2 && <DemoMeetDerek key={`s2-${cycle}`} />}
+          {stage === 3 && <DemoMagic key={`s3-${cycle}`} />}
+          {stage === 4 && <DemoResult key={`s4-${cycle}`} />}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function LandingPage() {
   const router = useRouter()
   const [prompts, setPrompts] = React.useState<PromptItem[]>([])
@@ -387,6 +588,9 @@ export default function LandingPage() {
 
         </div>
       </section>
+
+      {/* SEE DEREK IN ACTION — auto-looping 4-stage demo */}
+      <DerekDemo />
 
       {/* DEREK */}
       <section className={`${styles.section} ${styles.derekSection}`} id="derek">
