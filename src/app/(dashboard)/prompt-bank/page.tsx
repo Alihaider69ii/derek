@@ -2,14 +2,18 @@
 
 import * as React from "react"
 import { Search, X, Copy, Send, Check, Star } from "lucide-react"
+import { useSession } from "next-auth/react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PromptCard } from "@/components/shared/PromptCard"
 import { Badge } from "@/components/ui/badge"
+import { ProtectedContent } from "@/components/shared/ProtectedContent"
+import { embedZeroWidthWatermark } from "@/lib/protection"
 
 export const dynamic = 'force-dynamic'
 
 export default function PromptBankPage() {
+    const { data: session } = useSession()
     const [search, setSearch] = React.useState("")
     const [category, setCategory] = React.useState("All")
     
@@ -56,7 +60,9 @@ export default function PromptBankPage() {
 
     const handleCopy = () => {
         if (!selectedPrompt) return;
-        navigator.clipboard.writeText(selectedPrompt.promptText || selectedPrompt.body);
+        const raw = selectedPrompt.promptText || selectedPrompt.body;
+        const watermarkId = session?.user?.email || "anonymous";
+        navigator.clipboard.writeText(embedZeroWidthWatermark(raw, watermarkId));
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     }
@@ -186,8 +192,11 @@ export default function PromptBankPage() {
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 hide-scrollbar">
                             <div>
                                 <h3 className="text-sm font-semibold text-text-primary mb-3">Prompt Body</h3>
-                                <div className="bg-bg-base border border-border rounded-xl p-4 text-sm text-text-primary whitespace-pre-wrap font-mono leading-relaxed max-h-[300px] overflow-y-auto hide-scrollbar">
-                                    {selectedPrompt.promptText || selectedPrompt.body}
+                                <div className="bg-bg-base border border-border rounded-xl p-4 max-h-[300px] overflow-y-auto hide-scrollbar">
+                                    <ProtectedContent
+                                        text={selectedPrompt.promptText || selectedPrompt.body}
+                                        className="text-sm text-text-primary whitespace-pre-wrap font-mono leading-relaxed"
+                                    />
                                 </div>
                             </div>
 

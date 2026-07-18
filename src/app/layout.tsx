@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/shared/AuthProvider";
+import { ProtectionInit } from "@/components/shared/ProtectionInit";
 
 export const metadata: Metadata = {
   title: "EaseMyPrompt.ai — Engineer Prompts Like a Pro",
@@ -33,6 +34,7 @@ export default function RootLayout({
         }}
       >
         <AuthProvider>{children}</AuthProvider>
+        <ProtectionInit />
       </body>
     </html>
   );

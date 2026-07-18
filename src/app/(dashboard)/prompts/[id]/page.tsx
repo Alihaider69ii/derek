@@ -3,13 +3,17 @@
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, Copy, Send, Check } from "lucide-react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ProtectedContent } from "@/components/shared/ProtectedContent"
+import { embedZeroWidthWatermark } from "@/lib/protection"
 
 export default function MegaPromptPage() {
     const params = useParams()
     const router = useRouter()
-    
+    const { data: session } = useSession()
+
     const [prompt, setPrompt] = React.useState<any>(null)
     const [loading, setLoading] = React.useState(true)
     const [copied, setCopied] = React.useState(false)
@@ -33,16 +37,20 @@ export default function MegaPromptPage() {
         }
     }, [params.id])
 
+    const watermarkId = session?.user?.email || "anonymous"
+
     const handleCopy = () => {
         if (!prompt) return;
-        navigator.clipboard.writeText(prompt.promptText || prompt.body);
+        const raw = prompt.promptText || prompt.body;
+        navigator.clipboard.writeText(embedZeroWidthWatermark(raw, watermarkId));
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     }
 
     const sendToChat = (ai: "derek" | "claude") => {
         if (!prompt) return;
-        const text = encodeURIComponent(prompt.promptText || prompt.body);
+        const raw = prompt.promptText || prompt.body;
+        const text = encodeURIComponent(embedZeroWidthWatermark(raw, watermarkId));
         window.location.href = `/dashboard?prefill${ai === 'derek' ? 'Derek' : 'Claude'}=${text}`;
     }
 
@@ -116,8 +124,11 @@ export default function MegaPromptPage() {
                             <div className="w-1 h-6 bg-accent rounded-full" />
                             Comprehensive Prompt
                         </h2>
-                        <div className="bg-bg-panel border border-border rounded-2xl p-6 md:p-8 text-base text-text-primary whitespace-pre-wrap font-mono leading-relaxed shadow-sm">
-                            {prompt.promptText || prompt.body}
+                        <div className="bg-bg-panel border border-border rounded-2xl p-6 md:p-8 shadow-sm">
+                            <ProtectedContent
+                                text={prompt.promptText || prompt.body}
+                                className="text-base text-text-primary whitespace-pre-wrap font-mono leading-relaxed"
+                            />
                         </div>
                     </div>
 

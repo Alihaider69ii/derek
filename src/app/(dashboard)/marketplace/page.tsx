@@ -4,18 +4,22 @@ import * as React from "react"
 import { ShoppingBag, X, Copy, Check, Lock, Tag, User, IndianRupee, Search } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { ProtectedContent } from "@/components/shared/ProtectedContent"
+import { embedZeroWidthWatermark } from "@/lib/protection"
 
 export const dynamic = 'force-dynamic'
 
 // ── Marketplace Card ──────────────────────────────────────────────────────────
 function ListingCard({ listing, onBuy }: { listing: any; onBuy: (id: string) => void }) {
+  const { data: session } = useSession()
   const [copied, setCopied] = React.useState(false)
   const [buying, setBuying] = React.useState(false)
   const [showDetail, setShowDetail] = React.useState(false)
 
   const handleCopy = () => {
     if (!listing.purchased) return
-    navigator.clipboard.writeText(listing.promptText)
+    const watermarkId = session?.user?.email || "anonymous"
+    navigator.clipboard.writeText(embedZeroWidthWatermark(listing.promptText, watermarkId))
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -50,9 +54,16 @@ function ListingCard({ listing, onBuy }: { listing: any; onBuy: (id: string) => 
 
         {/* Blurred / revealed prompt */}
         <div className="relative rounded-xl overflow-hidden border border-border">
-          <div className={`bg-bg-input p-4 text-xs font-mono text-text-secondary leading-relaxed min-h-[80px] ${!listing.purchased ? "blur-sm select-none" : ""}`}>
-            {listing.promptText || "Your purchased prompt will appear here in full detail..."}
-          </div>
+          {listing.purchased ? (
+            <ProtectedContent
+              text={listing.promptText || "Your purchased prompt will appear here in full detail..."}
+              className="bg-bg-input p-4 text-xs font-mono text-text-secondary leading-relaxed min-h-[80px] block"
+            />
+          ) : (
+            <div className="bg-bg-input p-4 text-xs font-mono text-text-secondary leading-relaxed min-h-[80px] blur-sm select-none">
+              {listing.promptText || "Your purchased prompt will appear here in full detail..."}
+            </div>
+          )}
           {!listing.purchased && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/20 backdrop-blur-[1px]">
               <Lock size={18} className="text-text-secondary" />
@@ -112,8 +123,11 @@ function ListingCard({ listing, onBuy }: { listing: any; onBuy: (id: string) => 
               <button onClick={() => setShowDetail(false)} className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover"><X size={18} /></button>
             </div>
             <div className="p-6">
-              <div className="bg-bg-input border border-border rounded-xl p-5 text-sm text-text-primary font-mono whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto">
-                {listing.promptText}
+              <div className="bg-bg-input border border-border rounded-xl p-5 max-h-[400px] overflow-y-auto">
+                <ProtectedContent
+                  text={listing.promptText}
+                  className="text-sm text-text-primary font-mono whitespace-pre-wrap leading-relaxed"
+                />
               </div>
               <button onClick={handleCopy} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold border border-border text-text-primary hover:bg-bg-hover transition-colors">
                 {copied ? <Check size={15} className="text-success" /> : <Copy size={15} />}

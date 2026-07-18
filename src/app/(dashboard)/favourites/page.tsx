@@ -4,6 +4,8 @@ import * as React from "react"
 import { Star, Trash2, ShoppingBag, X, IndianRupee, Filter, BookOpen, Cpu, Copy, Check } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { ProtectedContent } from "@/components/shared/ProtectedContent"
+import { embedZeroWidthWatermark } from "@/lib/protection"
 
 export const dynamic = 'force-dynamic'
 
@@ -46,9 +48,14 @@ function SellModal({ fav, onClose, onSell }: { fav: any; onClose: () => void; on
 }
 
 function FavCard({ fav, onDelete, onSell }: { fav: any; onDelete: () => void; onSell: () => void }) {
+  const { data: session } = useSession()
   const [confirm, setConfirm] = React.useState(false)
   const [copied, setCopied] = React.useState(false)
-  const handleCopy = () => { navigator.clipboard.writeText(fav.promptText); setCopied(true); setTimeout(() => setCopied(false), 2000) }
+  const handleCopy = () => {
+    const watermarkId = session?.user?.email || "anonymous"
+    navigator.clipboard.writeText(embedZeroWidthWatermark(fav.promptText, watermarkId))
+    setCopied(true); setTimeout(() => setCopied(false), 2000)
+  }
   return (
     <div className="group flex flex-col gap-3 p-5 rounded-2xl border border-border bg-bg-panel hover:border-accent/40 transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,77,0,0.08)]">
       <div className="flex items-start justify-between gap-3">
@@ -61,7 +68,12 @@ function FavCard({ fav, onDelete, onSell }: { fav: any; onDelete: () => void; on
           <Trash2 size={13} />
         </button>
       </div>
-      <p className="text-xs text-text-secondary line-clamp-3 leading-relaxed font-mono bg-bg-input rounded-lg p-3 border border-border">{fav.promptText}</p>
+      <div className="bg-bg-input rounded-lg p-3 border border-border">
+        <ProtectedContent
+          text={fav.promptText}
+          className="text-xs text-text-secondary line-clamp-3 leading-relaxed font-mono"
+        />
+      </div>
       <div className="flex items-center justify-between">
         <span className={`text-[0.6rem] font-bold uppercase tracking-widest px-2 py-1 rounded-full ${fav.source === "generated" ? "bg-accent2/10 text-accent2 border border-accent2/20" : "bg-accent/10 text-accent border border-accent/20"}`}>
           {fav.source === "generated" ? "🤖 Derek" : "📚 Bank"}

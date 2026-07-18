@@ -2,8 +2,11 @@
 
 import * as React from "react"
 import { ArrowLeft, Loader2, MessageSquare, ClipboardList, Trash2, ChevronRight, Star, Check, Copy } from "lucide-react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { ProtectedContent } from "@/components/shared/ProtectedContent"
+import { embedZeroWidthWatermark } from "@/lib/protection"
 
 export const dynamic = 'force-dynamic'
 
@@ -17,11 +20,13 @@ function PromptItem({
   onDelete: () => void
   onFavourite: () => void
 }) {
+  const { data: session } = useSession()
   const [confirm, setConfirm] = React.useState(false)
   const [copied, setCopied] = React.useState(false)
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(prompt.promptText)
+    const watermarkId = session?.user?.email || "anonymous"
+    navigator.clipboard.writeText(embedZeroWidthWatermark(prompt.promptText, watermarkId))
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -34,7 +39,10 @@ function PromptItem({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-text-primary truncate">{prompt.label}</p>
-          <p className="text-xs text-text-secondary mt-1 line-clamp-2 leading-relaxed">{prompt.promptText}</p>
+          <ProtectedContent
+            text={prompt.promptText}
+            className="text-xs text-text-secondary mt-1 line-clamp-2 leading-relaxed"
+          />
         </div>
         <button
           onClick={() => { if (!confirm) { setConfirm(true); return } onDelete() }}

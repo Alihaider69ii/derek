@@ -180,3 +180,61 @@ code, pre {
 .animate-marquee {
   animation: marquee 40s linear infinite;
 }
+
+/* ============================================================ */
+/* CONTENT PROTECTION - DO NOT REMOVE                            */
+/* Site-wide anti-copy defaults. Paired with src/lib/protection.ts */
+/* (JS deterrents) and src/middleware.ts (anti-scraping network   */
+/* layer). See src/components/shared/ProtectedContent.tsx for the */
+/* component that wraps individual prompt text.                   */
+/* ============================================================ */
+
+/* Global default: nothing on the page is selectable/long-press-saveable
+   unless explicitly opted back in below. This is what makes new pages and
+   components inherit the protection automatically without extra wiring. */
+html, body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Form fields (and anything marked .allow-select) must stay selectable and
+   editable, or the site becomes unusable — login, search, chat input, etc.
+   `user-select` is inherited, so this override is required for the app to
+   keep functioning under the global rule above. */
+input,
+textarea,
+select,
+[contenteditable="true"],
+.allow-select {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* Applied by <ProtectedContent> around every rendered `promptText`. */
+.protected-content {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
+.protected-content img,
+.protected-content video {
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* Toggled on <body> by src/lib/protection.ts when it detects an open
+   DevTools panel (best-effort window-size heuristic — see comments there
+   for why this can't be a guarantee). */
+body.devtools-detected .protected-content {
+  filter: blur(8px);
+  transition: filter 0.15s ease;
+}
