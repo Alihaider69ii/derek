@@ -117,20 +117,6 @@ code, pre {
     transition: background-color 0.3s ease;
   }
 
-  /* Dot-mesh grid overlay */
-  .animated-bg::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: radial-gradient(circle, rgba(46, 91, 255, 0.08) 1px, transparent 1px);
-    background-size: 28px 28px;
-    pointer-events: none;
-    z-index: 0;
-    mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 40%, transparent 100%);
-    -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 40%, transparent 100%);
-    transition: opacity 0.3s ease;
-  }
-
   /* Floating glow orbs */
   .animated-bg::after {
     content: '';

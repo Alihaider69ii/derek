@@ -344,8 +344,6 @@ export default function LandingPage() {
 
   return (
     <div className={styles.empHome}>
-      <div className={styles.scanline} />
-
       {/* NAV */}
       <nav className={styles.nav}>
         <Link href="/" className={styles.navLogo}>EaseMyPrompt<span>.ai</span></Link>
