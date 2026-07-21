@@ -29,6 +29,7 @@ export async function POST(
         const alreadyBought = listing.buyers.some((b: any) => b.toString() === userId.toString());
         if (!alreadyBought) {
             listing.buyers.push(userId);
+            listing.sales.push({ buyerId: userId, price: listing.price, purchasedAt: new Date() } as any);
             await listing.save();
         }
 

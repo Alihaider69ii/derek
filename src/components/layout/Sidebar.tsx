@@ -81,7 +81,7 @@ export function Sidebar() {
                     </button>
                 </div>
                 <Button
-                    onClick={() => { router.push('/dashboard'); setIsOpen(false) }}
+                    onClick={() => { router.push('/chat'); setIsOpen(false) }}
                     className="w-full justify-start gap-2 bg-accent text-white hover:bg-accent-hover"
                 >
                     <Plus size={16} /> New Chat
@@ -110,7 +110,7 @@ export function Sidebar() {
                             {todayChats.map(chat => (
                                 <button
                                     key={chat._id}
-                                    onClick={() => { router.push(`/dashboard?id=${chat._id}`); setIsOpen(false) }}
+                                    onClick={() => { router.push(`/chat?id=${chat._id}`); setIsOpen(false) }}
                                     className={`w-full text-left px-3 py-2 text-sm truncate transition-colors rounded-btn ${currentChatId === chat._id ? 'bg-bg-hover text-text-primary' : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'}`}
                                 >
                                     {chat.title}
@@ -127,7 +127,7 @@ export function Sidebar() {
                             {olderChats.map(chat => (
                                 <button
                                     key={chat._id}
-                                    onClick={() => { router.push(`/dashboard?id=${chat._id}`); setIsOpen(false) }}
+                                    onClick={() => { router.push(`/chat?id=${chat._id}`); setIsOpen(false) }}
                                     className={`w-full text-left px-3 py-2 text-sm truncate transition-colors rounded-btn ${currentChatId === chat._id ? 'bg-bg-hover text-text-primary' : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'}`}
                                 >
                                     {chat.title}

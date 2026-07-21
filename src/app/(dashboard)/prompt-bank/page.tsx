@@ -90,7 +90,7 @@ export default function PromptBankPage() {
     const sendToChat = (ai: "derek" | "claude") => {
         if (!selectedPrompt) return;
         const text = encodeURIComponent(selectedPrompt.promptText || selectedPrompt.body);
-        window.location.href = `/dashboard?prefill${ai === 'derek' ? 'Derek' : 'Claude'}=${text}`;
+        window.location.href = `/chat?prefill${ai === 'derek' ? 'Derek' : 'Claude'}=${text}`;
     }
 
     return (

@@ -157,7 +157,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
   const handleNewChat = () => {
     if (!newChatInput.trim()) return
-    router.push(`/dashboard?prefillDerek=${encodeURIComponent(newChatInput)}&projectId=${params.id}`)
+    router.push(`/chat?prefillDerek=${encodeURIComponent(newChatInput)}&projectId=${params.id}`)
   }
 
   if (loading) return <div className="flex h-full bg-bg-base items-center justify-center"><Loader2 size={24} className="animate-spin text-[#2E5BFF]" /></div>
@@ -229,7 +229,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             ) : chats.length > 0 ? (
               <div className="space-y-3">
                 {chats.map(chat => (
-                  <Link key={chat._id} href={`/dashboard?id=${chat._id}&projectId=${params.id}`}>
+                  <Link key={chat._id} href={`/chat?id=${chat._id}&projectId=${params.id}`}>
                     <div className="group p-4 bg-bg-panel border border-border rounded-xl hover:border-[#2E5BFF]/50 transition-colors flex items-center justify-between mb-3">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-[#2E5BFF]/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">

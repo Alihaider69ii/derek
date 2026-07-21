@@ -547,9 +547,9 @@ export function SplitChat({ guestMode = false, projectId }: SplitChatProps) {
             if (data._id && !chatId) {
                 if (urlProjectId) {
                     // Stay on current page but update URL with chat id
-                    router.replace(`/dashboard?id=${data._id}&projectId=${urlProjectId}`)
+                    router.replace(`/chat?id=${data._id}&projectId=${urlProjectId}`)
                 } else {
-                    router.replace(`/dashboard?id=${data._id}`)
+                    router.replace(`/chat?id=${data._id}`)
                 }
             }
         } catch (e) { console.error("Failed to save chat", e) }

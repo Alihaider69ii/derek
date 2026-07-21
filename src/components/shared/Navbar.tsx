@@ -2,9 +2,12 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 
 export function Navbar() {
+    const { data: session } = useSession()
     const navLinks = [
         { href: "/marketplace", label: "Marketplace" },
         { href: "/", label: "Home" },
@@ -57,14 +60,29 @@ export function Navbar() {
 
                 {/* Right Auth actions */}
                 <div className="flex items-center gap-3">
-                    <Link href="/login">
-                        <Button variant="ghost" className="hidden sm:inline-flex text-sm font-medium">Login</Button>
-                    </Link>
-                    <Link href="/signup">
-                        <Button className="text-sm font-semibold px-5 rounded-full bg-accent hover:bg-accent-hover text-white shadow-md hover:shadow-lg transition-all">
-                            Get started
-                        </Button>
-                    </Link>
+                    {session?.user ? (
+                        <>
+                            <Link href="/sell/new">
+                                <Button className="text-sm font-semibold px-5 rounded-full bg-accent hover:bg-accent-hover text-white shadow-md hover:shadow-lg transition-all">
+                                    <Plus size={15} className="mr-1.5" /> New prompt
+                                </Button>
+                            </Link>
+                            <Link href="/dashboard">
+                                <Button variant="ghost" className="hidden sm:inline-flex text-sm font-medium">Dashboard</Button>
+                            </Link>
+                        </>
+                    ) : (
+                        <>
+                            <Link href="/login">
+                                <Button variant="ghost" className="hidden sm:inline-flex text-sm font-medium">Login</Button>
+                            </Link>
+                            <Link href="/signup">
+                                <Button className="text-sm font-semibold px-5 rounded-full bg-accent hover:bg-accent-hover text-white shadow-md hover:shadow-lg transition-all">
+                                    Get started
+                                </Button>
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
         </nav>

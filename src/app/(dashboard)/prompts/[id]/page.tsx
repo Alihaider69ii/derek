@@ -51,7 +51,7 @@ export default function MegaPromptPage() {
         if (!prompt) return;
         const raw = prompt.promptText || prompt.body;
         const text = encodeURIComponent(embedZeroWidthWatermark(raw, watermarkId));
-        window.location.href = `/dashboard?prefill${ai === 'derek' ? 'Derek' : 'Claude'}=${text}`;
+        window.location.href = `/chat?prefill${ai === 'derek' ? 'Derek' : 'Claude'}=${text}`;
     }
 
     if (loading) {
