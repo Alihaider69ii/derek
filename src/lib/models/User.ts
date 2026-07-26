@@ -13,10 +13,12 @@ export interface IUser extends Document {
     password?: string;
     name?: string;
     image?: string;
+    bio?: string;
     emailVerified?: Date;
     plan: "Free" | "Pro";
     trialUses: number;
     promptsForSale: IPromptForSale[]; // prompts user wants to sell
+    createdAt: Date;
 }
 
 const PromptForSaleSchema = new Schema<IPromptForSale>(
@@ -36,6 +38,7 @@ const UserSchema = new Schema<IUser>(
         password: { type: String },
         name: { type: String },
         image: { type: String },
+        bio: { type: String, maxlength: 280 },
         emailVerified: { type: Date },
         plan: { type: String, enum: ["Free", "Pro"], default: "Free" },
         trialUses: { type: Number, default: 0 },

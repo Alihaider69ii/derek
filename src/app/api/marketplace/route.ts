@@ -3,39 +3,91 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/db";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
+import { placeholderRating } from "@/lib/utils";
 import mongoose from "mongoose";
 
 export const dynamic = 'force-dynamic';
 
-// GET all marketplace listings (blurs promptText unless purchased)
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// GET all marketplace listings (blurs promptText unless purchased). Supports
+// ?category=&price=&rating=&chip=&sort= query params — see marketplace page.
 export async function GET(request: Request) {
     try {
         const session = await getServerSession(authOptions);
         const userId = (session?.user as any)?.id || null;
+        const { searchParams } = new URL(request.url);
+        const category = searchParams.get("category");
+        const price = searchParams.get("price"); // free | under100 | 100-500 | 500plus
+        const minRating = Number(searchParams.get("rating")) || 0;
+        const chip = searchParams.get("chip") || "all"; // all | trending | new | free | bestsellers
+        const sort = searchParams.get("sort") || "top-rated"; // top-rated | newest | price-asc | price-desc | sales
 
         await connectToDatabase();
         // Only publicly-visible listings: "live", or legacy docs created before
         // the status field existed (lean() reads skip schema defaults).
-        const listings = await MarketplaceListing.find({
+        const dbFilter: any = {
             $or: [{ status: "live" }, { status: { $exists: false } }],
-        })
-            .sort({ createdAt: -1 })
-            .lean();
+        };
+        if (category) dbFilter.category = category;
 
-        // Return listings with promptText blurred unless the user has purchased
-        const sanitized = listings.map((l: any) => {
+        const listings = await MarketplaceListing.find(dbFilter).lean();
+
+        const now = Date.now();
+        let sanitized = (listings as any[]).map((l) => {
             const hasPurchased = userId && l.buyers?.some((b: any) => b.toString() === userId);
+            const salesCount = Array.isArray(l.sales) ? l.sales.length : (l.buyers?.length || 0);
+            const rating = typeof l.rating === "number" ? l.rating : placeholderRating(l._id.toString());
             return {
                 _id: l._id,
+                sellerId: l.sellerId,
                 title: l.title,
                 sellerName: l.sellerName,
+                category: l.category || null,
+                previewSnippet: l.previewSnippet || l.description || null,
                 price: l.price,
+                isFree: !!l.isFree,
+                rating,
+                salesCount,
                 createdAt: l.createdAt,
                 promptText: hasPurchased ? l.promptText : null,
                 purchased: !!hasPurchased,
             };
         });
-        return NextResponse.json(sanitized);
+
+        // Price bucket filter
+        if (price === "free") sanitized = sanitized.filter(l => l.isFree);
+        else if (price === "under100") sanitized = sanitized.filter(l => !l.isFree && l.price < 100);
+        else if (price === "100-500") sanitized = sanitized.filter(l => !l.isFree && l.price >= 100 && l.price <= 500);
+        else if (price === "500plus") sanitized = sanitized.filter(l => !l.isFree && l.price > 500);
+
+        // Rating filter
+        if (minRating > 0) sanitized = sanitized.filter(l => l.rating >= minRating);
+
+        // Chip filter (quick filters shown as pills above the grid)
+        if (chip === "trending") {
+            sanitized = sanitized.filter(l => l.salesCount > 0 && now - new Date(l.createdAt).getTime() <= 30 * DAY_MS);
+        } else if (chip === "new") {
+            sanitized = sanitized.filter(l => now - new Date(l.createdAt).getTime() <= 14 * DAY_MS);
+        } else if (chip === "free") {
+            sanitized = sanitized.filter(l => l.isFree);
+        } else if (chip === "bestsellers") {
+            sanitized = sanitized.filter(l => l.salesCount > 0);
+        }
+
+        // Sort
+        sanitized.sort((a, b) => {
+            switch (sort) {
+                case "newest": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                case "price-asc": return a.price - b.price;
+                case "price-desc": return b.price - a.price;
+                case "sales": return b.salesCount - a.salesCount;
+                case "top-rated":
+                default: return b.rating - a.rating;
+            }
+        });
+
+        return NextResponse.json({ total: sanitized.length, listings: sanitized });
     } catch (error) {
         console.error("Fetch Marketplace Error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

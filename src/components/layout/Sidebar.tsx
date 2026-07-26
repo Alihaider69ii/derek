@@ -11,6 +11,7 @@ import { Plus, LayoutGrid, Settings, HelpCircle, LogOut, Menu, X, BookOpen, Fold
 
 export function Sidebar() {
     const { data: session } = useSession()
+    const userId = (session?.user as any)?.id
     const router = useRouter()
     const searchParams = useSearchParams()
     const pathname = usePathname()
@@ -156,7 +157,11 @@ export function Sidebar() {
             </div>
 
             <div className="p-4 border-t border-border mt-auto">
-                <div className="flex items-center gap-3 px-2 mb-4">
+                <Link
+                    href={userId ? `/profile/${userId}` : "/profile"}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-2 mb-4 rounded-btn hover:bg-bg-hover transition-colors -mx-2 py-1"
+                >
                     <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center font-bold text-sm shrink-0">
                         {initials}
                     </div>
@@ -164,7 +169,7 @@ export function Sidebar() {
                         <p className="text-sm font-medium text-text-primary truncate">{name}</p>
                         <p className="text-xs text-text-secondary truncate">{email}</p>
                     </div>
-                </div>
+                </Link>
 
                 <div className="flex items-center justify-between px-2 mb-4">
                     <div className="flex items-center gap-4 text-text-secondary">
