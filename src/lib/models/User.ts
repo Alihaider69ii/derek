@@ -18,6 +18,9 @@ export interface IUser extends Document {
     plan: "Free" | "Pro";
     trialUses: number;
     promptsForSale: IPromptForSale[]; // prompts user wants to sell
+    role: "user" | "admin";
+    suspended: boolean;
+    lastActiveAt?: Date;
     createdAt: Date;
 }
 
@@ -43,6 +46,9 @@ const UserSchema = new Schema<IUser>(
         plan: { type: String, enum: ["Free", "Pro"], default: "Free" },
         trialUses: { type: Number, default: 0 },
         promptsForSale: { type: [PromptForSaleSchema], default: [] },
+        role: { type: String, enum: ["user", "admin"], default: "user" },
+        suspended: { type: Boolean, default: false },
+        lastActiveAt: { type: Date },
     },
     { timestamps: true }
 );

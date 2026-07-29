@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import {
   HONEYPOT_PATH,
   BLOCKED_UA_SUBSTRINGS,
@@ -89,12 +90,28 @@ function isSameHost(referer: string, host: string | null): boolean {
   }
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   sweepStaleEntries();
 
   const { pathname } = req.nextUrl;
   const ip = getClientIP(req);
   const ua = req.headers.get("user-agent") || "";
+
+  // 0. Admin area — /admin/* pages and /api/admin/* routes require an
+  // authenticated user with role "admin". Checked here (via the JWT, no DB
+  // hit) so non-admins never even reach the page/route; each /api/admin/*
+  // handler additionally re-verifies via requireAdminSession() against the
+  // DB as defense in depth.
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const isAdmin = (token as any)?.role === "admin";
+    if (!isAdmin) {
+      if (pathname.startsWith("/api/admin")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+  }
 
   // 1. Repeat offender — already tripped the honeypot within the last 24h.
   if (isCurrentlyBlocked(ip)) {

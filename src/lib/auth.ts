@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GithubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
@@ -14,6 +15,11 @@ export const authOptions: NextAuthOptions = {
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID || "",
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+            allowDangerousEmailAccountLinking: true,
+        }),
+        GithubProvider({
+            clientId: process.env.GITHUB_CLIENT_ID || "",
+            clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
             allowDangerousEmailAccountLinking: true,
         }),
         EmailProvider({
@@ -111,10 +117,28 @@ export const authOptions: NextAuthOptions = {
         strategy: "jwt",
     },
     callbacks: {
+        async signIn({ user }) {
+            if (!user?.email) return true;
+            await connectToDatabase();
+            const dbUser = await User.findOne({ email: user.email });
+            if (dbUser?.suspended) {
+                return false;
+            }
+            return true;
+        },
+        async jwt({ token }) {
+            if (token.sub) {
+                await connectToDatabase();
+                const dbUser = await User.findById(token.sub).lean();
+                token.role = (dbUser as any)?.role || "user";
+            }
+            return token;
+        },
         async session({ session, token }) {
             if (session.user && token.sub) {
-                // Attach the user ID from the database to the session
+                // Attach the user ID and role from the database to the session
                 (session.user as any).id = token.sub;
+                (session.user as any).role = token.role || "user";
             }
             return session;
         },

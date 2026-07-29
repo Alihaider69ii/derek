@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useSession } from "next-auth/react"
 import { usePathname } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
+import { NotificationBell } from "@/components/shared/NotificationBell"
 import {
     LayoutDashboard, FileText, Wallet, ArrowLeftRight,
     Settings, HelpCircle, Menu, X,
@@ -85,12 +86,13 @@ export function SellerSidebar() {
                     <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center font-bold text-sm shrink-0">
                         {initial}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-text-primary truncate">{name}</p>
                         <Badge variant="secondary" className="bg-bg-hover mt-0.5 text-[0.65rem]">
                             {plan === "Pro" ? "Pro seller" : "Seller"}
                         </Badge>
                     </div>
+                    <NotificationBell />
                 </div>
             </div>
 

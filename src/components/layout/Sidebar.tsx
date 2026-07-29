@@ -7,6 +7,7 @@ import { useSession, signOut } from "next-auth/react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { NotificationBell } from "@/components/shared/NotificationBell"
 import { Plus, LayoutGrid, Settings, HelpCircle, LogOut, Menu, X, BookOpen, FolderKanban, Star, ShoppingBag } from "lucide-react"
 
 export function Sidebar() {
@@ -176,6 +177,7 @@ export function Sidebar() {
                         <button aria-label="Settings" className="hover:text-text-primary transition-colors"><Settings size={16} /></button>
                         <button aria-label="Help" className="hover:text-text-primary transition-colors"><HelpCircle size={16} /></button>
                         <button aria-label="Logout" onClick={() => signOut({ callbackUrl: '/' })} className="hover:text-text-primary transition-colors"><LogOut size={16} /></button>
+                        <NotificationBell />
                     </div>
                     <Badge variant="secondary" className="bg-bg-hover">Free Plan</Badge>
                 </div>

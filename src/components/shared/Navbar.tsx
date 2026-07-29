@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import { NotificationBell } from "@/components/shared/NotificationBell"
 
 export function Navbar() {
     const { data: session } = useSession()
@@ -62,6 +63,7 @@ export function Navbar() {
                 <div className="flex items-center gap-3">
                     {session?.user ? (
                         <>
+                            <NotificationBell />
                             <Link href="/sell/new">
                                 <Button className="text-sm font-semibold px-5 rounded-full bg-accent hover:bg-accent-hover text-white shadow-md hover:shadow-lg transition-all">
                                     <Plus size={15} className="mr-1.5" /> New prompt
