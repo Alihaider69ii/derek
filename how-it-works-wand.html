@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How It Works — EaseMyPrompt.ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:      #D62828;
+  --red-mid:  #A01E1E;
+  --red-pale: rgba(214,40,40,0.09);
+  --navy:     #080D1A;
+  --navy-2:   #0E1525;
+  --navy-3:   #161F34;
+  --navy-4:   #1E2A42;
+  --white:    #FFFFFF;
+  --muted:    #7A8499;
+  --border:   rgba(255,255,255,0.07);
+  --border-r: rgba(214,40,40,0.28);
+  --gold:     #F5C842;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+.hiw {
+  position: relative;
+  padding: 130px 40px 160px;
+  overflow: hidden;
+}
+
+.hiw::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+}
+
+.hiw-inner {
+  position: relative;
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+/* ── HERO ROW ── */
+.hero-row {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  align-items: center;
+  gap: 60px;
+  margin-bottom: 96px;
+}
+
+.label-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--red-pale);
+  border: 1px solid var(--border-r);
+  border-radius: 100px;
+  padding: 5px 14px 5px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--red);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.label-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.hiw-heading {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(40px, 5vw, 66px);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -2px;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.hiw-heading em { font-style: normal; color: var(--red); }
+
+.hiw-sub {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 400px;
+  margin-bottom: 36px;
+}
+
+.hiw-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--red);
+  color: var(--white);
+  border-radius: 8px;
+  padding: 13px 26px;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -0.2px;
+  transition: background 0.2s, transform 0.2s;
+}
+.hiw-cta:hover { background: var(--red-mid); transform: translateY(-2px); }
+.hiw-cta svg  { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* ── WAND ILLUSTRATION ── */
+.wand-wrap {
+  position: relative;
+  height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wand-glow {
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(214,40,40,0.16) 0%, transparent 68%);
+}
+
+.orbit {
+  position: absolute;
+  width: 290px; height: 290px;
+  border-radius: 50%;
+  border: 1px dashed rgba(214,40,40,0.18);
+  animation: spin 20s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.orbit-dot {
+  position: absolute;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--red);
+  top: -4.5px; left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 12px var(--red);
+}
+
+.orbit-b {
+  width: 210px; height: 210px;
+  animation: spin 13s linear infinite reverse;
+  border-color: rgba(245,200,66,0.12);
+}
+.orbit-b .orbit-dot {
+  width: 7px; height: 7px; top: -3.5px;
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold);
+}
+
+.spark {
+  position: absolute;
+  z-index: 3;
+  animation: fspark 3s ease-in-out infinite;
+}
+@keyframes fspark {
+  0%,100%{ transform:translateY(0) scale(1); opacity:1; }
+  50%    { transform:translateY(-10px) scale(1.25); opacity:0.55; }
+}
+
+.wand-svg-wrap { position: relative; z-index: 2; }
+
+/* ── STEPS ── */
+.steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+.step {
+  position: relative;
+  background: var(--navy-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 32px 44px;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.step:hover { border-color: var(--border-r); transform: translateY(-5px); }
+
+.step::after {
+  content: '';
+  position: absolute;
+  top:0; left:0; right:0;
+  height: 2px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.step:hover::after { transform: scaleX(1); }
+
+.step-num {
+  position: absolute;
+  bottom: -20px; right: 16px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 130px;
+  color: var(--white);
+  opacity: 0.03;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.step-wand-badge {
+  position: absolute;
+  top: 20px; right: 20px;
+  width: 36px; height: 36px;
+  background: var(--red-pale);
+  border: 1px solid var(--border-r);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-wand-badge svg { width: 18px; height: 18px; }
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--red-pale);
+  border: 1px solid var(--border-r);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--red);
+  margin-bottom: 24px;
+}
+
+.terminal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--navy-4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 14px;
+  margin-bottom: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.t-prompt { color: var(--red); flex-shrink: 0; }
+.t-text   { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.t-cursor {
+  width:7px; height:13px;
+  background: var(--red);
+  border-radius: 1px;
+  animation: blink 1s step-end infinite;
+}
+.t-check { color: #4ADE80; }
+
+.step-2 .terminal-row {
+  border-color: var(--border-r);
+  background: rgba(214,40,40,0.05);
+}
+
+.step-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+.step-title em { font-style:normal; color:var(--red); }
+
+.step-body {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
+.step-tag {
+  display: inline-block;
+  margin-top: 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--red);
+  background: var(--red-pale);
+  border: 1px solid var(--border-r);
+  border-radius: 4px;
+  padding: 3px 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── BOTTOM ── */
+.hiw-bottom {
+  margin-top: 60px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.bottom-line { flex:1; height:1px; background:var(--border); }
+.bottom-quote {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bottom-quote strong { font-style:normal; font-weight:500; color:var(--red); }
+
+.compat {
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.compat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.compat-chip {
+  background: var(--navy-3);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  transition: border-color 0.2s, color 0.2s;
+  cursor: default;
+}
+.compat-chip:hover { border-color: var(--border-r); color: var(--white); }
+
+@media (max-width: 900px) {
+  .hero-row { grid-template-columns: 1fr; }
+  .wand-wrap { height: 240px; order: -1; }
+  .steps { grid-template-columns: 1fr; }
+  .hiw { padding: 80px 20px 100px; }
+  .bottom-quote { white-space: normal; flex-wrap: wrap; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<section class="hiw" id="how-it-works">
+  <div class="hiw-inner">
+
+    <!-- HERO ROW -->
+    <div class="hero-row">
+
+      <div>
+        <div class="label-pill"><span class="label-dot"></span>Simple. Fast. Powerful.</div>
+        <h2 class="hiw-heading">How it<br/><em>works.</em></h2>
+        <p class="hiw-sub">From raw idea to precision prompt in three steps. Derek handles the hard part — you just share what you need.</p>
+        <a href="#" class="hiw-cta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M17.8 6.2 19 5M12.2 6.2 11 5M12.2 11.8 11 13"/>
+            <path d="M3 21 12.9 11.1"/><path d="m14 16-3-3"/>
+          </svg>
+          Ask Derek now
+        </a>
+      </div>
+
+      <!-- BIG WAND -->
+      <div class="wand-wrap">
+        <div class="wand-glow"></div>
+        <div class="orbit"><div class="orbit-dot"></div></div>
+        <div class="orbit orbit-b"><div class="orbit-dot"></div></div>
+
+        <!-- Sparkles -->
+        <div class="spark" style="top:28px;left:58px;animation-delay:0s">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        </div>
+        <div class="spark" style="top:55px;right:48px;animation-delay:0.9s">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--red)"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        </div>
+        <div class="spark" style="bottom:58px;left:38px;animation-delay:1.5s">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        </div>
+        <div class="spark" style="bottom:38px;right:65px;animation-delay:2.1s">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="var(--red)"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        </div>
+        <div class="spark" style="top:138px;right:28px;animation-delay:0.4s">
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="white" opacity="0.3"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        </div>
+
+        <!-- Main wand SVG -->
+        <div class="wand-svg-wrap">
+          <svg width="210" height="210" viewBox="0 0 210 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="wg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.92"/>
+                <stop offset="45%"  stop-color="#9BAFC4" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#2A3D5C" stop-opacity="0.6"/>
+              </linearGradient>
+              <filter id="tipglow">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Wand body -->
+            <rect x="56" y="56" width="16" height="128" rx="8" fill="url(#wg)" transform="rotate(-45 56 56)"/>
+
+            <!-- Tip glow -->
+            <circle cx="62" cy="62" r="30" fill="var(--red)" opacity="0.10" filter="url(#tipglow)"/>
+            <circle cx="62" cy="62" r="20" fill="var(--red)" opacity="0.14"/>
+
+            <!-- Tip star -->
+            <circle cx="62" cy="62" r="11" fill="white" opacity="0.95"/>
+            <circle cx="62" cy="62" r="7"  fill="var(--red)"/>
+
+            <!-- Tip rays -->
+            <line x1="62" y1="42" x2="62" y2="51" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+            <line x1="62" y1="73" x2="62" y2="82" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+            <line x1="42" y1="62" x2="51" y2="62" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+            <line x1="73" y1="62" x2="82" y2="62" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+            <line x1="48" y1="48" x2="55" y2="55" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="69" y1="69" x2="76" y2="76" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="69" y1="48" x2="76" y2="55" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="48" y1="69" x2="55" y2="76" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+            <!-- Floating prompt card near tip -->
+            <rect x="86" y="16" width="116" height="56" rx="9" fill="#161F34" stroke="rgba(214,40,40,0.45)" stroke-width="1"/>
+            <rect x="97" y="28" width="56" height="5" rx="2.5" fill="var(--red)" opacity="0.75"/>
+            <rect x="97" y="39" width="86" height="4" rx="2" fill="white" opacity="0.14"/>
+            <rect x="97" y="49" width="52" height="4" rx="2" fill="white" opacity="0.09"/>
+            <rect x="151" y="49" width="6" height="4" rx="1" fill="var(--red)" opacity="0.9"/>
+            <!-- connector dashed -->
+            <line x1="76" y1="52" x2="86" y2="44" stroke="rgba(214,40,40,0.32)" stroke-width="1" stroke-dasharray="3 3"/>
+
+            <!-- Derek D on handle -->
+            <circle cx="158" cy="158" r="20" fill="#161F34" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+            <text x="158" y="165" text-anchor="middle" font-family="Syne,sans-serif" font-size="18" font-weight="800" fill="var(--red)">D</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEPS -->
+    <div class="steps">
+
+      <!-- Step 1 -->
+      <div class="step">
+        <span class="step-num">1</span>
+        <div class="step-badge">01</div>
+        <div class="terminal-row">
+          <span class="t-prompt">&gt;</span>
+          <span class="t-text">your idea here...</span>
+          <span class="t-cursor"></span>
+        </div>
+        <h3 class="step-title">Share your <em>idea</em></h3>
+        <p class="step-body">Tell Derek what you want in plain words. A caption, a hook, a message, a plan — anything at all. No experience needed.</p>
+        <span class="step-tag">you type</span>
+      </div>
+
+      <!-- Step 2 — the wand moment -->
+      <div class="step step-2">
+        <span class="step-num">2</span>
+        <div class="step-badge">02</div>
+
+        <!-- Wand badge top right -->
+        <div class="step-wand-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M17.8 6.2 19 5M12.2 6.2 11 5M12.2 11.8 11 13"/>
+            <path d="M3 21 12.9 11.1"/><path d="m14 16-3-3"/>
+          </svg>
+        </div>
+
+        <div class="terminal-row">
+          <span class="t-prompt">#</span>
+          <span class="t-text">ask derek to engineer it...</span>
+          <span class="t-cursor"></span>
+        </div>
+        <h3 class="step-title"><em>Ask Derek</em> to engineer it</h3>
+        <p class="step-body">Derek structures and optimises your idea into a precision prompt in seconds. No jargon. No struggle. He waves the wand.</p>
+        <span class="step-tag">derek works</span>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step step-3">
+        <span class="step-num">3</span>
+        <div class="step-badge">03</div>
+        <div class="terminal-row">
+          <span class="t-check">✓</span>
+          <span class="t-text">prompt ready — copy &amp; paste</span>
+        </div>
+        <h3 class="step-title">Paste. <em>Get results.</em></h3>
+        <p class="step-body">Copy your prompt into ChatGPT, Claude, Gemini, anything — and get scroll-stopping, impactful output. Instantly.</p>
+        <span class="step-tag">you win</span>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM -->
+    <div class="hiw-bottom">
+      <div class="bottom-line"></div>
+      <p class="bottom-quote">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+          <path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M17.8 6.2 19 5M12.2 6.2 11 5M12.2 11.8 11 13"/>
+          <path d="M3 21 12.9 11.1"/><path d="m14 16-3-3"/>
+        </svg>
+        A great idea shouldn't start with confusion — it should start with <strong>the right prompt.</strong>
+      </p>
+      <div class="bottom-line"></div>
+    </div>
+
+    <!-- Works with -->
+    <div class="compat">
+      <span class="compat-label">Works with</span>
+      <span class="compat-chip">ChatGPT</span>
+      <span class="compat-chip">Claude</span>
+      <span class="compat-chip">Gemini</span>
+      <span class="compat-chip">Grok</span>
+      <span class="compat-chip">Copilot</span>
+      <span class="compat-chip">+ any AI tool</span>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>
