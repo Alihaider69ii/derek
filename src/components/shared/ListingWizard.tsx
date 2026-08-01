@@ -4,17 +4,35 @@ import * as React from "react"
 import { useSession } from "next-auth/react"
 import {
     Check, ChevronLeft, ChevronRight, Lock, User, IndianRupee,
-    Loader2, Sparkles, FileCheck, X,
+    Loader2, Sparkles, FileCheck, X, Type, Image as ImageIcon,
+    Video, Code2, Music2, Bot, Gem, Zap, Loader,
 } from "lucide-react"
+import { Dropdown } from "@/components/ui/dropdown"
+import { cn } from "@/lib/utils"
 
-const AI_MODELS = ["Claude", "GPT-4", "Gemini", "Grok"]
 const STEPS = ["Basics", "The prompt", "Preview", "Submit"]
+
+const MODEL_META: { name: string; color: string; icon: React.ReactNode }[] = [
+    { name: "Claude", color: "#D97757", icon: <Sparkles size={14} /> },
+    { name: "GPT-4", color: "#10A37F", icon: <Bot size={14} /> },
+    { name: "Gemini", color: "#4285F4", icon: <Gem size={14} /> },
+    { name: "Grok", color: "#8B5CF6", icon: <Zap size={14} /> },
+]
+
+const OUTPUT_TYPES: { value: string; icon: React.ReactNode }[] = [
+    { value: "Text", icon: <Type size={14} /> },
+    { value: "Image", icon: <ImageIcon size={14} /> },
+    { value: "Video", icon: <Video size={14} /> },
+    { value: "Code", icon: <Code2 size={14} /> },
+    { value: "Audio", icon: <Music2 size={14} /> },
+]
 
 type FormData = {
     title: string
     description: string
     category: string
     models: string[]
+    outputType: string
     price: string
     isFree: boolean
     promptText: string
@@ -26,11 +44,14 @@ const initialForm: FormData = {
     description: "",
     category: "",
     models: [],
+    outputType: "Text",
     price: "",
     isFree: false,
     promptText: "",
     previewSnippet: "",
 }
+
+const AUTOSAVE_INTERVAL_MS = 60_000
 
 function ProgressBar({ step }: { step: number }) {
     return (
@@ -76,12 +97,25 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
     )
 }
 
+function Toast({ message, onDone }: { message: string; onDone: () => void }) {
+    React.useEffect(() => { const t = setTimeout(onDone, 2800); return () => clearTimeout(t) }, [onDone])
+    return (
+        <div className="fixed bottom-6 right-6 z-[400] flex items-center gap-2.5 bg-accent text-white px-5 py-3 rounded-2xl shadow-2xl animate-in slide-in-from-bottom-4 duration-300 text-sm font-semibold">
+            <Check size={17} /> {message}
+        </div>
+    )
+}
+
 export function ListingWizard({
     onClose,
     onSubmitted,
+    editListingId,
+    registerRequestClose,
 }: {
     onClose: () => void
     onSubmitted: (status: "draft" | "pending_review") => void
+    editListingId?: string
+    registerRequestClose?: (fn: () => void) => void
 }) {
     const { data: session } = useSession()
     const [step, setStep] = React.useState(1)
@@ -91,10 +125,43 @@ export function ListingWizard({
     const [submitting, setSubmitting] = React.useState<"draft" | "review" | null>(null)
     const [result, setResult] = React.useState<"draft" | "review" | null>(null)
     const [error, setError] = React.useState("")
+    const [loadingExisting, setLoadingExisting] = React.useState(!!editListingId)
+    const [toast, setToast] = React.useState("")
+    const [autoSaveStatus, setAutoSaveStatus] = React.useState<"idle" | "saving" | "saved">("idle")
+
+    const lastSavedRef = React.useRef<string>(JSON.stringify(initialForm))
+    const formRef = React.useRef(form)
+    formRef.current = form
 
     React.useEffect(() => {
         fetch("/api/categories").then(r => r.json()).then(d => { if (Array.isArray(d)) setCategories(d) }).catch(console.error)
     }, [])
+
+    React.useEffect(() => {
+        if (!editListingId) return
+        fetch(`/api/marketplace/${editListingId}`)
+            .then(r => r.json())
+            .then(d => {
+                if (d?.error) return
+                const loaded: FormData = {
+                    title: d.title || "",
+                    description: d.description || "",
+                    category: d.category || "",
+                    models: Array.isArray(d.models) ? d.models : [],
+                    outputType: d.outputType || "Text",
+                    price: d.isFree ? "" : String(d.price ?? ""),
+                    isFree: !!d.isFree,
+                    promptText: d.promptText || "",
+                    previewSnippet: d.previewSnippet || "",
+                }
+                setForm(loaded)
+                lastSavedRef.current = JSON.stringify(loaded)
+            })
+            .catch(console.error)
+            .finally(() => setLoadingExisting(false))
+    }, [editListingId])
+
+    const isDirty = React.useCallback(() => JSON.stringify(formRef.current) !== lastSavedRef.current, [])
 
     const update = (patch: Partial<FormData>) => setForm(prev => ({ ...prev, ...patch }))
 
@@ -113,34 +180,103 @@ export function ListingWizard({
     const goNext = () => setStep(s => Math.min(4, s + 1))
     const goBack = () => setStep(s => Math.max(1, s - 1))
 
+    const persist = React.useCallback(async (status: "draft" | "pending_review") => {
+        const current = formRef.current
+        const payload = {
+            title: current.title,
+            description: current.description,
+            category: current.category,
+            models: current.models,
+            outputType: current.outputType,
+            promptText: current.promptText,
+            previewSnippet: current.previewSnippet,
+            price: current.isFree ? 0 : Number(current.price),
+            isFree: current.isFree,
+            status,
+        }
+        const res = editListingId
+            ? await fetch(`/api/marketplace/${editListingId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            })
+            : await fetch("/api/marketplace", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || "Failed to save listing")
+        lastSavedRef.current = JSON.stringify(current)
+        return data
+    }, [editListingId])
+
+    // Silent 60s autosave while there are unsaved changes and a title exists.
+    React.useEffect(() => {
+        const interval = setInterval(async () => {
+            if (result) return
+            if (!formRef.current.title.trim()) return
+            if (!isDirty()) return
+            setAutoSaveStatus("saving")
+            try {
+                await persist("draft")
+                setAutoSaveStatus("saved")
+                onSubmitted("draft")
+                setTimeout(() => setAutoSaveStatus("idle"), 2000)
+            } catch {
+                setAutoSaveStatus("idle")
+            }
+        }, AUTOSAVE_INTERVAL_MS)
+        return () => clearInterval(interval)
+    }, [isDirty, persist, onSubmitted, result])
+
+    // Warn on a real page unload (tab close / refresh / navigation) while dirty.
+    React.useEffect(() => {
+        const handler = (e: BeforeUnloadEvent) => {
+            if (!isDirty()) return
+            e.preventDefault()
+            e.returnValue = "You have unsaved changes. Leave?"
+            return e.returnValue
+        }
+        window.addEventListener("beforeunload", handler)
+        return () => window.removeEventListener("beforeunload", handler)
+    }, [isDirty])
+
+    const requestClose = React.useCallback(() => {
+        if (isDirty() && !window.confirm("You have unsaved changes. Leave?")) return
+        onClose()
+    }, [isDirty, onClose])
+
+    React.useEffect(() => {
+        registerRequestClose?.(requestClose)
+    }, [registerRequestClose, requestClose])
+
     const submitListing = async (status: "draft" | "pending_review") => {
         setError("")
         setSubmitting(status === "draft" ? "draft" : "review")
         try {
-            const res = await fetch("/api/marketplace", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    title: form.title,
-                    description: form.description,
-                    category: form.category,
-                    models: form.models,
-                    promptText: form.promptText,
-                    previewSnippet: form.previewSnippet,
-                    price: form.isFree ? 0 : Number(form.price),
-                    isFree: form.isFree,
-                    status,
-                }),
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || "Failed to save listing")
-            setResult(status === "draft" ? "draft" : "review")
-            onSubmitted(status === "draft" ? "draft" : "pending_review")
+            await persist(status)
+            if (status === "draft") {
+                setToast("Draft saved ✓")
+                onSubmitted("draft")
+            } else {
+                setResult("review")
+                onSubmitted("pending_review")
+            }
         } catch (e: any) {
             setError(e.message || "Something went wrong")
         } finally {
             setSubmitting(null)
         }
+    }
+
+    if (loadingExisting) {
+        return (
+            <div className="flex flex-col h-full items-center justify-center gap-3">
+                <Loader2 size={22} className="animate-spin text-accent" />
+                <p className="text-sm text-text-secondary">Loading your draft...</p>
+            </div>
+        )
     }
 
     if (result) {
@@ -149,24 +285,13 @@ export function ListingWizard({
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-success/10 text-success mb-5">
                     <Check size={28} />
                 </div>
-                {result === "review" ? (
-                    <>
-                        <h1 className="text-xl font-bold text-text-primary mb-2">Submitted for review</h1>
-                        <p className="text-text-secondary text-sm max-w-md">
-                            Your prompt has been submitted for review. We&apos;ll notify you once it&apos;s approved.
-                        </p>
-                    </>
-                ) : (
-                    <>
-                        <h1 className="text-xl font-bold text-text-primary mb-2">Saved as draft</h1>
-                        <p className="text-text-secondary text-sm max-w-md">
-                            Your prompt was saved as a draft. You can finish and submit it anytime from your dashboard.
-                        </p>
-                    </>
-                )}
+                <h1 className="text-xl font-bold text-text-primary mb-2">Submitted for review</h1>
+                <p className="text-text-secondary text-sm max-w-md">
+                    Your prompt has been submitted for review. We&apos;ll notify you once it&apos;s approved.
+                </p>
                 <div className="flex items-center gap-3 mt-6">
                     <button
-                        onClick={() => { setForm(initialForm); setStep(1); setResult(null) }}
+                        onClick={() => { setForm(initialForm); lastSavedRef.current = JSON.stringify(initialForm); setStep(1); setResult(null) }}
                         className="px-5 py-2.5 rounded-full text-sm font-semibold border border-border text-text-primary hover:bg-bg-hover transition-colors"
                     >
                         List another prompt
@@ -186,11 +311,23 @@ export function ListingWizard({
         <div className="flex flex-col h-full">
             <div className="px-4 sm:px-6 pt-6 pb-4 flex items-start justify-between gap-3 border-b border-border">
                 <div>
-                    <h1 className="text-xl font-bold text-text-primary">List a prompt</h1>
-                    <p className="text-text-secondary text-sm mt-0.5">Sell your best prompts on the marketplace</p>
+                    <h1 className="text-xl font-bold text-text-primary">{editListingId ? "Edit prompt" : "List a prompt"}</h1>
+                    <p className="text-text-secondary text-sm mt-0.5 flex items-center gap-1.5">
+                        Sell your best prompts on the marketplace
+                        {autoSaveStatus === "saving" && (
+                            <span className="inline-flex items-center gap-1 text-accent font-medium">
+                                <Loader size={11} className="animate-spin" /> Saving...
+                            </span>
+                        )}
+                        {autoSaveStatus === "saved" && (
+                            <span className="inline-flex items-center gap-1 text-success font-medium">
+                                <Check size={11} /> Saved
+                            </span>
+                        )}
+                    </p>
                 </div>
                 <button
-                    onClick={onClose}
+                    onClick={requestClose}
                     aria-label="Close"
                     className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover shrink-0"
                 >
@@ -227,34 +364,71 @@ export function ListingWizard({
                             </Field>
 
                             <Field label="Category">
-                                <select
+                                <Dropdown
+                                    fullWidth
+                                    align="left"
                                     value={form.category}
-                                    onChange={e => update({ category: e.target.value })}
-                                    className="w-full h-10 rounded-btn border border-border bg-bg-input px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
-                                >
-                                    <option value="">Select a category</option>
-                                    {categories.map(c => (
-                                        <option key={c.name} value={c.name}>{c.emoji} {c.name}</option>
-                                    ))}
-                                </select>
+                                    placeholder="Select a category"
+                                    onChange={(v) => update({ category: v })}
+                                    options={categories.map(c => ({ value: c.name, label: `${c.emoji} ${c.name}` }))}
+                                />
+                            </Field>
+
+                            <Field label="Output type">
+                                <div className="flex flex-wrap gap-2">
+                                    {OUTPUT_TYPES.map(o => {
+                                        const active = form.outputType === o.value
+                                        return (
+                                            <button
+                                                key={o.value}
+                                                type="button"
+                                                onClick={() => update({ outputType: o.value })}
+                                                className={cn(
+                                                    "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-colors",
+                                                    active
+                                                        ? "bg-accent text-white border-accent"
+                                                        : "border-border text-text-secondary hover:bg-bg-hover"
+                                                )}
+                                            >
+                                                {o.icon}
+                                                {o.value}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
                             </Field>
 
                             <Field label="Compatible AI models">
-                                <div className="flex flex-wrap gap-2">
-                                    {AI_MODELS.map(m => {
-                                        const checked = form.models.includes(m)
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    {MODEL_META.map(m => {
+                                        const checked = form.models.includes(m.name)
                                         return (
                                             <button
-                                                key={m}
+                                                key={m.name}
                                                 type="button"
-                                                onClick={() => toggleModel(m)}
-                                                className={`px-3.5 py-2 rounded-full text-xs font-semibold border transition-colors ${checked
-                                                    ? "bg-accent/10 border-accent text-accent"
-                                                    : "border-border text-text-secondary hover:bg-bg-hover"
-                                                    }`}
+                                                onClick={() => toggleModel(m.name)}
+                                                style={checked ? { borderColor: m.color, backgroundColor: `${m.color}14` } : undefined}
+                                                className={cn(
+                                                    "relative flex items-center gap-2 px-3 py-2.5 rounded-btn border text-xs font-semibold transition-colors",
+                                                    checked ? "text-text-primary" : "border-border text-text-secondary hover:bg-bg-hover"
+                                                )}
                                             >
-                                                {checked && <Check size={11} className="inline mr-1 -mt-0.5" />}
-                                                {m}
+                                                <span
+                                                    className="w-6 h-6 rounded-full flex items-center justify-center text-white shrink-0"
+                                                    style={{ backgroundColor: m.color }}
+                                                >
+                                                    {m.icon}
+                                                </span>
+                                                {m.name}
+                                                <span
+                                                    className={cn(
+                                                        "ml-auto w-4 h-4 rounded flex items-center justify-center border shrink-0",
+                                                        checked ? "text-white" : "border-border"
+                                                    )}
+                                                    style={checked ? { backgroundColor: m.color, borderColor: m.color } : undefined}
+                                                >
+                                                    {checked && <Check size={11} />}
+                                                </span>
                                             </button>
                                         )
                                     })}
@@ -262,38 +436,49 @@ export function ListingWizard({
                             </Field>
 
                             <Field label="Price">
-                                <div className="flex items-center gap-3 flex-wrap">
-                                    <div className="flex items-center rounded-btn border border-border overflow-hidden shrink-0">
-                                        {(["₹", "$"] as const).map(c => (
-                                            <button
-                                                key={c}
-                                                type="button"
-                                                onClick={() => setCurrency(c)}
-                                                className={`w-9 h-10 text-sm font-semibold transition-colors ${currency === c ? "bg-accent text-white" : "bg-bg-input text-text-secondary hover:bg-bg-hover"}`}
-                                            >
-                                                {c}
-                                            </button>
-                                        ))}
+                                <div className="space-y-3">
+                                    <div className="inline-flex items-center rounded-full border border-border p-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => update({ isFree: false })}
+                                            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${!form.isFree ? "bg-accent text-white" : "text-text-secondary hover:bg-bg-hover"}`}
+                                        >
+                                            Paid
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => update({ isFree: true, price: "" })}
+                                            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${form.isFree ? "bg-accent text-white" : "text-text-secondary hover:bg-bg-hover"}`}
+                                        >
+                                            Free
+                                        </button>
                                     </div>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={1000}
-                                        disabled={form.isFree}
-                                        value={form.price}
-                                        onChange={e => update({ price: e.target.value })}
-                                        placeholder="e.g. 199"
-                                        className="flex-1 min-w-[120px] h-10 rounded-btn border border-border bg-bg-input px-3 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                                    />
-                                    <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer shrink-0">
-                                        <input
-                                            type="checkbox"
-                                            checked={form.isFree}
-                                            onChange={e => update({ isFree: e.target.checked, price: e.target.checked ? "" : form.price })}
-                                            className="w-4 h-4 rounded accent-accent"
-                                        />
-                                        or Free
-                                    </label>
+
+                                    {!form.isFree && (
+                                        <div className="flex items-center gap-3 flex-wrap animate-in fade-in slide-in-from-top-1 duration-150">
+                                            <div className="flex items-center rounded-btn border border-border overflow-hidden shrink-0">
+                                                {(["₹", "$"] as const).map(c => (
+                                                    <button
+                                                        key={c}
+                                                        type="button"
+                                                        onClick={() => setCurrency(c)}
+                                                        className={`w-9 h-10 text-sm font-semibold transition-colors ${currency === c ? "bg-accent text-white" : "bg-bg-input text-text-secondary hover:bg-bg-hover"}`}
+                                                    >
+                                                        {c}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                max={1000}
+                                                value={form.price}
+                                                onChange={e => update({ price: e.target.value })}
+                                                placeholder="e.g. 199"
+                                                className="flex-1 min-w-[120px] h-10 rounded-btn border border-border bg-bg-input px-3 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/30"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </Field>
                         </div>
@@ -356,11 +541,12 @@ export function ListingWizard({
                                     </div>
                                 </div>
 
-                                {(form.category || form.models.length > 0) && (
+                                {(form.category || form.outputType || form.models.length > 0) && (
                                     <div className="flex flex-wrap gap-1.5">
                                         {form.category && (
                                             <span className="text-[0.65rem] font-medium px-2 py-1 rounded-full bg-bg-input border border-border text-text-secondary">{form.category}</span>
                                         )}
+                                        <span className="text-[0.65rem] font-medium px-2 py-1 rounded-full bg-bg-input border border-border text-text-secondary">{form.outputType}</span>
                                         {form.models.map(m => (
                                             <span key={m} className="text-[0.65rem] font-medium px-2 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent">{m}</span>
                                         ))}
@@ -456,6 +642,8 @@ export function ListingWizard({
                     </div>
                 </div>
             </div>
+
+            {toast && <Toast message={toast} onDone={() => setToast("")} />}
         </div>
     )
 }
@@ -463,18 +651,27 @@ export function ListingWizard({
 export function ListingWizardModal({
     onClose,
     onSubmitted,
+    editListingId,
 }: {
     onClose: () => void
     onSubmitted: (status: "draft" | "pending_review") => void
+    editListingId?: string
 }) {
+    const requestCloseRef = React.useRef<() => void>(onClose)
+
     return (
         <div className="fixed inset-0 z-[200] flex justify-end bg-black/60 backdrop-blur-sm">
             <div
                 className="absolute inset-0"
-                onClick={onClose}
+                onClick={() => requestCloseRef.current()}
             />
             <div className="relative w-full sm:w-[640px] h-full bg-bg-panel border-l border-border shadow-2xl animate-in slide-in-from-right duration-300 overflow-hidden">
-                <ListingWizard onClose={onClose} onSubmitted={onSubmitted} />
+                <ListingWizard
+                    onClose={onClose}
+                    onSubmitted={onSubmitted}
+                    editListingId={editListingId}
+                    registerRequestClose={(fn) => { requestCloseRef.current = fn }}
+                />
             </div>
         </div>
     )

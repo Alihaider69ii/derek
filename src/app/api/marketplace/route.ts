@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         const {
             favouriteId, title, promptText, price, isFree,
-            description, category, models, previewSnippet, status,
+            description, category, models, previewSnippet, status, outputType,
         } = body;
 
         if (!title?.trim() || !promptText?.trim()) {
@@ -119,6 +119,8 @@ export async function POST(request: Request) {
 
         const allowedStatuses = ["draft", "pending_review", "live"];
         const resolvedStatus = allowedStatuses.includes(status) ? status : "live";
+        const allowedOutputTypes = ["Text", "Image", "Video", "Code", "Audio"];
+        const resolvedOutputType = allowedOutputTypes.includes(outputType) ? outputType : "Text";
 
         const listing = await MarketplaceListing.create({
             sellerId: new mongoose.Types.ObjectId((session.user as any).id),
@@ -128,6 +130,7 @@ export async function POST(request: Request) {
             description: description?.trim(),
             category: category?.trim(),
             models: Array.isArray(models) ? models : [],
+            outputType: resolvedOutputType,
             promptText: promptText.trim(),
             previewSnippet: previewSnippet?.trim(),
             price: numericPrice,

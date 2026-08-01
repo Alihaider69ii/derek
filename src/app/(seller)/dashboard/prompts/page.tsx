@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { FileText, Plus, Star } from "lucide-react"
+import { FileText, Plus, Star, Pencil } from "lucide-react"
 import { ListingWizardModal } from "@/components/shared/ListingWizard"
 
 export const dynamic = 'force-dynamic'
@@ -25,7 +25,7 @@ type Listing = {
 const FILTERS = [
     { key: "all", label: "All" },
     { key: "live", label: "Live" },
-    { key: "draft", label: "Draft" },
+    { key: "draft", label: "Drafts" },
     { key: "pending_review", label: "Pending" },
     { key: "rejected", label: "Rejected" },
 ] as const
@@ -48,6 +48,10 @@ export default function MyPromptsPage() {
     const [loading, setLoading] = React.useState(true)
     const [filter, setFilter] = React.useState<(typeof FILTERS)[number]["key"]>("all")
     const [wizardOpen, setWizardOpen] = React.useState(false)
+    const [editingId, setEditingId] = React.useState<string | null>(null)
+
+    const openNew = () => { setEditingId(null); setWizardOpen(true) }
+    const openEdit = (id: string) => { setEditingId(id); setWizardOpen(true) }
 
     const load = React.useCallback(() => {
         setLoading(true)
@@ -70,7 +74,7 @@ export default function MyPromptsPage() {
                     <p className="text-text-secondary text-sm mt-0.5">All the prompts you&apos;ve listed, in every status</p>
                 </div>
                 <button
-                    onClick={() => setWizardOpen(true)}
+                    onClick={openNew}
                     className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white bg-accent hover:bg-accent-hover transition-colors"
                 >
                     <Plus size={16} /> New Prompt
@@ -105,7 +109,7 @@ export default function MyPromptsPage() {
                                 <p className="text-text-secondary text-sm mt-1">List your first prompt to start earning</p>
                             </div>
                             <button
-                                onClick={() => setWizardOpen(true)}
+                                onClick={openNew}
                                 className="mt-1 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-accent hover:bg-accent-hover transition-colors"
                             >
                                 + New Prompt
@@ -122,6 +126,7 @@ export default function MyPromptsPage() {
                                             <th className="px-5 py-3 font-semibold">Revenue</th>
                                             <th className="px-5 py-3 font-semibold">Rating</th>
                                             <th className="px-5 py-3 font-semibold">Status</th>
+                                            <th className="px-5 py-3 font-semibold text-right">&nbsp;</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -136,6 +141,16 @@ export default function MyPromptsPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-3.5"><StatusBadge status={l.status} /></td>
+                                                <td className="px-5 py-3.5 text-right">
+                                                    {(l.status === "draft" || l.status === "rejected") && (
+                                                        <button
+                                                            onClick={() => openEdit(l._id)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-btn text-xs font-semibold border border-border text-text-primary hover:bg-bg-hover transition-colors"
+                                                        >
+                                                            <Pencil size={12} /> Continue editing
+                                                        </button>
+                                                    )}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -156,6 +171,14 @@ export default function MyPromptsPage() {
                                                 <Star size={11} className="text-orange-400 fill-orange-400" /> {l.rating.toFixed(1)}
                                             </span>
                                         </div>
+                                        {(l.status === "draft" || l.status === "rejected") && (
+                                            <button
+                                                onClick={() => openEdit(l._id)}
+                                                className="mt-1 inline-flex items-center gap-1.5 self-start px-3 py-1.5 rounded-btn text-xs font-semibold border border-border text-text-primary hover:bg-bg-hover transition-colors"
+                                            >
+                                                <Pencil size={12} /> Continue editing
+                                            </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -166,7 +189,8 @@ export default function MyPromptsPage() {
 
             {wizardOpen && (
                 <ListingWizardModal
-                    onClose={() => setWizardOpen(false)}
+                    editListingId={editingId || undefined}
+                    onClose={() => { setWizardOpen(false); setEditingId(null) }}
                     onSubmitted={() => load()}
                 />
             )}

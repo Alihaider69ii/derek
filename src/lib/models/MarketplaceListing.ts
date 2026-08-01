@@ -14,6 +14,7 @@ export interface IMarketplaceListing extends Document {
     description?: string;
     category?: string;
     models: string[]; // compatible AI models, e.g. Claude, GPT-4, Gemini, Grok
+    outputType: "Text" | "Image" | "Video" | "Code" | "Audio";
     promptText: string;   // stored in full; only revealed after purchase
     previewSnippet?: string; // teaser visible before purchase
     price: number;        // in INR, 0-1000 (0 = free)
@@ -44,6 +45,7 @@ const MarketplaceListingSchema = new Schema<IMarketplaceListing>(
         description: { type: String },
         category: { type: String },
         models: { type: [String], default: [] },
+        outputType: { type: String, enum: ["Text", "Image", "Video", "Code", "Audio"], default: "Text" },
         promptText: { type: String, required: true },
         previewSnippet: { type: String },
         price: { type: Number, required: true, min: 0, max: 1000 },
