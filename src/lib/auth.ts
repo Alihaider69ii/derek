@@ -1,4 +1,5 @@
 import { NextAuthOptions } from "next-auth";
+import type { Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
@@ -10,7 +11,7 @@ import { User } from "@/lib/models/User";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 export const authOptions: NextAuthOptions = {
-    adapter: MongoDBAdapter(clientPromise) as any,
+    adapter: MongoDBAdapter(clientPromise) as Adapter,
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -91,7 +92,7 @@ export const authOptions: NextAuthOptions = {
                     throw new Error("Invalid credentials");
                 }
                 await connectToDatabase();
-                const user = await User.findOne({ email: credentials.email });
+                const user = await User.findOne({ email: credentials.email.trim().toLowerCase() });
                 if (!user || !user.password) {
                     // Try to catch OAuth only users silently or error
                     throw new Error("No password found. Use Google or Magic Link to sign in.");
@@ -120,7 +121,7 @@ export const authOptions: NextAuthOptions = {
         async signIn({ user }) {
             if (!user?.email) return true;
             await connectToDatabase();
-            const dbUser = await User.findOne({ email: user.email });
+            const dbUser = await User.findOne({ email: user.email.trim().toLowerCase() });
             if (dbUser?.suspended) {
                 return false;
             }
