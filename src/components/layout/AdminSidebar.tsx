@@ -13,6 +13,7 @@ const NAV_ITEMS = [
     { href: "/admin/reviews", icon: <FileCheck size={16} />, label: "Prompt Reviews", badgeKey: "pendingReviews" as const },
     { href: "/admin/users", icon: <Users size={16} />, label: "Users" },
     { href: "/admin/analytics", icon: <BarChart3 size={16} />, label: "Analytics" },
+    { href: "/admin/settings", icon: <Settings size={16} />, label: "Settings" },
 ]
 
 export function AdminSidebar() {
@@ -77,14 +78,6 @@ export function AdminSidebar() {
                         </Link>
                     )
                 })}
-
-                <button
-                    title="Coming soon"
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-btn text-text-secondary/60 cursor-not-allowed"
-                >
-                    <Settings size={16} />
-                    Settings
-                </button>
             </nav>
 
             <div className="p-4 border-t border-border">

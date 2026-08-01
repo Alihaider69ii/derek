@@ -418,7 +418,7 @@ export default function MarketplacePage() {
                   <p className="text-text-secondary text-sm mt-1">{search ? "Try a different keyword" : "Try widening your filters, or be the first to list one!"}</p>
                 </div>
                 {!search && status === "authenticated" && (
-                  <Link href="/sell/new">
+                  <Link href="/dashboard?new=1">
                     <button className="mt-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white hover:opacity-80" style={{ background: "linear-gradient(135deg,var(--accent),var(--accent-hover))" }}>
                       List a Prompt
                     </button>

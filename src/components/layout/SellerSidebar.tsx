@@ -8,30 +8,14 @@ import { usePathname } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { NotificationBell } from "@/components/shared/NotificationBell"
 import {
-    LayoutDashboard, FileText, Wallet, ArrowLeftRight,
-    Settings, HelpCircle, Menu, X,
+    LayoutDashboard, FileText, Wallet, Settings, Menu, X,
 } from "lucide-react"
 
-const NAV_SECTIONS = [
-    {
-        label: "OVERVIEW",
-        items: [
-            { href: "/dashboard", icon: <LayoutDashboard size={16} />, label: "Dashboard" },
-            { href: "/dashboard#top-prompts", icon: <FileText size={16} />, label: "My prompts" },
-        ],
-    },
-    {
-        label: "EARNINGS",
-        items: [
-            { href: "/dashboard#payout", icon: <Wallet size={16} />, label: "Payouts" },
-            { href: "/dashboard#top-prompts", icon: <ArrowLeftRight size={16} />, label: "Transactions" },
-        ],
-    },
-]
-
-const ACCOUNT_ITEMS = [
-    { icon: <Settings size={16} />, label: "Settings" },
-    { icon: <HelpCircle size={16} />, label: "Help" },
+const NAV_ITEMS = [
+    { href: "/dashboard", icon: <LayoutDashboard size={16} />, label: "Overview" },
+    { href: "/dashboard/prompts", icon: <FileText size={16} />, label: "My Prompts" },
+    { href: "/dashboard/earnings", icon: <Wallet size={16} />, label: "Earnings" },
+    { href: "/dashboard/settings", icon: <Settings size={16} />, label: "Settings" },
 ]
 
 export function SellerSidebar() {
@@ -96,52 +80,23 @@ export function SellerSidebar() {
                 </div>
             </div>
 
-            <nav className="flex-1 overflow-y-auto p-4 space-y-6 hide-scrollbar">
-                {NAV_SECTIONS.map(section => (
-                    <div key={section.label}>
-                        <h4 className="text-[0.7rem] uppercase tracking-wider text-text-secondary font-semibold mb-2 px-2">
-                            {section.label}
-                        </h4>
-                        <div className="space-y-1">
-                            {section.items.map(item => {
-                                const active = item.href === "/dashboard"
-                                    ? pathname === "/dashboard"
-                                    : false
-                                return (
-                                    <Link key={item.label} href={item.href}>
-                                        <button
-                                            className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-btn transition-colors ${active
-                                                ? "bg-accent/10 text-accent font-semibold"
-                                                : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-                                                }`}
-                                        >
-                                            {item.icon}
-                                            {item.label}
-                                        </button>
-                                    </Link>
-                                )
-                            })}
-                        </div>
-                    </div>
-                ))}
-
-                <div>
-                    <h4 className="text-[0.7rem] uppercase tracking-wider text-text-secondary font-semibold mb-2 px-2">
-                        ACCOUNT
-                    </h4>
-                    <div className="space-y-1">
-                        {ACCOUNT_ITEMS.map(item => (
+            <nav className="flex-1 overflow-y-auto p-4 space-y-1 hide-scrollbar">
+                {NAV_ITEMS.map(item => {
+                    const active = pathname === item.href
+                    return (
+                        <Link key={item.href} href={item.href}>
                             <button
-                                key={item.label}
-                                title="Coming soon"
-                                className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-btn text-text-secondary/60 cursor-not-allowed"
+                                className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-btn transition-colors ${active
+                                    ? "bg-accent/10 text-accent font-semibold"
+                                    : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+                                    }`}
                             >
                                 {item.icon}
                                 {item.label}
                             </button>
-                        ))}
-                    </div>
-                </div>
+                        </Link>
+                    )
+                })}
             </nav>
         </>
     )

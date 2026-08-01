@@ -37,7 +37,7 @@ export function FreeTierModal({ isOpen, onClose, isGuest = true }: FreeTierModal
                             Sign up for free to unlock <strong className="text-text-primary">3 chats every 3 hours</strong> and access your entire chat history.
                         </p>
                         <div className="flex gap-3">
-                            <Link href="/signup" className="flex-1">
+                            <Link href="/login?tab=signup" className="flex-1">
                                 <Button className="w-full">Sign Up Free</Button>
                             </Link>
                             <Link href="/login" className="flex-1">

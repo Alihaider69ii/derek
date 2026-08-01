@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/db";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { User } from "@/lib/models/User";
+import { Project } from "@/lib/models/Project";
 import { placeholderRating } from "@/lib/utils";
 import mongoose from "mongoose";
 
@@ -26,9 +27,10 @@ export async function GET() {
         await connectToDatabase();
         const sellerId = new mongoose.Types.ObjectId((session.user as any).id);
 
-        const [listings, user] = await Promise.all([
+        const [listings, user, promptsBuiltWithDerek] = await Promise.all([
             MarketplaceListing.find({ sellerId }).lean(),
             User.findById(sellerId).lean(),
+            Project.countDocuments({ userId: sellerId }),
         ]);
 
         const now = new Date();
@@ -53,11 +55,13 @@ export async function GET() {
         let salesThisWeek = 0;
         let activePrompts = 0;
         let pendingReview = 0;
+        let draftsSaved = 0;
         const ratings: number[] = [];
 
         for (const l of listings as any[]) {
             if (l.status === "live" || l.status === undefined) activePrompts++;
             if (l.status === "pending_review") pendingReview++;
+            if (l.status === "draft") draftsSaved++;
             ratings.push(typeof l.rating === "number" ? l.rating : placeholderRating(l._id.toString()));
 
             const sales = Array.isArray(l.sales) ? l.sales : [];
@@ -104,7 +108,10 @@ export async function GET() {
             totalSales,
             salesThisWeek,
             activePrompts,
+            liveOnMarketplace: activePrompts,
             pendingReview,
+            draftsSaved,
+            promptsBuiltWithDerek,
             avgRating,
             chart,
             payout: {

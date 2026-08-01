@@ -278,7 +278,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
               </p>
             </div>
             {profile.isOwner && (
-              <Link href="/sell/new">
+              <Link href="/dashboard?new=1">
                 <button className="mt-1 flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-accent hover:bg-accent-hover transition-colors">
                   <ShoppingBag size={15} /> List a prompt
                 </button>

@@ -1,4 +1,9 @@
+import dns from "dns"
 import { MongoClient, ServerApiVersion } from "mongodb"
+
+// See src/lib/db.ts for why this is needed — some hosts' default DNS
+// resolver can't answer the SRV queries `mongodb+srv://` requires.
+dns.setServers(["1.1.1.1", "8.8.8.8"])
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"')

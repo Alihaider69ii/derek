@@ -64,7 +64,7 @@ export function Navbar() {
                     {session?.user ? (
                         <>
                             <NotificationBell />
-                            <Link href="/sell/new">
+                            <Link href="/dashboard?new=1">
                                 <Button className="text-sm font-semibold px-5 rounded-full bg-accent hover:bg-accent-hover text-white shadow-md hover:shadow-lg transition-all">
                                     <Plus size={15} className="mr-1.5" /> New prompt
                                 </Button>
@@ -78,7 +78,7 @@ export function Navbar() {
                             <Link href="/login">
                                 <Button variant="ghost" className="hidden sm:inline-flex text-sm font-medium">Login</Button>
                             </Link>
-                            <Link href="/signup">
+                            <Link href="/login?tab=signup">
                                 <Button className="text-sm font-semibold px-5 rounded-full bg-accent hover:bg-accent-hover text-white shadow-md hover:shadow-lg transition-all">
                                     Get started
                                 </Button>

@@ -1,15 +1,11 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import {
     Check, ChevronLeft, ChevronRight, Lock, User, IndianRupee,
-    Loader2, Sparkles, FileCheck,
+    Loader2, Sparkles, FileCheck, X,
 } from "lucide-react"
-
-export const dynamic = 'force-dynamic'
 
 const AI_MODELS = ["Claude", "GPT-4", "Gemini", "Grok"]
 const STEPS = ["Basics", "The prompt", "Preview", "Submit"]
@@ -80,8 +76,13 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
     )
 }
 
-export default function ListAPromptPage() {
-    const router = useRouter()
+export function ListingWizard({
+    onClose,
+    onSubmitted,
+}: {
+    onClose: () => void
+    onSubmitted: (status: "draft" | "pending_review") => void
+}) {
     const { data: session } = useSession()
     const [step, setStep] = React.useState(1)
     const [form, setForm] = React.useState<FormData>(initialForm)
@@ -134,6 +135,7 @@ export default function ListAPromptPage() {
             const data = await res.json()
             if (!res.ok) throw new Error(data.error || "Failed to save listing")
             setResult(status === "draft" ? "draft" : "review")
+            onSubmitted(status === "draft" ? "draft" : "pending_review")
         } catch (e: any) {
             setError(e.message || "Something went wrong")
         } finally {
@@ -143,7 +145,7 @@ export default function ListAPromptPage() {
 
     if (result) {
         return (
-            <div className="flex flex-col h-full bg-bg-base items-center justify-center px-6 text-center">
+            <div className="flex flex-col h-full items-center justify-center px-6 text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-success/10 text-success mb-5">
                     <Check size={28} />
                 </div>
@@ -170,10 +172,10 @@ export default function ListAPromptPage() {
                         List another prompt
                     </button>
                     <button
-                        onClick={() => router.push("/dashboard")}
+                        onClick={onClose}
                         className="px-5 py-2.5 rounded-full text-sm font-semibold text-white bg-accent hover:bg-accent-hover transition-colors"
                     >
-                        Go to dashboard
+                        Done
                     </button>
                 </div>
             </div>
@@ -181,18 +183,27 @@ export default function ListAPromptPage() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-bg-base overflow-y-auto">
-            <div className="px-4 sm:px-6 pt-6 sm:pt-8 pb-4">
-                <h1 className="text-2xl font-bold text-text-primary text-center sm:text-left">List a prompt</h1>
-                <p className="text-text-secondary text-sm mt-0.5 text-center sm:text-left">Sell your best prompts on the marketplace</p>
+        <div className="flex flex-col h-full">
+            <div className="px-4 sm:px-6 pt-6 pb-4 flex items-start justify-between gap-3 border-b border-border">
+                <div>
+                    <h1 className="text-xl font-bold text-text-primary">List a prompt</h1>
+                    <p className="text-text-secondary text-sm mt-0.5">Sell your best prompts on the marketplace</p>
+                </div>
+                <button
+                    onClick={onClose}
+                    aria-label="Close"
+                    className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover shrink-0"
+                >
+                    <X size={18} />
+                </button>
             </div>
 
-            <div className="px-4 sm:px-6 pb-6">
+            <div className="px-4 sm:px-6 py-5">
                 <ProgressBar step={step} />
             </div>
 
-            <div className="flex-1 px-4 sm:px-6 pb-10">
-                <div className="max-w-2xl mx-auto rounded-card border border-border bg-bg-panel p-5 sm:p-8">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6">
+                <div className="max-w-2xl mx-auto rounded-card border border-border bg-bg-base p-5 sm:p-8">
                     {/* STEP 1 — BASICS */}
                     {step === 1 && (
                         <div className="space-y-5">
@@ -320,7 +331,7 @@ export default function ListAPromptPage() {
                                 <Sparkles size={13} /> This is how your listing will appear on the marketplace
                             </div>
 
-                            <div className="relative flex flex-col gap-4 p-5 rounded-2xl border border-border bg-bg-base overflow-hidden">
+                            <div className="relative flex flex-col gap-4 p-5 rounded-2xl border border-border bg-bg-panel overflow-hidden">
                                 <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(90deg, var(--accent), var(--accent-2))" }} />
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1 min-w-0">
@@ -444,6 +455,26 @@ export default function ListAPromptPage() {
                         )}
                     </div>
                 </div>
+            </div>
+        </div>
+    )
+}
+
+export function ListingWizardModal({
+    onClose,
+    onSubmitted,
+}: {
+    onClose: () => void
+    onSubmitted: (status: "draft" | "pending_review") => void
+}) {
+    return (
+        <div className="fixed inset-0 z-[200] flex justify-end bg-black/60 backdrop-blur-sm">
+            <div
+                className="absolute inset-0"
+                onClick={onClose}
+            />
+            <div className="relative w-full sm:w-[640px] h-full bg-bg-panel border-l border-border shadow-2xl animate-in slide-in-from-right duration-300 overflow-hidden">
+                <ListingWizard onClose={onClose} onSubmitted={onSubmitted} />
             </div>
         </div>
     )
