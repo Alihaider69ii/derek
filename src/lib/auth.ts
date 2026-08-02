@@ -134,14 +134,25 @@ export const authOptions: NextAuthOptions = {
         },
         async jwt({ token }) {
             if (token.sub) {
-                await connectToDatabase();
-                const dbUser = await User.findById(token.sub).lean();
-                console.log("[DEBUG jwt callback]", {
-                    tokenSub: token.sub,
-                    dbUserId: (dbUser as any)?._id?.toString(),
-                    dbUserRole: (dbUser as any)?.role,
-                });
-                token.role = (dbUser as any)?.role || "user";
+                try {
+                    await connectToDatabase();
+                    const dbUser = await User.findById(token.sub).lean();
+                    console.log("[DEBUG jwt callback] query result", {
+                        tokenSub: token.sub,
+                        dbUserFound: !!dbUser,
+                        dbUserId: (dbUser as any)?._id?.toString() ?? null,
+                        dbUserKeys: dbUser ? Object.keys(dbUser) : null,
+                        rawRole: (dbUser as any)?.role,
+                        rawRoleType: typeof (dbUser as any)?.role,
+                    });
+                    token.role = (dbUser as any)?.role || "user";
+                } catch (err) {
+                    console.error("[DEBUG jwt callback] User.findById threw", {
+                        tokenSub: token.sub,
+                        message: err instanceof Error ? err.message : String(err),
+                        stack: err instanceof Error ? err.stack : undefined,
+                    });
+                }
             }
             return token;
         },
