@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import {
   HONEYPOT_PATH,
   BLOCKED_UA_SUBSTRINGS,
@@ -121,20 +120,14 @@ export async function middleware(req: NextRequest) {
   const ua = req.headers.get("user-agent") || "";
 
   // 0. Admin area — /admin/* pages and /api/admin/* routes require an
-  // authenticated user with role "admin". Checked here (via the JWT, no DB
-  // hit) so non-admins never even reach the page/route; each /api/admin/*
-  // handler additionally re-verifies via requireAdminSession() against the
-  // DB as defense in depth.
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    const isAdmin = (token as any)?.role === "admin";
-    if (!isAdmin) {
-      if (pathname.startsWith("/api/admin")) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-  }
+  // authenticated user with role "admin". NOT checked here: getToken()
+  // only decrypts whatever role claim is already baked into the current
+  // JWT cookie — it does not run the jwt callback, so it never re-reads
+  // the DB and can lag behind a real-time role change (e.g. promoting a
+  // user to admin) until their cookie happens to get reissued. The
+  // authoritative, DB-fresh check lives in src/app/admin/layout.tsx
+  // (getServerSession) for pages, and requireAdminSession() (same
+  // mechanism) in every /api/admin/* handler.
 
   // 1. Repeat offender — already tripped the honeypot within the last 24h.
   if (isCurrentlyBlocked(ip)) {
