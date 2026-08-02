@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { ObjectId } from "mongodb";
 import connectToDatabase from "@/lib/db";
+import clientPromise from "@/lib/mongodb";
 import { User } from "@/lib/models/User";
+
+const PROVIDER_LABELS: Record<string, string> = {
+    google: "Google",
+    github: "GitHub",
+};
 
 export async function POST(req: Request) {
     try {
@@ -27,7 +34,37 @@ export async function POST(req: Request) {
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
-            return NextResponse.json({ error: "Email already in use" }, { status: 400 });
+            if (existingUser.password) {
+                return NextResponse.json(
+                    {
+                        error: "An account with this email already exists. Please sign in with your password.",
+                        code: "EMAIL_EXISTS_CREDENTIALS",
+                    },
+                    { status: 409 }
+                );
+            }
+
+            // No password on file means this user was created by an OAuth
+            // provider — look up which one so the message can name it.
+            const client = await clientPromise;
+            const linkedAccount = await client
+                .db()
+                .collection("accounts")
+                .findOne({ userId: new ObjectId(existingUser._id.toString()) });
+
+            const provider = linkedAccount?.provider;
+            const providerLabel = provider ? PROVIDER_LABELS[provider] : undefined;
+
+            return NextResponse.json(
+                {
+                    error: providerLabel
+                        ? `An account with this email already exists. Please sign in with ${providerLabel}.`
+                        : "An account with this email already exists. Please sign in with your original sign-in method.",
+                    code: "EMAIL_EXISTS_OAUTH",
+                    provider,
+                },
+                { status: 409 }
+            );
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);

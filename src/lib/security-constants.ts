@@ -35,3 +35,12 @@ export const PROTECTED_API_PREFIXES = ["/api/prompts", "/api/categories"];
 export const RATE_LIMIT_WINDOW_MS = 60_000;
 export const RATE_LIMIT_MAX_REQUESTS = 30;
 export const HONEYPOT_BLOCK_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+// Stricter brute-force guard specifically for auth endpoints, layered on top
+// of the generic rate limit above.
+export const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+export const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5;
+export const LOGIN_RATE_LIMITED_PATHS = [
+  "/api/auth/callback/credentials",
+  "/api/auth/register",
+];

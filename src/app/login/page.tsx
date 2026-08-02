@@ -8,6 +8,7 @@ import Image from "next/image"
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
 type Tab = "signin" | "signup"
 
@@ -28,12 +29,24 @@ function GoogleIcon() {
     )
 }
 
-async function handleGoogleSignIn() {
-    // NextAuth blocks linking a different already-registered Google account
-    // while a session is still active (to prevent session hijacking), so any
-    // stale session must be cleared before starting the OAuth redirect.
-    await signOut({ redirect: false })
-    await signIn("google", { callbackUrl: "/marketplace" })
+function useGoogleSignIn() {
+    const [loading, setLoading] = React.useState(false)
+
+    const trigger = React.useCallback(async () => {
+        if (loading) return
+        setLoading(true)
+        try {
+            // NextAuth blocks linking a different already-registered Google account
+            // while a session is still active (to prevent session hijacking), so any
+            // stale session must be cleared before starting the OAuth redirect.
+            await signOut({ redirect: false })
+            await signIn("google", { callbackUrl: "/marketplace" })
+        } finally {
+            setLoading(false)
+        }
+    }, [loading])
+
+    return { loading, trigger }
 }
 
 function TabToggle({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
@@ -66,6 +79,7 @@ function SignInForm({ onSwitchTab }: { onSwitchTab: () => void }) {
     const [password, setPassword] = React.useState("")
     const [loading, setLoading] = React.useState(false)
     const [message, setMessage] = React.useState("")
+    const google = useGoogleSignIn()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -90,11 +104,12 @@ function SignInForm({ onSwitchTab }: { onSwitchTab: () => void }) {
     return (
         <div className="space-y-4">
             <Button
-                onClick={handleGoogleSignIn}
+                onClick={google.trigger}
+                disabled={google.loading}
                 variant="outline"
                 className="w-full bg-bg-input text-text-primary border-border hover:bg-bg-hover"
             >
-                <GoogleIcon /> Sign in with Google
+                <GoogleIcon /> {google.loading ? "Redirecting..." : "Sign in with Google"}
             </Button>
 
             <div className="relative my-6">
@@ -146,6 +161,8 @@ function SignUpForm({ onSwitchTab }: { onSwitchTab: () => void }) {
     const [agreed, setAgreed] = React.useState(false)
     const [loading, setLoading] = React.useState(false)
     const [message, setMessage] = React.useState("")
+    const [emailError, setEmailError] = React.useState<{ text: string; provider?: string } | null>(null)
+    const google = useGoogleSignIn()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -156,6 +173,7 @@ function SignUpForm({ onSwitchTab }: { onSwitchTab: () => void }) {
         }
         setLoading(true)
         setMessage("")
+        setEmailError(null)
         try {
             const regRes = await fetch("/api/auth/register", {
                 method: "POST",
@@ -164,7 +182,11 @@ function SignUpForm({ onSwitchTab }: { onSwitchTab: () => void }) {
             })
             const regData = await regRes.json()
             if (!regRes.ok) {
-                setMessage(regData.error || "Registration failed.")
+                if (regData.code === "EMAIL_EXISTS_CREDENTIALS" || regData.code === "EMAIL_EXISTS_OAUTH") {
+                    setEmailError({ text: regData.error, provider: regData.provider })
+                } else {
+                    setMessage(regData.error || "Registration failed.")
+                }
                 setLoading(false)
                 return
             }
@@ -185,11 +207,12 @@ function SignUpForm({ onSwitchTab }: { onSwitchTab: () => void }) {
     return (
         <div className="space-y-3">
             <Button
-                onClick={handleGoogleSignIn}
+                onClick={google.trigger}
+                disabled={google.loading}
                 variant="outline"
                 className="w-full bg-bg-input text-text-primary border-border hover:bg-bg-hover"
             >
-                <GoogleIcon /> Continue with Google
+                <GoogleIcon /> {google.loading ? "Redirecting..." : "Continue with Google"}
             </Button>
 
             <div className="relative my-5">
@@ -218,7 +241,33 @@ function SignUpForm({ onSwitchTab }: { onSwitchTab: () => void }) {
                 </div>
                 <div>
                     <label className="block text-sm font-medium mb-2 text-text-primary">Email</label>
-                    <Input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={e => { setEmail(e.target.value); setEmailError(null) }}
+                        className={cn(emailError && "border-red-500 focus-visible:ring-red-500/30")}
+                        aria-invalid={!!emailError}
+                        required
+                    />
+                    {emailError && (
+                        <p className="text-xs text-red-500 mt-1.5">
+                            {emailError.text}{" "}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (emailError.provider === "google") {
+                                        google.trigger()
+                                    } else {
+                                        onSwitchTab()
+                                    }
+                                }}
+                                className="underline font-medium"
+                            >
+                                {emailError.provider === "google" ? "Sign in with Google" : "Go to sign in"}
+                            </button>
+                        </p>
+                    )}
                 </div>
                 <div>
                     <label className="block text-sm font-medium mb-2 text-text-primary">Password</label>

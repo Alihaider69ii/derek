@@ -7,6 +7,9 @@ import {
   RATE_LIMIT_WINDOW_MS,
   RATE_LIMIT_MAX_REQUESTS,
   HONEYPOT_BLOCK_MS,
+  LOGIN_RATE_LIMIT_WINDOW_MS,
+  LOGIN_RATE_LIMIT_MAX_ATTEMPTS,
+  LOGIN_RATE_LIMITED_PATHS,
 } from "@/lib/security-constants";
 
 /**
@@ -29,6 +32,7 @@ import {
 
 const requestLog = new Map<string, number[]>();
 const blockedIPs = new Map<string, number>();
+const loginAttemptLog = new Map<string, number[]>();
 
 function getClientIP(req: NextRequest): string {
   const forwardedFor = req.headers.get("x-forwarded-for");
@@ -49,6 +53,20 @@ function isRateLimited(ip: string): boolean {
   timestamps.push(now);
   requestLog.set(ip, timestamps);
   return timestamps.length > RATE_LIMIT_MAX_REQUESTS;
+}
+
+// Dedicated brute-force guard for login/registration attempts: 5 per IP
+// per 15 minutes, independent of (and stricter than) the generic request
+// rate limiter above. Counts every attempt (success or failure) — the same
+// per-instance-memory caveat documented at the top of this file applies.
+function isLoginRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = (loginAttemptLog.get(ip) || []).filter(
+    (t) => now - t < LOGIN_RATE_LIMIT_WINDOW_MS
+  );
+  timestamps.push(now);
+  loginAttemptLog.set(ip, timestamps);
+  return timestamps.length > LOGIN_RATE_LIMIT_MAX_ATTEMPTS;
 }
 
 function blockIPForHoneypot(ip: string) {
@@ -78,6 +96,11 @@ function sweepStaleEntries() {
   });
   blockedIPs.forEach((until, ip) => {
     if (now > until) blockedIPs.delete(ip);
+  });
+  loginAttemptLog.forEach((timestamps, ip) => {
+    const fresh = timestamps.filter((t) => now - t < LOGIN_RATE_LIMIT_WINDOW_MS);
+    if (fresh.length === 0) loginAttemptLog.delete(ip);
+    else loginAttemptLog.set(ip, fresh);
   });
 }
 
@@ -137,6 +160,18 @@ export async function middleware(req: NextRequest) {
   // search engine crawlers.
   if (isBlockedUserAgent(ua)) {
     return new NextResponse("Forbidden", { status: 403 });
+  }
+
+  // 4b. Auth brute-force guard — login/registration attempts are rate
+  // limited far more strictly than general traffic (5 per 15 min per IP),
+  // independent of whether the attempt succeeds or fails.
+  if (req.method === "POST" && LOGIN_RATE_LIMITED_PATHS.includes(pathname)) {
+    if (isLoginRateLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again in 15 minutes." },
+        { status: 429, headers: { "Retry-After": "900" } }
+      );
+    }
   }
 
   // 5. Rate limiting. Skip Next.js's own background link-prefetch requests
