@@ -5,12 +5,15 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
     LayoutDashboard, FileCheck, Users, BarChart3, Settings, Menu, X, LogOut, ShieldCheck,
+    MessageSquare, Activity,
 } from "lucide-react"
 
 const NAV_ITEMS = [
     { href: "/admin", icon: <LayoutDashboard size={16} />, label: "Dashboard" },
     { href: "/admin/reviews", icon: <FileCheck size={16} />, label: "Prompt Reviews", badgeKey: "pendingReviews" as const },
     { href: "/admin/users", icon: <Users size={16} />, label: "Users" },
+    { href: "/admin/derek-chats", icon: <MessageSquare size={16} />, label: "Derek Chats" },
+    { href: "/admin/ai-usage", icon: <Activity size={16} />, label: "AI Usage" },
     { href: "/admin/analytics", icon: <BarChart3 size={16} />, label: "Analytics" },
     { href: "/admin/settings", icon: <Settings size={16} />, label: "Settings" },
 ]

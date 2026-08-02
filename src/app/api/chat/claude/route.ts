@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { logAiUsage } from '@/lib/aiUsageLog';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' });
 
@@ -45,6 +48,10 @@ function buildUserContent(message: string, file?: FilePayload): Anthropic.Messag
 
 export async function POST(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        const userId = (session?.user as any)?.id || null;
+        const userEmail = session?.user?.email || null;
+
         const { message, model, history, file } = await req.json() as {
             message: string;
             model?: string;
@@ -79,6 +86,25 @@ export async function POST(req: Request) {
                             controller.enqueue(encoder.encode(chunk.delta.text));
                         }
                     }
+                    const finalMessage = await stream.finalMessage();
+                    await logAiUsage({
+                        userId,
+                        userEmail,
+                        feature: "claude",
+                        model: selectedModel,
+                        inputTokens: finalMessage.usage?.input_tokens,
+                        outputTokens: finalMessage.usage?.output_tokens,
+                        success: true,
+                    });
+                } catch (err) {
+                    await logAiUsage({
+                        userId,
+                        userEmail,
+                        feature: "claude",
+                        model: selectedModel,
+                        success: false,
+                        errorMessage: err instanceof Error ? err.message : String(err),
+                    });
                 } finally {
                     controller.close();
                 }

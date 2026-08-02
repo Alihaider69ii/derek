@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { logAiUsage } from '@/lib/aiUsageLog';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' });
 
@@ -61,7 +64,13 @@ function buildAnthropicContent(message: string, file?: FilePayload): Anthropic.M
 }
 
 export async function POST(req: Request) {
+    let userId: string | null = null;
+    let userEmail: string | null = null;
     try {
+        const session = await getServerSession(authOptions);
+        userId = (session?.user as any)?.id || null;
+        userEmail = session?.user?.email || null;
+
         if (!process.env.ANTHROPIC_API_KEY) {
             return new Response(
                 "Derek is unavailable because the Anthropic API key is missing or invalid.\n\nSet ANTHROPIC_API_KEY in your .env and restart the dev server.",
@@ -96,12 +105,30 @@ export async function POST(req: Request) {
         const textBlock = (finalMessage.content ?? []).find(b => b.type === "text") as Anthropic.TextBlock | undefined;
         const text = textBlock?.text ?? "";
 
+        await logAiUsage({
+            userId,
+            userEmail,
+            feature: "derek",
+            model: 'claude-sonnet-4-6',
+            inputTokens: finalMessage.usage?.input_tokens,
+            outputTokens: finalMessage.usage?.output_tokens,
+            success: true,
+        });
+
         return new Response(text, {
             headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
         });
     } catch (error: unknown) {
         console.error("Derek API Error:", error);
         const message = error instanceof Error ? error.message : "Unknown error";
+        await logAiUsage({
+            userId,
+            userEmail,
+            feature: "derek",
+            model: 'claude-sonnet-4-6',
+            success: false,
+            errorMessage: message,
+        });
         if (message.toLowerCase().includes("invalid x-api-key") || (error as any)?.status === 401) {
             return new Response(
                 "Derek is unavailable because the Anthropic API key is invalid.\n\nSet ANTHROPIC_API_KEY in your .env and restart the dev server.",
