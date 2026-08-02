@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Suspense } from "react"
-import { SellerSidebar } from "@/components/layout/SellerSidebar"
+import { AppSidebar } from "@/components/layout/AppSidebar"
 
 export default function SellerLayout({
     children,
@@ -10,7 +10,7 @@ export default function SellerLayout({
     return (
         <div className="flex h-screen bg-bg-base overflow-hidden">
             <Suspense fallback={<div>Loading sidebar...</div>}>
-                <SellerSidebar />
+                <AppSidebar />
             </Suspense>
 
             <main className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto pt-14 md:pt-0">

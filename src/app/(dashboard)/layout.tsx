@@ -1,11 +1,7 @@
 import * as React from "react"
 import { Suspense } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Plus, LayoutGrid, Settings, HelpCircle, LogOut } from "lucide-react"
 
-import { Sidebar } from "@/components/layout/Sidebar"
+import { AppSidebar } from "@/components/layout/AppSidebar"
 
 export default function DashboardLayout({
     children,
@@ -15,7 +11,7 @@ export default function DashboardLayout({
     return (
         <div className="flex h-screen bg-bg-base overflow-hidden">
             <Suspense fallback={<div>Loading sidebar...</div>}>
-                <Sidebar />
+                <AppSidebar />
             </Suspense>
 
             {/* MAIN CONTENT AREA */}

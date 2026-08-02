@@ -5,19 +5,13 @@ import { useSession } from "next-auth/react"
 import {
     Check, ChevronLeft, ChevronRight, Lock, User, IndianRupee,
     Loader2, Sparkles, FileCheck, X, Type, Image as ImageIcon,
-    Video, Code2, Music2, Bot, Gem, Zap, Loader,
+    Video, Code2, Music2, Loader, MoreHorizontal,
 } from "lucide-react"
 import { Dropdown } from "@/components/ui/dropdown"
 import { cn } from "@/lib/utils"
+import { AI_MODELS } from "@/lib/ai-models"
 
 const STEPS = ["Basics", "The prompt", "Preview", "Submit"]
-
-const MODEL_META: { name: string; color: string; icon: React.ReactNode }[] = [
-    { name: "Claude", color: "#D97757", icon: <Sparkles size={14} /> },
-    { name: "GPT-4", color: "#10A37F", icon: <Bot size={14} /> },
-    { name: "Gemini", color: "#4285F4", icon: <Gem size={14} /> },
-    { name: "Grok", color: "#8B5CF6", icon: <Zap size={14} /> },
-]
 
 const OUTPUT_TYPES: { value: string; icon: React.ReactNode }[] = [
     { value: "Text", icon: <Type size={14} /> },
@@ -25,6 +19,7 @@ const OUTPUT_TYPES: { value: string; icon: React.ReactNode }[] = [
     { value: "Video", icon: <Video size={14} /> },
     { value: "Code", icon: <Code2 size={14} /> },
     { value: "Audio", icon: <Music2 size={14} /> },
+    { value: "Other", icon: <MoreHorizontal size={14} /> },
 ]
 
 type FormData = {
@@ -128,6 +123,7 @@ export function ListingWizard({
     const [loadingExisting, setLoadingExisting] = React.useState(!!editListingId)
     const [toast, setToast] = React.useState("")
     const [autoSaveStatus, setAutoSaveStatus] = React.useState<"idle" | "saving" | "saved">("idle")
+    const [draftSavedInline, setDraftSavedInline] = React.useState(false)
 
     const lastSavedRef = React.useRef<string>(JSON.stringify(initialForm))
     const formRef = React.useRef(form)
@@ -258,6 +254,8 @@ export function ListingWizard({
             await persist(status)
             if (status === "draft") {
                 setToast("Draft saved ✓")
+                setDraftSavedInline(true)
+                setTimeout(() => setDraftSavedInline(false), 3000)
                 onSubmitted("draft")
             } else {
                 setResult("review")
@@ -398,13 +396,14 @@ export function ListingWizard({
                                 </div>
                             </Field>
 
-                            <Field label="Compatible AI models">
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                    {MODEL_META.map(m => {
+                            <Field label="Compatible AI models" hint="Select every model your prompt has been tested with">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    {AI_MODELS.map(m => {
                                         const checked = form.models.includes(m.name)
+                                        const Icon = m.icon
                                         return (
                                             <button
-                                                key={m.name}
+                                                key={m.id}
                                                 type="button"
                                                 onClick={() => toggleModel(m.name)}
                                                 style={checked ? { borderColor: m.color, backgroundColor: `${m.color}14` } : undefined}
@@ -413,11 +412,8 @@ export function ListingWizard({
                                                     checked ? "text-text-primary" : "border-border text-text-secondary hover:bg-bg-hover"
                                                 )}
                                             >
-                                                <span
-                                                    className="w-6 h-6 rounded-full flex items-center justify-center text-white shrink-0"
-                                                    style={{ backgroundColor: m.color }}
-                                                >
-                                                    {m.icon}
+                                                <span className="w-6 h-6 rounded-full flex items-center justify-center bg-white shrink-0 border border-border/60 overflow-hidden">
+                                                    <Icon className="w-4 h-4" />
                                                 </span>
                                                 {m.name}
                                                 <span
@@ -602,6 +598,11 @@ export function ListingWizard({
                     </button>
 
                     <div className="flex items-center gap-3">
+                        {draftSavedInline && (
+                            <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
+                                <Check size={14} /> Draft saved ✓
+                            </span>
+                        )}
                         {step < 4 ? (
                             <>
                                 <button

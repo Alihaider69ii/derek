@@ -2,11 +2,13 @@
 
 import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import Link from "next/link"
 import {
     Plus, IndianRupee, FileText, Sparkles, ShoppingBag,
-    Clock, CheckCircle2, XCircle, Tag, Bell,
+    Clock, CheckCircle2, XCircle, Tag, Bell, ExternalLink, ChevronDown, ArrowRight,
 } from "lucide-react"
 import { ListingWizardModal } from "@/components/shared/ListingWizard"
+import { AI_MODELS } from "@/lib/ai-models"
 
 export const dynamic = 'force-dynamic'
 
@@ -45,14 +47,19 @@ type NotificationItem = {
 }
 
 function StatCard({
-    icon, label, value,
+    icon, label, value, onClick,
 }: {
     icon: React.ReactNode
     label: string
     value: string
+    onClick?: () => void
 }) {
+    const Comp = onClick ? "button" : "div"
     return (
-        <div className="rounded-card border border-border bg-bg-panel p-5 flex flex-col gap-3">
+        <Comp
+            onClick={onClick}
+            className={`rounded-card border border-border bg-bg-panel p-5 flex flex-col gap-3 text-left w-full ${onClick ? "hover:border-accent/40 hover:shadow-[0_0_24px_rgba(46,91,255,0.10)] transition-all cursor-pointer" : ""}`}
+        >
             <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-text-secondary">{label}</span>
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent/10 text-accent">
@@ -60,6 +67,67 @@ function StatCard({
                 </div>
             </div>
             <p className="text-2xl font-bold text-text-primary">{value}</p>
+        </Comp>
+    )
+}
+
+// Quick-launch menu for jumping straight into any external AI model's own
+// site. Links below are PLACEHOLDERS (see src/lib/ai-models.tsx) — swap for
+// real deep links once provided.
+function AskAiCard() {
+    const [open, setOpen] = React.useState(false)
+    const containerRef = React.useRef<HTMLDivElement>(null)
+
+    React.useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false)
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [])
+
+    return (
+        <div className="rounded-card border border-border bg-bg-panel p-5 flex flex-col gap-3 relative" ref={containerRef}>
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-accent2/10 border border-accent2/25 shrink-0">
+                    <ExternalLink size={18} className="text-accent2" />
+                </div>
+                <div>
+                    <h3 className="text-sm font-bold text-text-primary">Ask AI</h3>
+                    <p className="text-xs text-text-secondary">Jump straight into any AI model</p>
+                </div>
+            </div>
+            <button
+                onClick={() => setOpen(v => !v)}
+                className="flex items-center justify-between px-3 py-2.5 rounded-btn border border-border text-sm text-text-primary hover:bg-bg-hover transition-colors"
+            >
+                Choose a model
+                <ChevronDown size={15} className={`text-text-secondary transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+            </button>
+
+            {open && (
+                <div className="absolute top-full left-5 right-5 mt-1 bg-bg-panel border border-border rounded-btn shadow-lg z-20 max-h-72 overflow-y-auto">
+                    {AI_MODELS.map(m => {
+                        const Icon = m.icon
+                        return (
+                            <a
+                                key={m.id}
+                                href={m.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setOpen(false)}
+                                className="flex items-center gap-3 px-3 py-2.5 text-sm text-text-primary hover:bg-bg-hover transition-colors border-b border-border last:border-b-0"
+                            >
+                                <span className="w-6 h-6 rounded-full flex items-center justify-center bg-white border border-border/60 overflow-hidden shrink-0">
+                                    <Icon className="w-4 h-4" />
+                                </span>
+                                <span className="flex-1">{m.name}</span>
+                                <ExternalLink size={13} className="text-text-secondary shrink-0" />
+                            </a>
+                        )
+                    })}
+                </div>
+            )}
         </div>
     )
 }
@@ -137,6 +205,26 @@ function DashboardOverviewInner() {
             </div>
 
             <div className="px-4 sm:px-6 pb-10 space-y-6">
+                {/* Ask Derek + Ask AI */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Link href="/chat" className="rounded-card border border-border bg-bg-panel p-5 flex flex-col gap-3 hover:border-accent/40 hover:shadow-[0_0_24px_rgba(46,91,255,0.10)] transition-all">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-accent/10 border border-accent/25 shrink-0">
+                                <Sparkles size={18} className="text-accent" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-text-primary">Ask Derek</h3>
+                                <p className="text-xs text-text-secondary">Build and refine prompts with our AI assistant</p>
+                            </div>
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
+                            Start chatting <ArrowRight size={14} />
+                        </span>
+                    </Link>
+
+                    <AskAiCard />
+                </div>
+
                 {/* Stat cards */}
                 {loading || !stats ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -145,7 +233,12 @@ function DashboardOverviewInner() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard icon={<Sparkles size={16} />} label="Total Prompts Built (with Derek)" value={stats.promptsBuiltWithDerek.toLocaleString("en-IN")} />
-                        <StatCard icon={<FileText size={16} />} label="Drafts Saved" value={stats.draftsSaved.toLocaleString("en-IN")} />
+                        <StatCard
+                            icon={<FileText size={16} />}
+                            label="Drafts Saved"
+                            value={stats.draftsSaved.toLocaleString("en-IN")}
+                            onClick={() => router.push("/dashboard/prompts?filter=draft")}
+                        />
                         <StatCard icon={<ShoppingBag size={16} />} label="Live on Marketplace" value={stats.liveOnMarketplace.toLocaleString("en-IN")} />
                         <StatCard icon={<IndianRupee size={16} />} label="Total Earnings" value={formatINR(stats.totalEarned)} />
                     </div>

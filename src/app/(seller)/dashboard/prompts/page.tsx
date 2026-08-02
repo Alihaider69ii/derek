@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useSearchParams } from "next/navigation"
 import { FileText, Plus, Star, Pencil } from "lucide-react"
 import { ListingWizardModal } from "@/components/shared/ListingWizard"
 
@@ -43,10 +44,15 @@ function StatusBadge({ status }: { status: Listing["status"] }) {
     return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[0.7rem] font-semibold bg-bg-hover text-text-secondary border border-border">Draft</span>
 }
 
-export default function MyPromptsPage() {
+function MyPromptsPageInner() {
+    const searchParams = useSearchParams()
+    const initialFilter = (FILTERS.some(f => f.key === searchParams.get("filter"))
+        ? searchParams.get("filter")
+        : "all") as (typeof FILTERS)[number]["key"]
+
     const [listings, setListings] = React.useState<Listing[]>([])
     const [loading, setLoading] = React.useState(true)
-    const [filter, setFilter] = React.useState<(typeof FILTERS)[number]["key"]>("all")
+    const [filter, setFilter] = React.useState<(typeof FILTERS)[number]["key"]>(initialFilter)
     const [wizardOpen, setWizardOpen] = React.useState(false)
     const [editingId, setEditingId] = React.useState<string | null>(null)
 
@@ -195,5 +201,13 @@ export default function MyPromptsPage() {
                 />
             )}
         </div>
+    )
+}
+
+export default function MyPromptsPage() {
+    return (
+        <React.Suspense fallback={<div className="flex-1 bg-bg-base" />}>
+            <MyPromptsPageInner />
+        </React.Suspense>
     )
 }

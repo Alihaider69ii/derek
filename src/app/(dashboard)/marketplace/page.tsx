@@ -3,7 +3,7 @@
 import * as React from "react"
 import {
   ShoppingBag, X, Copy, Check, Lock, User, IndianRupee, Search,
-  Star, SlidersHorizontal, Flame, Sparkles, Gift, Trophy,
+  Star, SlidersHorizontal, Flame, Sparkles, Gift, Trophy, ChevronDown,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
@@ -96,16 +96,39 @@ function FilterPanel({
       {children}
     </button>
   )
+
+  // Collapsed by default — only expand automatically if a specific category
+  // (not "All prompts") is already selected, so the active filter stays visible.
+  const [categoryExpanded, setCategoryExpanded] = React.useState(category !== "all")
+  // De-dupe by name in case the same category was seeded twice in the DB.
+  const uniqueCategories = React.useMemo(() => {
+    const seen = new Set<string>()
+    return categories.filter(c => {
+      if (seen.has(c.name)) return false
+      seen.add(c.name)
+      return true
+    })
+  }, [categories])
+
   return (
     <div>
-      <Section title="Category">
-        <Item active={category === "all"} onClick={() => setCategory("all")}>All prompts</Item>
-        {categories.map(c => (
-          <Item key={c.name} active={category === c.name} onClick={() => setCategory(c.name)}>
-            {c.emoji} {c.name}
-          </Item>
-        ))}
-      </Section>
+      <div className="mb-6">
+        <button
+          onClick={() => setCategoryExpanded(v => !v)}
+          className="w-full flex items-center justify-between mb-2 group"
+        >
+          <h4 className="text-[0.7rem] uppercase tracking-wider text-text-secondary font-semibold group-hover:text-text-primary transition-colors">Category</h4>
+          <ChevronDown size={13} className={`text-text-secondary transition-transform duration-200 ${categoryExpanded ? "rotate-180" : ""}`} />
+        </button>
+        <div className="space-y-0.5">
+          <Item active={category === "all"} onClick={() => setCategory("all")}>All prompts</Item>
+          {categoryExpanded && uniqueCategories.map(c => (
+            <Item key={c.name} active={category === c.name} onClick={() => setCategory(c.name)}>
+              {c.emoji} {c.name}
+            </Item>
+          ))}
+        </div>
+      </div>
       <Section title="Price">
         {PRICE_OPTIONS.map(p => (
           <Item key={p.value} active={price === p.value} onClick={() => setPrice(p.value)}>{p.label}</Item>
