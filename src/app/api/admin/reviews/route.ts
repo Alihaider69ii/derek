@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin";
+import { requireAdminApiSession } from "@/lib/adminSession";
 import connectToDatabase from "@/lib/db";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { User } from "@/lib/models/User";
@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 // GET /api/admin/reviews — all listings awaiting moderation.
 export async function GET() {
-    const session = await requireAdminSession();
-    if (!session) {
+    const adminSession = await requireAdminApiSession();
+    if (!adminSession) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

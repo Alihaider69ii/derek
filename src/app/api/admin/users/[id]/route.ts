@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin";
+import { requireAdminApiSession } from "@/lib/adminSession";
+import { logAdminAction } from "@/lib/adminActivityLog";
 import connectToDatabase from "@/lib/db";
 import { User } from "@/lib/models/User";
 
@@ -10,8 +11,8 @@ type Action = (typeof ACTIONS)[number];
 
 // PATCH /api/admin/users/[id] — body: { action: "make_admin" | "remove_admin" | "suspend" | "unsuspend" }
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const session = await requireAdminSession();
-    if (!session) {
+    const adminSession = await requireAdminApiSession();
+    if (!adminSession) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -19,10 +20,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         const { action } = (await req.json()) as { action: Action };
         if (!ACTIONS.includes(action)) {
             return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-        }
-
-        if ((action === "remove_admin" || action === "suspend") && (session.user as any).id === params.id) {
-            return NextResponse.json({ error: "You cannot perform this action on your own account" }, { status: 400 });
         }
 
         await connectToDatabase();
@@ -37,6 +34,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
+
+        await logAdminAction({
+            admin: adminSession,
+            action,
+            targetType: "User",
+            targetId: user._id.toString(),
+            details: user.email,
+        });
 
         return NextResponse.json({ success: true, user });
     } catch (error) {

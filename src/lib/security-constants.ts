@@ -43,4 +43,5 @@ export const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5;
 export const LOGIN_RATE_LIMITED_PATHS = [
   "/api/auth/callback/credentials",
   "/api/auth/register",
+  "/api/admin/login",
 ];

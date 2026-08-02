@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/adminAuth";
 import {
   HONEYPOT_PATH,
   BLOCKED_UA_SUBSTRINGS,
@@ -119,15 +120,27 @@ export async function middleware(req: NextRequest) {
   const ip = getClientIP(req);
   const ua = req.headers.get("user-agent") || "";
 
-  // 0. Admin area — /admin/* pages and /api/admin/* routes require an
-  // authenticated user with role "admin". NOT checked here: getToken()
-  // only decrypts whatever role claim is already baked into the current
-  // JWT cookie — it does not run the jwt callback, so it never re-reads
-  // the DB and can lag behind a real-time role change (e.g. promoting a
-  // user to admin) until their cookie happens to get reissued. The
-  // authoritative, DB-fresh check lives in src/app/admin/layout.tsx
-  // (getServerSession) for pages, and requireAdminSession() (same
-  // mechanism) in every /api/admin/* handler.
+  // 0. Admin area — a completely separate auth system from the regular
+  // user/next-auth session (its own AdminUser model, own cookie, own JWT
+  // secret). /admin/login and /api/admin/login are excluded so there's a
+  // way to actually authenticate. Unlike the old role-based check this
+  // replaced, "adminness" here is fully defined by possession of a
+  // validly-signed, unexpired admin_session cookie — there's no separate
+  // mutable DB field for it to go stale against, so verifying the JWT here
+  // (no DB hit) is safe. getAdminSession() re-verifies the same way in
+  // src/app/admin/(dashboard)/layout.tsx and every /api/admin/* handler,
+  // as defense in depth.
+  const isAdminAuthRoute = pathname === "/admin/login" || pathname === "/api/admin/login";
+  if (!isAdminAuthRoute && (pathname.startsWith("/admin") || pathname.startsWith("/api/admin"))) {
+    const adminToken = req.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    const adminSession = await verifyAdminSessionToken(adminToken);
+    if (!adminSession) {
+      if (pathname.startsWith("/api/admin")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+  }
 
   // 1. Repeat offender — already tripped the honeypot within the last 24h.
   if (isCurrentlyBlocked(ip)) {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin";
+import { requireAdminApiSession } from "@/lib/adminSession";
 import connectToDatabase from "@/lib/db";
 import { User } from "@/lib/models/User";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
@@ -14,8 +14,8 @@ function dayKey(d: Date) {
 
 // GET /api/admin/stats — platform-wide totals for the admin dashboard.
 export async function GET() {
-    const session = await requireAdminSession();
-    if (!session) {
+    const adminSession = await requireAdminApiSession();
+    if (!adminSession) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

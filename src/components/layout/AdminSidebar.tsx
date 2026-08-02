@@ -2,8 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
+import { usePathname, useRouter } from "next/navigation"
 import {
     LayoutDashboard, FileCheck, Users, BarChart3, Settings, Menu, X, LogOut, ShieldCheck,
 } from "lucide-react"
@@ -18,8 +17,15 @@ const NAV_ITEMS = [
 
 export function AdminSidebar() {
     const pathname = usePathname()
+    const router = useRouter()
     const [isOpen, setIsOpen] = React.useState(false)
     const [pendingReviews, setPendingReviews] = React.useState(0)
+
+    const handleSignOut = React.useCallback(async () => {
+        await fetch("/api/admin/logout", { method: "POST" })
+        router.push("/admin/login")
+        router.refresh()
+    }, [router])
 
     React.useEffect(() => {
         fetch("/api/admin/stats")
@@ -82,7 +88,7 @@ export function AdminSidebar() {
 
             <div className="p-4 border-t border-border">
                 <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={handleSignOut}
                     className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-btn text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
                 >
                     <LogOut size={16} />

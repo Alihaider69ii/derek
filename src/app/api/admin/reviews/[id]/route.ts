@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin";
+import { requireAdminApiSession } from "@/lib/adminSession";
+import { logAdminAction } from "@/lib/adminActivityLog";
 import connectToDatabase from "@/lib/db";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { Notification } from "@/lib/models/Notification";
@@ -9,8 +10,8 @@ export const dynamic = "force-dynamic";
 // PATCH /api/admin/reviews/[id] — approve or reject a pending_review listing.
 // body: { action: "approve" | "reject", reason?: string }
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const session = await requireAdminSession();
-    if (!session) {
+    const adminSession = await requireAdminApiSession();
+    if (!adminSession) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -52,6 +53,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
                 reason: reason.trim(),
             });
         }
+
+        await logAdminAction({
+            admin: adminSession,
+            action: action === "approve" ? "review_approve" : "review_reject",
+            targetType: "MarketplaceListing",
+            targetId: listing._id.toString(),
+            details: action === "reject" ? reason.trim() : listing.title,
+        });
 
         return NextResponse.json({ success: true, status: listing.status });
     } catch (error) {
