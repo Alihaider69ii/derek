@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_STATUSES = ["draft", "pending_review", "live"];
-const ALLOWED_OUTPUT_TYPES = ["Text", "Image", "Video", "Code", "Audio"];
+const ALLOWED_OUTPUT_TYPES = ["Text", "Image", "Video", "Code", "Audio", "Other"];
 
 // GET /api/marketplace/[id] — owner-only full listing fetch, used to
 // pre-fill the listing wizard when a seller resumes editing a draft.

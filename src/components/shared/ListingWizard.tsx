@@ -124,6 +124,7 @@ export function ListingWizard({
     const [toast, setToast] = React.useState("")
     const [autoSaveStatus, setAutoSaveStatus] = React.useState<"idle" | "saving" | "saved">("idle")
     const [draftSavedInline, setDraftSavedInline] = React.useState(false)
+    const [categoryMode, setCategoryMode] = React.useState<"list" | "other">("list")
 
     const lastSavedRef = React.useRef<string>(JSON.stringify(initialForm))
     const formRef = React.useRef(form)
@@ -132,6 +133,17 @@ export function ListingWizard({
     React.useEffect(() => {
         fetch("/api/categories").then(r => r.json()).then(d => { if (Array.isArray(d)) setCategories(d) }).catch(console.error)
     }, [])
+
+    // If an existing draft/listing being edited has a custom category that
+    // isn't in the known list, land straight in "Other" text-input mode so
+    // it doesn't silently disappear from the dropdown.
+    React.useEffect(() => {
+        if (loadingExisting || categories.length === 0) return
+        const current = formRef.current.category
+        if (current && !categories.some(c => c.name === current)) {
+            setCategoryMode("other")
+        }
+    }, [categories, loadingExisting])
 
     React.useEffect(() => {
         if (!editListingId) return
@@ -362,14 +374,43 @@ export function ListingWizard({
                             </Field>
 
                             <Field label="Category">
-                                <Dropdown
-                                    fullWidth
-                                    align="left"
-                                    value={form.category}
-                                    placeholder="Select a category"
-                                    onChange={(v) => update({ category: v })}
-                                    options={categories.map(c => ({ value: c.name, label: `${c.emoji} ${c.name}` }))}
-                                />
+                                {categoryMode === "other" ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            value={form.category}
+                                            onChange={e => update({ category: e.target.value })}
+                                            placeholder="Type a custom category"
+                                            autoFocus
+                                            className="w-full h-10 rounded-btn border border-border bg-bg-input px-3 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/30"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => { setCategoryMode("list"); update({ category: "" }) }}
+                                            className="shrink-0 text-xs font-semibold text-text-secondary hover:text-text-primary px-2 py-2 whitespace-nowrap"
+                                        >
+                                            Choose from list
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <Dropdown
+                                        fullWidth
+                                        align="left"
+                                        value={form.category}
+                                        placeholder="Select a category"
+                                        onChange={(v) => {
+                                            if (v === "__other__") {
+                                                setCategoryMode("other")
+                                                update({ category: "" })
+                                            } else {
+                                                update({ category: v })
+                                            }
+                                        }}
+                                        options={[
+                                            ...categories.map(c => ({ value: c.name, label: `${c.emoji} ${c.name}` })),
+                                            { value: "__other__", label: "🏷️ Other" },
+                                        ]}
+                                    />
+                                )}
                             </Field>
 
                             <Field label="Output type">
@@ -582,10 +623,13 @@ export function ListingWizard({
                                     Submit &quot;{form.title || "your prompt"}&quot; for review, or save it as a draft to finish later.
                                 </p>
                             </div>
-                            {error && <p className="text-sm text-danger">{error}</p>}
                         </div>
                     )}
                 </div>
+
+                {error && (
+                    <p className="max-w-2xl mx-auto mt-3 text-sm text-danger text-center">{error}</p>
+                )}
 
                 {/* Navigation */}
                 <div className="max-w-2xl mx-auto flex items-center justify-between mt-5 gap-3">

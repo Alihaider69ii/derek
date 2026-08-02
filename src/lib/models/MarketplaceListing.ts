@@ -14,7 +14,7 @@ export interface IMarketplaceListing extends Document {
     description?: string;
     category?: string;
     models: string[]; // compatible AI models, e.g. Claude, GPT-4, Gemini, Grok
-    outputType: "Text" | "Image" | "Video" | "Code" | "Audio";
+    outputType: "Text" | "Image" | "Video" | "Code" | "Audio" | "Other";
     promptText: string;   // stored in full; only revealed after purchase
     previewSnippet?: string; // teaser visible before purchase
     price: number;        // in INR, 0-1000 (0 = free)
@@ -45,10 +45,13 @@ const MarketplaceListingSchema = new Schema<IMarketplaceListing>(
         description: { type: String },
         category: { type: String },
         models: { type: [String], default: [] },
-        outputType: { type: String, enum: ["Text", "Image", "Video", "Code", "Audio"], default: "Text" },
-        promptText: { type: String, required: true },
+        outputType: { type: String, enum: ["Text", "Image", "Video", "Code", "Audio", "Other"], default: "Text" },
+        // Not `required` — drafts are allowed to save with just a title, so
+        // these are filled in incrementally as the wizard progresses. Only
+        // required once a listing leaves draft status (enforced in the route).
+        promptText: { type: String, default: "" },
         previewSnippet: { type: String },
-        price: { type: Number, required: true, min: 0, max: 1000 },
+        price: { type: Number, min: 0, max: 1000, default: 0 },
         isFree: { type: Boolean, default: false },
         status: { type: String, enum: ["draft", "pending_review", "live", "rejected"], default: "live" },
         rating: { type: Number, min: 0, max: 5 },

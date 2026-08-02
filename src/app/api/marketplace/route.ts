@@ -108,18 +108,26 @@ export async function POST(request: Request) {
             description, category, models, previewSnippet, status, outputType,
         } = body;
 
-        if (!title?.trim() || !promptText?.trim()) {
+        const allowedStatuses = ["draft", "pending_review", "live"];
+        const resolvedStatus = allowedStatuses.includes(status) ? status : "live";
+        const isDraft = resolvedStatus === "draft";
+
+        if (!title?.trim()) {
+            return NextResponse.json({ error: "Title is required" }, { status: 400 });
+        }
+        // Drafts only need a title — the rest can be filled in later. Full
+        // prompt text and a valid price are only required once the listing
+        // actually leaves draft status (submitted for review / made live).
+        if (!isDraft && !promptText?.trim()) {
             return NextResponse.json({ error: "title and promptText are required" }, { status: 400 });
         }
         const free = !!isFree;
-        const numericPrice = free ? 0 : Number(price);
-        if (!free && (!price || numericPrice < 1 || numericPrice > 1000)) {
+        const numericPrice = free ? 0 : (Number(price) || 0);
+        if (!isDraft && !free && (!price || numericPrice < 1 || numericPrice > 1000)) {
             return NextResponse.json({ error: "price must be between 1 and 1000" }, { status: 400 });
         }
 
-        const allowedStatuses = ["draft", "pending_review", "live"];
-        const resolvedStatus = allowedStatuses.includes(status) ? status : "live";
-        const allowedOutputTypes = ["Text", "Image", "Video", "Code", "Audio"];
+        const allowedOutputTypes = ["Text", "Image", "Video", "Code", "Audio", "Other"];
         const resolvedOutputType = allowedOutputTypes.includes(outputType) ? outputType : "Text";
 
         const listing = await MarketplaceListing.create({
@@ -131,7 +139,7 @@ export async function POST(request: Request) {
             category: category?.trim(),
             models: Array.isArray(models) ? models : [],
             outputType: resolvedOutputType,
-            promptText: promptText.trim(),
+            promptText: promptText?.trim() || "",
             previewSnippet: previewSnippet?.trim(),
             price: numericPrice,
             isFree: free,

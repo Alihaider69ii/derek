@@ -266,13 +266,16 @@ export function AppSidebar() {
             >
                 {sidebarContent}
 
-                {/* Collapse/expand toggle — vertically centered on the sidebar's edge */}
+                {/* Collapse/expand toggle — vertically centered on the sidebar's edge.
+                    Desktop-only: on mobile the sidebar is a full slide-over drawer
+                    (open/closed via the hamburger + backdrop), not a persistent rail,
+                    so an icon-only "collapsed" state doesn't apply there. */}
                 <button
                     onClick={toggleCollapsed}
                     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    className="hidden md:flex absolute top-1/2 -right-3 -translate-y-1/2 z-10 w-6 h-6 items-center justify-center rounded-full border border-border bg-bg-panel text-text-secondary hover:text-text-primary hover:bg-bg-hover shadow-sm transition-colors"
+                    className="hidden md:flex absolute top-1/2 -right-[18px] -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-accent text-white ring-2 ring-bg-base hover:bg-accent-hover shadow-md transition-colors"
                 >
-                    {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+                    {collapsed ? <ChevronRight size={19} /> : <ChevronLeft size={19} />}
                 </button>
             </aside>
         </>
