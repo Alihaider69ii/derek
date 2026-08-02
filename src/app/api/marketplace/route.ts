@@ -49,6 +49,7 @@ export async function GET(request: Request) {
                 isFree: !!l.isFree,
                 rating,
                 salesCount,
+                featured: !!l.featured,
                 createdAt: l.createdAt,
                 promptText: hasPurchased ? l.promptText : null,
                 purchased: !!hasPurchased,
@@ -83,7 +84,9 @@ export async function GET(request: Request) {
                 case "price-desc": return b.price - a.price;
                 case "sales": return b.salesCount - a.salesCount;
                 case "top-rated":
-                default: return b.rating - a.rating;
+                default:
+                    if (a.featured !== b.featured) return a.featured ? -1 : 1;
+                    return b.rating - a.rating;
             }
         });
 

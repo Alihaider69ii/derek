@@ -20,6 +20,7 @@ export interface IMarketplaceListing extends Document {
     price: number;        // in INR, 0-1000 (0 = free)
     isFree: boolean;
     status: "draft" | "pending_review" | "live" | "rejected";
+    featured: boolean;      // admin-curated highlight on homepage/marketplace
     rating?: number;       // 0-5, placeholder until a real review system exists
     buyers: mongoose.Types.ObjectId[]; // userIds who have purchased
     sales: IListingSale[]; // per-purchase record for revenue/earnings history
@@ -54,6 +55,7 @@ const MarketplaceListingSchema = new Schema<IMarketplaceListing>(
         price: { type: Number, min: 0, max: 1000, default: 0 },
         isFree: { type: Boolean, default: false },
         status: { type: String, enum: ["draft", "pending_review", "live", "rejected"], default: "live" },
+        featured: { type: Boolean, default: false },
         rating: { type: Number, min: 0, max: 5 },
         buyers: [{ type: Schema.Types.ObjectId, ref: "User" }],
         sales: { type: [ListingSaleSchema], default: [] },
