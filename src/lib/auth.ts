@@ -136,6 +136,11 @@ export const authOptions: NextAuthOptions = {
             if (token.sub) {
                 await connectToDatabase();
                 const dbUser = await User.findById(token.sub).lean();
+                console.log("[DEBUG jwt callback]", {
+                    tokenSub: token.sub,
+                    dbUserId: (dbUser as any)?._id?.toString(),
+                    dbUserRole: (dbUser as any)?.role,
+                });
                 token.role = (dbUser as any)?.role || "user";
             }
             return token;
