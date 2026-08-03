@@ -2,13 +2,11 @@
 
 import * as React from "react"
 import {
-  ShoppingBag, X, Copy, Check, Lock, User, IndianRupee, Search,
+  ShoppingBag, X, Check, User, IndianRupee, Search,
   Star, SlidersHorizontal, Flame, Sparkles, Gift, Trophy, ChevronDown, Flag,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { ProtectedContent } from "@/components/shared/ProtectedContent"
-import { embedZeroWidthWatermark } from "@/lib/protection"
 import { categoryTagStyle } from "@/lib/utils"
 
 export const dynamic = 'force-dynamic'
@@ -209,11 +207,9 @@ function ReportModal({
 }
 
 // ── Marketplace Card ──────────────────────────────────────────────────────────
-function ListingCard({ listing, onBuy }: { listing: Listing; onBuy: (id: string) => Promise<void> }) {
-  const { data: session } = useSession()
-  const [copied, setCopied] = React.useState(false)
-  const [buying, setBuying] = React.useState(false)
-  const [showDetail, setShowDetail] = React.useState(false)
+// Clicking a card opens the dedicated Prompt Detail & Purchase page
+// (/marketplace/[id]) — buying, "Try with Derek", and reviews all live there.
+function ListingCard({ listing }: { listing: Listing }) {
   const [showReport, setShowReport] = React.useState(false)
   const [reportToast, setReportToast] = React.useState("")
 
@@ -233,25 +229,11 @@ function ListingCard({ listing, onBuy }: { listing: Listing; onBuy: (id: string)
   const tag = categoryTagStyle(listing.category || undefined)
   const isTrending = listing.salesCount > 0 && Date.now() - new Date(listing.createdAt).getTime() <= 30 * 24 * 60 * 60 * 1000
 
-  const handleCopy = () => {
-    if (!listing.purchased || !listing.promptText) return
-    const watermarkId = session?.user?.email || "anonymous"
-    navigator.clipboard.writeText(embedZeroWidthWatermark(listing.promptText, watermarkId))
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleBuy = async () => {
-    setBuying(true)
-    await onBuy(listing._id)
-    setBuying(false)
-  }
-
   return (
     <>
-      <div
-        className="relative flex flex-col gap-3 p-4 rounded-card border border-border bg-bg-panel hover:border-accent/40 transition-all duration-200 hover:shadow-[0_0_24px_rgba(46,91,255,0.10)] cursor-pointer"
-        onClick={() => setShowDetail(true)}
+      <Link
+        href={`/marketplace/${listing._id}`}
+        className="relative flex flex-col gap-3 p-4 rounded-card border border-border bg-bg-panel hover:border-accent/40 transition-all duration-200 hover:shadow-[0_0_24px_rgba(46,91,255,0.10)]"
       >
         {/* Tag row */}
         <div className="flex items-center justify-between gap-2">
@@ -264,11 +246,18 @@ function ListingCard({ listing, onBuy }: { listing: Listing; onBuy: (id: string)
               {listing.category}
             </span>
           ) : <span />}
-          {listing.purchased && (
-            <span className="text-[0.6rem] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20">
-              ✓ Purchased
-            </span>
-          )}
+          <div className="flex items-center gap-1">
+            {listing.purchased && (
+              <span className="text-[0.6rem] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20">
+                ✓ Purchased
+              </span>
+            )}
+            <button
+              onClick={e => { e.preventDefault(); e.stopPropagation(); setShowReport(true) }}
+              title="Report this prompt"
+              className="p-1 rounded-lg text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
+            ><Flag size={13} /></button>
+          </div>
         </div>
 
         {/* Title + preview */}
@@ -303,68 +292,7 @@ function ListingCard({ listing, onBuy }: { listing: Listing; onBuy: (id: string)
         <p className="text-[0.65rem] text-text-secondary -mt-1">
           {listing.salesCount > 0 ? `${listing.salesCount} sale${listing.salesCount === 1 ? "" : "s"}` : "New listing"}
         </p>
-      </div>
-
-      {/* Detail / Purchase Modal */}
-      {showDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => { if (e.target === e.currentTarget) setShowDetail(false) }}>
-          <div className="bg-bg-panel border border-border w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <div className="min-w-0">
-                <h2 className="text-lg font-bold text-text-primary truncate">{listing.title}</h2>
-                <p className="text-xs text-text-secondary mt-0.5">
-                  by <Link href={`/profile/${listing.sellerId}`} className="hover:text-accent">{listing.sellerName}</Link> · {listing.isFree ? "Free" : `₹${listing.price}`} · <Stars rating={listing.rating} />
-                </p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  onClick={() => setShowReport(true)}
-                  title="Report this prompt"
-                  className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
-                ><Flag size={16} /></button>
-                <button onClick={() => setShowDetail(false)} className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover"><X size={18} /></button>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="relative rounded-xl overflow-hidden border border-border">
-                {listing.purchased && listing.promptText ? (
-                  <ProtectedContent
-                    text={listing.promptText}
-                    className="text-sm text-text-primary font-mono whitespace-pre-wrap leading-relaxed"
-                    wrapperClassName="bg-bg-input p-4 max-h-[400px] overflow-y-auto block"
-                  />
-                ) : (
-                  <>
-                    <div className="bg-bg-input p-4 text-xs font-mono text-text-secondary leading-relaxed min-h-[100px] blur-sm select-none">
-                      {listing.previewSnippet || "Purchase to reveal the full prompt..."}
-                    </div>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/20 backdrop-blur-[1px]">
-                      <Lock size={18} className="text-text-secondary" />
-                      <span className="text-xs text-text-secondary font-medium">Purchase to reveal</span>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {listing.purchased ? (
-                <button onClick={handleCopy} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold border border-border text-text-primary hover:bg-bg-hover transition-colors">
-                  {copied ? <Check size={15} className="text-success" /> : <Copy size={15} />}
-                  {copied ? "Copied!" : "Copy Prompt"}
-                </button>
-              ) : (
-                <button
-                  onClick={handleBuy}
-                  disabled={buying}
-                  className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold text-white hover:opacity-80 disabled:opacity-50 transition-opacity"
-                  style={{ background: "linear-gradient(135deg,var(--accent),var(--accent-hover))" }}
-                >
-                  <ShoppingBag size={14} /> {buying ? "Processing..." : listing.isFree ? "Get for Free" : `Buy Now · ₹${listing.price}`}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      </Link>
 
       {showReport && (
         <ReportModal title={listing.title} onCancel={() => setShowReport(false)} onSubmit={handleReport} />
@@ -392,7 +320,6 @@ export default function MarketplacePage() {
   const [categories, setCategories] = React.useState<CategoryOpt[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
-  const [toast, setToast] = React.useState("")
 
   const [category, setCategory] = React.useState("all")
   const [price, setPrice] = React.useState("all")
@@ -424,19 +351,6 @@ export default function MarketplacePage() {
   }, [category, price, rating, chip, sort])
 
   React.useEffect(() => { load() }, [load])
-
-  const handleBuy = async (id: string) => {
-    if (status !== "authenticated") {
-      alert("Please sign in to purchase prompts.")
-      return
-    }
-    const res = await fetch(`/api/marketplace/${id}/buy`, { method: "POST" })
-    const data = await res.json()
-    if (res.ok) {
-      setListings(prev => prev.map(l => l._id === id ? { ...l, purchased: true, promptText: data.promptText } : l))
-      setToast("Prompt Purchased ✓ The full prompt is now revealed!")
-    }
-  }
 
   const filtered = listings.filter(l => l.title.toLowerCase().includes(search.toLowerCase()))
 
@@ -521,7 +435,7 @@ export default function MarketplacePage() {
               </div>
             ) : filtered.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filtered.map(listing => <ListingCard key={listing._id} listing={listing} onBuy={handleBuy} />)}
+                {filtered.map(listing => <ListingCard key={listing._id} listing={listing} />)}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
@@ -561,8 +475,6 @@ export default function MarketplacePage() {
           </div>
         </div>
       )}
-
-      {toast && <Toast message={toast} onDone={() => setToast("")} />}
     </div>
   )
 }
