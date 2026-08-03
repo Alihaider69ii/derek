@@ -3,7 +3,7 @@
 import * as React from "react"
 import {
   ShoppingBag, X, Copy, Check, Lock, User, IndianRupee, Search,
-  Star, SlidersHorizontal, Flame, Sparkles, Gift, Trophy, ChevronDown,
+  Star, SlidersHorizontal, Flame, Sparkles, Gift, Trophy, ChevronDown, Flag,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
@@ -51,6 +51,14 @@ const CHIPS = [
   { value: "new", label: "New arrivals", icon: <Sparkles size={12} /> },
   { value: "free", label: "Free", icon: <Gift size={12} /> },
   { value: "bestsellers", label: "Best sellers", icon: <Trophy size={12} /> },
+]
+
+const REPORT_REASONS = [
+  { value: "spam", label: "Spam" },
+  { value: "inappropriate", label: "Inappropriate content" },
+  { value: "copyright", label: "Copyright violation" },
+  { value: "misleading", label: "Misleading description" },
+  { value: "other", label: "Other" },
 ]
 
 const SORT_OPTIONS = [
@@ -143,12 +151,84 @@ function FilterPanel({
   )
 }
 
+// ── Report Modal ───────────────────────────────────────────────────────────
+function ReportModal({
+  title, onCancel, onSubmit,
+}: { title: string; onCancel: () => void; onSubmit: (reason: string, details: string) => Promise<string | null> }) {
+  const [reason, setReason] = React.useState("spam")
+  const [details, setDetails] = React.useState("")
+  const [error, setError] = React.useState("")
+  const [submitting, setSubmitting] = React.useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+    const err = await onSubmit(reason, details.trim())
+    setSubmitting(false)
+    if (err) setError(err)
+  }
+
+  return (
+    <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => { if (e.target === e.currentTarget) onCancel() }}>
+      <div className="w-full max-w-md bg-bg-panel border border-border rounded-2xl p-6">
+        <h3 className="text-lg font-semibold text-text-primary">Report prompt</h3>
+        <p className="text-sm text-text-secondary mt-1 mb-4">
+          Flag <span className="font-medium text-text-primary">&ldquo;{title}&rdquo;</span> for our team to review.
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="text-xs font-medium text-text-secondary">Reason</label>
+            <select
+              value={reason} onChange={e => setReason(e.target.value)}
+              className="w-full mt-1 h-10 rounded-btn border border-border bg-bg-input px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
+            >
+              {REPORT_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-text-secondary">Details (optional)</label>
+            <textarea
+              value={details} onChange={e => setDetails(e.target.value)}
+              className="w-full mt-1 h-20 rounded-btn border border-border bg-bg-input px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
+            />
+          </div>
+          {error && <p className="text-xs text-danger">{error}</p>}
+          <div className="flex justify-end gap-3 pt-1">
+            <button type="button" onClick={onCancel} className="px-4 py-2 rounded-btn text-sm font-medium text-text-secondary hover:bg-bg-hover transition-colors">Cancel</button>
+            <button
+              type="submit" disabled={submitting}
+              className="px-4 py-2 rounded-btn text-sm font-semibold text-white bg-danger hover:bg-danger/90 disabled:opacity-50 transition-colors"
+            >
+              {submitting ? "Submitting..." : "Submit report"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 // ── Marketplace Card ──────────────────────────────────────────────────────────
 function ListingCard({ listing, onBuy }: { listing: Listing; onBuy: (id: string) => Promise<void> }) {
   const { data: session } = useSession()
   const [copied, setCopied] = React.useState(false)
   const [buying, setBuying] = React.useState(false)
   const [showDetail, setShowDetail] = React.useState(false)
+  const [showReport, setShowReport] = React.useState(false)
+  const [reportToast, setReportToast] = React.useState("")
+
+  const handleReport = async (reason: string, details: string): Promise<string | null> => {
+    const res = await fetch(`/api/marketplace/${listing._id}/report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason, details }),
+    })
+    const data = await res.json()
+    if (!res.ok) return data?.error || "Something went wrong"
+    setShowReport(false)
+    setReportToast("Report submitted — thanks for flagging this")
+    return null
+  }
 
   const tag = categoryTagStyle(listing.category || undefined)
   const isTrending = listing.salesCount > 0 && Date.now() - new Date(listing.createdAt).getTime() <= 30 * 24 * 60 * 60 * 1000
@@ -236,7 +316,14 @@ function ListingCard({ listing, onBuy }: { listing: Listing; onBuy: (id: string)
                   by <Link href={`/profile/${listing.sellerId}`} className="hover:text-accent">{listing.sellerName}</Link> · {listing.isFree ? "Free" : `₹${listing.price}`} · <Stars rating={listing.rating} />
                 </p>
               </div>
-              <button onClick={() => setShowDetail(false)} className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover shrink-0"><X size={18} /></button>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => setShowReport(true)}
+                  title="Report this prompt"
+                  className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
+                ><Flag size={16} /></button>
+                <button onClick={() => setShowDetail(false)} className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover"><X size={18} /></button>
+              </div>
             </div>
             <div className="p-6">
               <div className="relative rounded-xl overflow-hidden border border-border">
@@ -278,6 +365,11 @@ function ListingCard({ listing, onBuy }: { listing: Listing; onBuy: (id: string)
           </div>
         </div>
       )}
+
+      {showReport && (
+        <ReportModal title={listing.title} onCancel={() => setShowReport(false)} onSubmit={handleReport} />
+      )}
+      {reportToast && <Toast message={reportToast} onDone={() => setReportToast("")} />}
     </>
   )
 }

@@ -5,6 +5,7 @@ import connectToDatabase from "@/lib/db";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { User } from "@/lib/models/User";
 import { Project } from "@/lib/models/Project";
+import { Payout } from "@/lib/models/Payout";
 import { placeholderRating } from "@/lib/utils";
 import mongoose from "mongoose";
 
@@ -98,7 +99,12 @@ export async function GET() {
             amount,
         }));
 
-        const availableToWithdraw = totalEarned;
+        const [claimedAgg] = await Payout.aggregate([
+            { $match: { sellerId, status: { $in: ["pending", "approved", "paid"] } } },
+            { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]);
+        const alreadyClaimed = claimedAgg?.total || 0;
+        const availableToWithdraw = Math.max(0, totalEarned - alreadyClaimed);
         const progressPct = Math.min(100, Math.round((availableToWithdraw / MIN_PAYOUT_THRESHOLD) * 100));
 
         return NextResponse.json({

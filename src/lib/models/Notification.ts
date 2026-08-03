@@ -1,6 +1,13 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-export type NotificationType = "prompt_approved" | "prompt_rejected";
+export type NotificationType =
+    | "prompt_approved"
+    | "prompt_rejected"
+    | "payout_approved"
+    | "payout_rejected"
+    | "payout_paid"
+    | "report_actioned"
+    | "broadcast";
 
 export interface INotification extends Document {
     userId: mongoose.Types.ObjectId;
@@ -8,7 +15,7 @@ export interface INotification extends Document {
     title: string;
     message: string;
     listingId?: mongoose.Types.ObjectId;
-    reason?: string; // set when type === "prompt_rejected"
+    reason?: string; // set when type === "prompt_rejected" | "payout_rejected" | "report_actioned"
     read: boolean;
     createdAt: Date;
 }
@@ -16,7 +23,19 @@ export interface INotification extends Document {
 const NotificationSchema = new Schema<INotification>(
     {
         userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        type: { type: String, enum: ["prompt_approved", "prompt_rejected"], required: true },
+        type: {
+            type: String,
+            enum: [
+                "prompt_approved",
+                "prompt_rejected",
+                "payout_approved",
+                "payout_rejected",
+                "payout_paid",
+                "report_actioned",
+                "broadcast",
+            ],
+            required: true,
+        },
         title: { type: String, required: true },
         message: { type: String, required: true },
         listingId: { type: Schema.Types.ObjectId, ref: "MarketplaceListing" },

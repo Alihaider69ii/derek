@@ -3,6 +3,7 @@ import { requireAdminApiSession } from "@/lib/adminSession";
 import connectToDatabase from "@/lib/db";
 import { User } from "@/lib/models/User";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
+import { Report } from "@/lib/models/Report";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +23,14 @@ export async function GET() {
     try {
         await connectToDatabase();
 
-        const [totalUsers, livePrompts, pendingReviews, onlineUsers, recentSignups, listings] = await Promise.all([
+        const [totalUsers, livePrompts, pendingReviews, onlineUsers, recentSignups, listings, openReports] = await Promise.all([
             User.countDocuments({}),
             MarketplaceListing.countDocuments({ status: "live" }),
             MarketplaceListing.countDocuments({ status: "pending_review" }),
             User.countDocuments({ lastActiveAt: { $gte: new Date(Date.now() - ONLINE_WINDOW_MS) } }),
             User.find({}).sort({ createdAt: -1 }).limit(10).select("name email createdAt role").lean(),
             MarketplaceListing.find({}).select("sales").lean(),
+            Report.countDocuments({ status: "open" }),
         ]);
 
         const today0 = new Date();
@@ -62,6 +64,7 @@ export async function GET() {
             totalUsers,
             livePrompts,
             pendingReviews,
+            openReports,
             totalRevenue,
             onlineUsers,
             recentSignups,

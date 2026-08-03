@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
     LayoutDashboard, FileCheck, Users, BarChart3, Settings, Menu, X, LogOut, ShieldCheck,
-    MessageSquare, Activity, BookOpen, ShoppingBag,
+    MessageSquare, Activity, BookOpen, ShoppingBag, Wallet, Flag, Megaphone,
 } from "lucide-react"
 
 const NAV_ITEMS = [
@@ -13,6 +13,9 @@ const NAV_ITEMS = [
     { href: "/admin/reviews", icon: <FileCheck size={16} />, label: "Prompt Reviews", badgeKey: "pendingReviews" as const },
     { href: "/admin/marketplace", icon: <ShoppingBag size={16} />, label: "Marketplace" },
     { href: "/admin/prompt-bank", icon: <BookOpen size={16} />, label: "Prompt Bank" },
+    { href: "/admin/payouts", icon: <Wallet size={16} />, label: "Payouts" },
+    { href: "/admin/reports", icon: <Flag size={16} />, label: "Reports", badgeKey: "openReports" as const },
+    { href: "/admin/broadcast", icon: <Megaphone size={16} />, label: "Broadcast" },
     { href: "/admin/users", icon: <Users size={16} />, label: "Users" },
     { href: "/admin/derek-chats", icon: <MessageSquare size={16} />, label: "Derek Chats" },
     { href: "/admin/ai-usage", icon: <Activity size={16} />, label: "AI Usage" },
@@ -25,6 +28,7 @@ export function AdminSidebar() {
     const router = useRouter()
     const [isOpen, setIsOpen] = React.useState(false)
     const [pendingReviews, setPendingReviews] = React.useState(0)
+    const [openReports, setOpenReports] = React.useState(0)
 
     const handleSignOut = React.useCallback(async () => {
         await fetch("/api/admin/logout", { method: "POST" })
@@ -35,7 +39,10 @@ export function AdminSidebar() {
     React.useEffect(() => {
         fetch("/api/admin/stats")
             .then((r) => r.json())
-            .then((data) => setPendingReviews(data?.pendingReviews || 0))
+            .then((data) => {
+                setPendingReviews(data?.pendingReviews || 0)
+                setOpenReports(data?.openReports || 0)
+            })
             .catch(() => { })
     }, [pathname])
 
@@ -69,7 +76,7 @@ export function AdminSidebar() {
             <nav className="flex-1 overflow-y-auto p-4 space-y-1 hide-scrollbar">
                 {NAV_ITEMS.map((item) => {
                     const active = pathname === item.href
-                    const badge = item.badgeKey === "pendingReviews" ? pendingReviews : 0
+                    const badge = item.badgeKey === "pendingReviews" ? pendingReviews : item.badgeKey === "openReports" ? openReports : 0
                     return (
                         <Link key={item.href} href={item.href}>
                             <button

@@ -2,17 +2,34 @@
 
 import * as React from "react"
 import { useSession } from "next-auth/react"
-import { Bell, CheckCircle2, XCircle } from "lucide-react"
+import { Bell, CheckCircle2, XCircle, Megaphone } from "lucide-react"
 import { cn } from "@/lib/utils"
+
+type NotificationType =
+    | "prompt_approved"
+    | "prompt_rejected"
+    | "payout_approved"
+    | "payout_rejected"
+    | "payout_paid"
+    | "report_actioned"
+    | "broadcast"
 
 type NotificationItem = {
     _id: string
-    type: "prompt_approved" | "prompt_rejected"
+    type: NotificationType
     title: string
     message: string
     reason?: string
     read: boolean
     createdAt: string
+}
+
+const POSITIVE_TYPES: NotificationType[] = ["prompt_approved", "payout_approved", "payout_paid"]
+
+function iconFor(type: NotificationType) {
+    if (type === "broadcast") return { Icon: Megaphone, cls: "bg-accent/10 text-accent" }
+    if (POSITIVE_TYPES.includes(type)) return { Icon: CheckCircle2, cls: "bg-success/10 text-success" }
+    return { Icon: XCircle, cls: "bg-danger/10 text-danger" }
 }
 
 const POLL_MS = 20_000
@@ -107,13 +124,12 @@ export function NotificationBell({ className }: { className?: string }) {
                         <p className="text-sm text-text-secondary px-4 py-6 text-center">You&apos;re all caught up</p>
                     ) : (
                         <div className="divide-y divide-border">
-                            {items.map((n) => (
+                            {items.map((n) => {
+                                const { Icon, cls } = iconFor(n.type)
+                                return (
                                 <div key={n._id} className={cn("px-4 py-3 flex gap-3", !n.read && "bg-accent/5")}>
-                                    <div className={cn(
-                                        "w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5",
-                                        n.type === "prompt_approved" ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                                    )}>
-                                        {n.type === "prompt_approved" ? <CheckCircle2 size={15} /> : <XCircle size={15} />}
+                                    <div className={cn("w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5", cls)}>
+                                        <Icon size={15} />
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-sm font-medium text-text-primary">{n.title}</p>
@@ -124,7 +140,8 @@ export function NotificationBell({ className }: { className?: string }) {
                                         <p className="text-[0.7rem] text-text-secondary/70 mt-1">{timeAgo(n.createdAt)}</p>
                                     </div>
                                 </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     )}
                 </div>
