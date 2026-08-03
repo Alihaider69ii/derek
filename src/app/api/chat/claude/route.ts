@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { logAiUsage } from '@/lib/aiUsageLog';
+import { logApiError } from '@/lib/apiErrorLog';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' });
 
@@ -116,6 +117,7 @@ export async function POST(req: Request) {
         });
     } catch (error: unknown) {
         console.error("Claude API Error:", error);
+        await logApiError("/api/chat/claude", error);
         return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }

@@ -4,6 +4,8 @@ import { ObjectId } from "mongodb";
 import connectToDatabase from "@/lib/db";
 import clientPromise from "@/lib/mongodb";
 import { User } from "@/lib/models/User";
+import { getAdminSettings } from "@/lib/adminSettings";
+import { logApiError } from "@/lib/apiErrorLog";
 
 const PROVIDER_LABELS: Record<string, string> = {
     google: "Google",
@@ -30,6 +32,14 @@ export async function POST(req: Request) {
         const email = rawEmail.trim().toLowerCase();
 
         await connectToDatabase();
+
+        const settings = await getAdminSettings();
+        if (settings.maintenanceMode) {
+            return NextResponse.json({ error: settings.maintenanceMessage }, { status: 503 });
+        }
+        if (!settings.featureFlags.signupsEnabled) {
+            return NextResponse.json({ error: "New signups are temporarily disabled." }, { status: 403 });
+        }
 
         const existingUser = await User.findOne({ email });
 
@@ -81,6 +91,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, message: "User registered safely." }, { status: 201 });
     } catch (error: any) {
         console.error("Registration Error", error);
+        await logApiError("/api/auth/register", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

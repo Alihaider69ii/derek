@@ -5,6 +5,7 @@ import connectToDatabase from "@/lib/db";
 import { Report } from "@/lib/models/Report";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { Notification } from "@/lib/models/Notification";
+import { logApiError } from "@/lib/apiErrorLog";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +67,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         return NextResponse.json({ success: true, status: report.status });
     } catch (error) {
         console.error("Admin Report Action Error:", error);
+        await logApiError("/api/admin/reports/[id]", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

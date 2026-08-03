@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/db";
 import { Payout } from "@/lib/models/Payout";
 import { getSellerAvailableBalance } from "@/lib/sellerEarnings";
+import { logApiError } from "@/lib/apiErrorLog";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, payout }, { status: 201 });
     } catch (error) {
         console.error("Seller Payout Request Error:", error);
+        await logApiError("/api/dashboard/earnings/payout", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

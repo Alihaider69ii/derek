@@ -6,6 +6,7 @@ import { User } from "@/lib/models/User";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { Notification } from "@/lib/models/Notification";
 import { AdminActivityLog } from "@/lib/models/AdminActivityLog";
+import { logApiError } from "@/lib/apiErrorLog";
 
 export const dynamic = "force-dynamic";
 
@@ -98,6 +99,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, recipientCount: recipientIds.length });
     } catch (error) {
         console.error("Admin Broadcast Send Error:", error);
+        await logApiError("/api/admin/broadcast", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

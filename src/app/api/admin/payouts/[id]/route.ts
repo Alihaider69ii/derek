@@ -4,6 +4,7 @@ import { logAdminAction } from "@/lib/adminActivityLog";
 import connectToDatabase from "@/lib/db";
 import { Payout } from "@/lib/models/Payout";
 import { Notification } from "@/lib/models/Notification";
+import { logApiError } from "@/lib/apiErrorLog";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +82,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         return NextResponse.json({ success: true, status: payout.status });
     } catch (error) {
         console.error("Admin Payout Action Error:", error);
+        await logApiError("/api/admin/payouts/[id]", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

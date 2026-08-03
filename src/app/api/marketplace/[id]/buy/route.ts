@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/db";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
+import { getAdminSettings } from "@/lib/adminSettings";
+import { logApiError } from "@/lib/apiErrorLog";
 import mongoose from "mongoose";
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +20,12 @@ export async function POST(
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
         await connectToDatabase();
+
+        const settings = await getAdminSettings();
+        if (settings.maintenanceMode || !settings.featureFlags.marketplaceEnabled) {
+            return NextResponse.json({ error: "The marketplace is temporarily unavailable." }, { status: 503 });
+        }
+
         const userId = new mongoose.Types.ObjectId((session.user as any).id);
 
         const listing = await MarketplaceListing.findById(params.id);
@@ -40,6 +48,7 @@ export async function POST(
         });
     } catch (error) {
         console.error("Buy Listing Error:", error);
+        await logApiError("/api/marketplace/[id]/buy", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

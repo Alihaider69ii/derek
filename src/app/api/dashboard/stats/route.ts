@@ -6,6 +6,7 @@ import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { User } from "@/lib/models/User";
 import { Project } from "@/lib/models/Project";
 import { Payout } from "@/lib/models/Payout";
+import { getCommissionNetFactor } from "@/lib/sellerEarnings";
 import { placeholderRating } from "@/lib/utils";
 import mongoose from "mongoose";
 
@@ -84,6 +85,14 @@ export async function GET() {
                 totalSales += l.buyers.length;
             }
         }
+
+        // Sellers see net-of-commission figures; admin-side revenue totals
+        // elsewhere stay gross (see getSellerAvailableBalance for why).
+        const netFactor = await getCommissionNetFactor();
+        totalEarned = Math.round(totalEarned * netFactor);
+        earnedThisMonth = Math.round(earnedThisMonth * netFactor);
+        earnedLastMonth = Math.round(earnedLastMonth * netFactor);
+        for (const c of Array.from(last7.keys())) last7.set(c, Math.round((last7.get(c) || 0) * netFactor));
 
         const avgRating = ratings.length
             ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
