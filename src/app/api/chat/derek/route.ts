@@ -13,10 +13,24 @@ import { Favourite } from '@/lib/models/Favourite';
 // DeepSeek exposes an OpenAI-compatible Responses API — same SDK, different
 // base URL/model. See platform.deepseek.com → API Keys for the key itself.
 const DEEPSEEK_MODEL = 'deepseek-v4-flash';
-const deepseek = new OpenAI({
-    apiKey: process.env.DEEPSEEK_API_KEY || '',
-    baseURL: 'https://api.deepseek.com',
-});
+
+// Lazily constructed inside the request handler, never at module scope: the
+// OpenAI SDK throws immediately if `apiKey` is empty, and Next.js imports
+// this module during build-time page-data collection — a phase that may
+// run before DEEPSEEK_API_KEY exists in the deploy environment. Building
+// the client eagerly at import time turned that into a hard build failure
+// ("Failed to collect page data for /api/chat/derek") even though the key
+// is only actually needed once a real request comes in.
+let deepseek: OpenAI | null = null;
+function getDeepseekClient(): OpenAI {
+    if (!deepseek) {
+        deepseek = new OpenAI({
+            apiKey: process.env.DEEPSEEK_API_KEY || '',
+            baseURL: 'https://api.deepseek.com',
+        });
+    }
+    return deepseek;
+}
 
 // Lifetime free Derek uses for a Free-plan account before upgrade is
 // required. Pro plan is unlimited. (Payment/upgrade flow isn't built yet —
@@ -98,7 +112,7 @@ export async function POST(req: Request) {
         }
         inputItems.push({ role: 'user', content: buildUserMessage(message, file) });
 
-        const stream = await deepseek.responses.create({
+        const stream = await getDeepseekClient().responses.create({
             model: DEEPSEEK_MODEL,
             instructions: systemPrompt,
             input: inputItems,
