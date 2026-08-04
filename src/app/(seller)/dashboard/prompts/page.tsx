@@ -55,9 +55,30 @@ function MyPromptsPageInner() {
     const [filter, setFilter] = React.useState<(typeof FILTERS)[number]["key"]>(initialFilter)
     const [wizardOpen, setWizardOpen] = React.useState(false)
     const [editingId, setEditingId] = React.useState<string | null>(null)
+    const [prefillData, setPrefillData] = React.useState<{ title?: string; promptText?: string; favouriteId?: string } | null>(null)
 
-    const openNew = () => { setEditingId(null); setWizardOpen(true) }
-    const openEdit = (id: string) => { setEditingId(id); setWizardOpen(true) }
+    const openNew = () => { setEditingId(null); setPrefillData(null); setWizardOpen(true) }
+    const openEdit = (id: string) => { setEditingId(id); setPrefillData(null); setWizardOpen(true) }
+
+    // Derek's "List for sale" action stores the structured prompt here (it
+    // can be long, so it goes through localStorage rather than the URL) and
+    // navigates to /dashboard/prompts?new=1 — pick it up and open the wizard
+    // pre-filled, same as clicking "New Prompt" manually.
+    React.useEffect(() => {
+        if (searchParams.get("new") !== "1") return
+        try {
+            const raw = localStorage.getItem("derek_wizard_prefill")
+            if (raw) {
+                setPrefillData(JSON.parse(raw))
+                localStorage.removeItem("derek_wizard_prefill")
+            }
+        } catch { }
+        setEditingId(null)
+        setWizardOpen(true)
+        const url = new URL(window.location.href)
+        url.searchParams.delete("new")
+        window.history.replaceState(null, "", url.pathname + url.search)
+    }, [searchParams])
 
     const load = React.useCallback(() => {
         setLoading(true)
@@ -196,7 +217,8 @@ function MyPromptsPageInner() {
             {wizardOpen && (
                 <ListingWizardModal
                     editListingId={editingId || undefined}
-                    onClose={() => { setWizardOpen(false); setEditingId(null) }}
+                    initialData={prefillData || undefined}
+                    onClose={() => { setWizardOpen(false); setEditingId(null); setPrefillData(null) }}
                     onSubmitted={() => load()}
                 />
             )}

@@ -106,15 +106,21 @@ export function ListingWizard({
     onSubmitted,
     editListingId,
     registerRequestClose,
+    initialData,
 }: {
     onClose: () => void
     onSubmitted: (status: "draft" | "pending_review") => void
     editListingId?: string
     registerRequestClose?: (fn: () => void) => void
+    /** Prefills a brand-new (non-edit) listing, e.g. from Derek's "List for sale" action. */
+    initialData?: { title?: string; promptText?: string; favouriteId?: string }
 }) {
     const { data: session } = useSession()
+    const startingForm: FormData = initialData
+        ? { ...initialForm, title: initialData.title || "", promptText: initialData.promptText || "" }
+        : initialForm
     const [step, setStep] = React.useState(1)
-    const [form, setForm] = React.useState<FormData>(initialForm)
+    const [form, setForm] = React.useState<FormData>(startingForm)
     const [categories, setCategories] = React.useState<{ name: string; emoji: string }[]>([])
     const [currency, setCurrency] = React.useState<"$" | "₹">("₹")
     const [submitting, setSubmitting] = React.useState<"draft" | "review" | null>(null)
@@ -126,7 +132,10 @@ export function ListingWizard({
     const [draftSavedInline, setDraftSavedInline] = React.useState(false)
     const [categoryMode, setCategoryMode] = React.useState<"list" | "other">("list")
 
-    const lastSavedRef = React.useRef<string>(JSON.stringify(initialForm))
+    // Prefilled forms start "dirty" on purpose — this data came from Derek's
+    // build, not a load of what was already saved, so autosave/unload-guard
+    // treat it the same as untyped edits until the user actually saves.
+    const lastSavedRef = React.useRef<string>(JSON.stringify(initialData ? initialForm : startingForm))
     const formRef = React.useRef(form)
     formRef.current = form
 
@@ -201,6 +210,7 @@ export function ListingWizard({
             price: current.isFree ? 0 : Number(current.price),
             isFree: current.isFree,
             status,
+            ...(initialData?.favouriteId && !editListingId ? { favouriteId: initialData.favouriteId } : {}),
         }
         const res = editListingId
             ? await fetch(`/api/marketplace/${editListingId}`, {
@@ -217,7 +227,7 @@ export function ListingWizard({
         if (!res.ok) throw new Error(data.error || "Failed to save listing")
         lastSavedRef.current = JSON.stringify(current)
         return data
-    }, [editListingId])
+    }, [editListingId, initialData?.favouriteId])
 
     // Silent 60s autosave while there are unsaved changes and a title exists.
     React.useEffect(() => {
@@ -697,10 +707,12 @@ export function ListingWizardModal({
     onClose,
     onSubmitted,
     editListingId,
+    initialData,
 }: {
     onClose: () => void
     onSubmitted: (status: "draft" | "pending_review") => void
     editListingId?: string
+    initialData?: { title?: string; promptText?: string; favouriteId?: string }
 }) {
     const requestCloseRef = React.useRef<() => void>(onClose)
 
@@ -716,6 +728,7 @@ export function ListingWizardModal({
                     onSubmitted={onSubmitted}
                     editListingId={editListingId}
                     registerRequestClose={(fn) => { requestCloseRef.current = fn }}
+                    initialData={initialData}
                 />
             </div>
         </div>

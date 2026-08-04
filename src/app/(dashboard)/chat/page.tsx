@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { SplitChat } from "@/components/shared/SplitChat"
+import { DerekChatScreen } from "@/components/shared/DerekChatScreen"
 
 export const dynamic = 'force-dynamic'
 
@@ -8,7 +8,7 @@ export default function ChatPage() {
         <div className="flex flex-col h-full bg-bg-base overflow-hidden">
             <div className="flex-1 min-h-0 p-4">
                 <Suspense fallback={<div>Loading...</div>}>
-                    <SplitChat />
+                    <DerekChatScreen />
                 </Suspense>
             </div>
         </div>
