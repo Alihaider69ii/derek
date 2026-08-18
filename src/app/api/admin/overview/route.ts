@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { requireAdminApiSession } from "@/lib/adminSession";
 import connectToDatabase from "@/lib/db";
 import { User } from "@/lib/models/User";
-import { Prompt } from "@/lib/models/Prompt";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +80,7 @@ export async function GET() {
                     },
                 },
             ]),
-            Prompt.countDocuments({}),
+            MarketplaceListing.countDocuments({ isOfficial: true }),
             MarketplaceListing.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
             MarketplaceListing.aggregate([
                 { $unwind: "$sales" },

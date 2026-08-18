@@ -25,6 +25,14 @@ export interface IMarketplaceListing extends Document {
     rating?: number;       // 0-5, placeholder until a real review system exists
     buyers: mongoose.Types.ObjectId[]; // userIds who have purchased
     sales: IListingSale[]; // per-purchase record for revenue/earnings history
+    // Official, platform-authored content (formerly the standalone "Prompt
+    // Bank"), merged into the marketplace grid — free, attributed to the
+    // "EaseMyPrompt" system seller, no purchase flow.
+    isOfficial: boolean;
+    emoji?: string;
+    isMega?: boolean;
+    sampleOutput?: string;
+    tags?: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -61,6 +69,11 @@ const MarketplaceListingSchema = new Schema<IMarketplaceListing>(
         rating: { type: Number, min: 0, max: 5 },
         buyers: [{ type: Schema.Types.ObjectId, ref: "User" }],
         sales: { type: [ListingSaleSchema], default: [] },
+        isOfficial: { type: Boolean, default: false },
+        emoji: { type: String },
+        isMega: { type: Boolean, default: false },
+        sampleOutput: { type: String },
+        tags: { type: [String], default: [] },
     },
     { timestamps: true }
 );

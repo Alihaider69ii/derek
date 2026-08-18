@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import {
     ArrowLeft, Flame, Star, IndianRupee, Lock, ShoppingBag,
-    Sparkles, Check, Copy, ShieldCheck, Clock, Layers, TrendingUp,
+    Sparkles, Check, Copy, ShieldCheck, Clock, Layers, TrendingUp, BadgeCheck,
 } from "lucide-react"
 import { ProtectedContent } from "@/components/shared/ProtectedContent"
 import { embedZeroWidthWatermark } from "@/lib/protection"
@@ -33,6 +33,9 @@ type Listing = {
     updatedAt: string
     purchased: boolean
     isOwner: boolean
+    isOfficial: boolean
+    emoji: string | null
+    isMega: boolean
     seller: {
         id: string
         name: string
@@ -201,6 +204,30 @@ export function ListingDetailView({ id }: { id: string }) {
         </div>
     )
 
+    // Official (formerly "Prompt Bank") content has no purchase flow at
+    // all — it's instantly usable, so this replaces the buy/price card.
+    const OfficialActionCard = () => (
+        <div className="rounded-card border border-border bg-bg-panel p-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Free · Official EaseMyPrompt content</p>
+            <p className="text-xs text-text-secondary mb-4">No purchase required · Use instantly</p>
+
+            <button
+                onClick={tryWithDerek}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold text-white hover:opacity-90 transition-opacity mb-2.5"
+                style={{ background: "linear-gradient(135deg,var(--accent),var(--accent-hover))" }}
+            >
+                <Sparkles size={15} /> Use this prompt with Derek
+            </button>
+            <button
+                onClick={handleCopy}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-semibold border border-border text-text-primary hover:bg-bg-hover transition-colors"
+            >
+                {copied ? <Check size={15} className="text-success" /> : <Copy size={15} />}
+                {copied ? "Copied!" : "Copy prompt"}
+            </button>
+        </div>
+    )
+
     return (
         <div className="flex flex-col h-full bg-bg-base overflow-y-auto">
             {/* Header — desktop */}
@@ -239,9 +266,16 @@ export function ListingDetailView({ id }: { id: string }) {
                                     <Flame size={11} /> Trending
                                 </span>
                             )}
+                            {listing.isMega && (
+                                <span className="text-[0.65rem] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                                    Mega
+                                </span>
+                            )}
                         </div>
 
-                        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2 leading-tight">{listing.title}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2 leading-tight">
+                            {listing.emoji ? `${listing.emoji} ` : ""}{listing.title}
+                        </h1>
 
                         {listing.hasReviews ? (
                             <div className="flex items-center gap-2 mb-5">
@@ -256,7 +290,7 @@ export function ListingDetailView({ id }: { id: string }) {
 
                         {/* Price card — mobile only, sits right after rating per wireframe */}
                         <div className="lg:hidden mb-6">
-                            <PriceCard />
+                            {listing.isOfficial ? <OfficialActionCard /> : <PriceCard />}
                         </div>
 
                         {/* Seller row */}
@@ -265,15 +299,22 @@ export function ListingDetailView({ id }: { id: string }) {
                                 {listing.seller.name.slice(0, 1).toUpperCase()}
                             </Link>
                             <div className="min-w-0 flex-1">
-                                <Link href={`/${listing.seller.username}`} className="text-sm font-semibold text-text-primary hover:text-accent transition-colors">
-                                    @{listing.seller.username}
-                                </Link>
+                                <div className="flex items-center gap-1.5">
+                                    <Link href={`/${listing.seller.username}`} className="text-sm font-semibold text-text-primary hover:text-accent transition-colors">
+                                        @{listing.seller.username}
+                                    </Link>
+                                    {listing.isOfficial && (
+                                        <span className="inline-flex items-center gap-1 text-[0.65rem] font-bold px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                                            <BadgeCheck size={11} /> Official
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="text-xs text-text-secondary">
                                     {listing.seller.totalSales} sale{listing.seller.totalSales === 1 ? "" : "s"}
                                     {listing.seller.joinedYear ? ` · Joined ${listing.seller.joinedYear}` : ""}
                                 </p>
                             </div>
-                            {!listing.isOwner && (
+                            {!listing.isOwner && !listing.isOfficial && (
                                 // No follow system exists yet — placeholder only, wire up once one ships.
                                 <button
                                     title="Follow system not implemented yet"
@@ -357,7 +398,7 @@ export function ListingDetailView({ id }: { id: string }) {
                     {/* ── RIGHT COLUMN (sticky on desktop) ────────────────── */}
                     <div className="hidden lg:block">
                         <div className="sticky top-20 space-y-4">
-                            <PriceCard />
+                            {listing.isOfficial ? <OfficialActionCard /> : <PriceCard />}
 
                             <div className="rounded-card border border-border bg-bg-panel p-5">
                                 <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-3">Prompt details</h3>

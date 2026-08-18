@@ -90,6 +90,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
             updatedAt: listing.updatedAt,
             purchased: hasPurchased || !!listing.isFree,
             isOwner,
+            isOfficial: !!listing.isOfficial,
+            emoji: listing.emoji || null,
+            isMega: !!listing.isMega,
+            sampleOutput: listing.sampleOutput || null,
             seller: {
                 id: listing.sellerId,
                 name: seller ? (seller as any).name || listing.sellerName : listing.sellerName,

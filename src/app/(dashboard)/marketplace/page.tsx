@@ -3,7 +3,7 @@
 import * as React from "react"
 import {
   ShoppingBag, X, Check, User, IndianRupee, Search,
-  Star, SlidersHorizontal, Flame, Sparkles, Gift, Trophy, ChevronDown, Flag,
+  Star, SlidersHorizontal, Flame, Sparkles, Gift, Trophy, ChevronDown, Flag, BadgeCheck,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
@@ -27,6 +27,9 @@ type Listing = {
   createdAt: string
   promptText: string | null
   purchased: boolean
+  isOfficial: boolean
+  emoji: string | null
+  isMega: boolean
 }
 
 type CategoryOpt = { name: string; emoji: string }
@@ -239,15 +242,27 @@ function ListingCard({ listing }: { listing: Listing }) {
       >
         {/* Tag row */}
         <div className="flex items-center justify-between gap-2">
-          {isTrending ? (
-            <span className="inline-flex items-center gap-1 text-[0.65rem] font-bold px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 border border-orange-500/20">
-              <Flame size={10} /> Trending
-            </span>
-          ) : listing.category ? (
-            <span className={`text-[0.65rem] font-bold px-2 py-0.5 rounded-full border ${tag.bg} ${tag.text} ${tag.border}`}>
-              {listing.category}
-            </span>
-          ) : <span />}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {listing.isOfficial && (
+              <span className="inline-flex items-center gap-1 text-[0.65rem] font-bold px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                <BadgeCheck size={10} /> Official
+              </span>
+            )}
+            {isTrending ? (
+              <span className="inline-flex items-center gap-1 text-[0.65rem] font-bold px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 border border-orange-500/20">
+                <Flame size={10} /> Trending
+              </span>
+            ) : listing.category ? (
+              <span className={`text-[0.65rem] font-bold px-2 py-0.5 rounded-full border ${tag.bg} ${tag.text} ${tag.border}`}>
+                {listing.category}
+              </span>
+            ) : null}
+            {listing.isMega && (
+              <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                Mega
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-1">
             {listing.purchased && (
               <span className="text-[0.6rem] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20">
@@ -264,7 +279,7 @@ function ListingCard({ listing }: { listing: Listing }) {
 
         {/* Title + preview */}
         <div>
-          <h3 className="font-bold text-text-primary text-sm mb-1">{listing.title}</h3>
+          <h3 className="font-bold text-text-primary text-sm mb-1">{listing.emoji ? `${listing.emoji} ` : ""}{listing.title}</h3>
           <p className="text-xs text-text-secondary leading-relaxed line-clamp-2">
             {listing.previewSnippet || "No preview available yet."}
           </p>

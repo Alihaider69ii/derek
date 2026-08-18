@@ -9,6 +9,9 @@ export const RESERVED_HANDLES = new Set([
     "chat", "favourites", "marketplace", "profile", "projects",
     "prompt-bank", "prompts", "dashboard", "settings",
     "_next", "favicon.ico", "robots.txt", "sitemap.xml",
+    // The official platform seller behind merged Prompt Bank content — no
+    // real user should ever be able to claim this username.
+    "easemyprompt",
 ]);
 
 export function slugify(input: string): string {

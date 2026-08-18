@@ -211,7 +211,7 @@ export default function AdminPromptBankPage() {
             <div className="px-4 sm:px-6 pt-6 sm:pt-8 pb-6 flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <h1 className="text-2xl font-bold text-text-primary">Prompt Bank</h1>
-                    <p className="text-text-secondary text-sm mt-0.5">Built-in prompts shown across the app</p>
+                    <p className="text-text-secondary text-sm mt-0.5">Official, free prompts — shown in the Marketplace with an &ldquo;Official&rdquo; badge</p>
                 </div>
                 <button
                     onClick={() => setEditing("new")}

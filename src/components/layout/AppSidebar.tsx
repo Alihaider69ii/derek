@@ -8,7 +8,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { NotificationBell } from "@/components/shared/NotificationBell"
 import {
-    Plus, Settings, HelpCircle, LogOut, Menu, X, LayoutGrid, FolderKanban,
+    Plus, Settings, HelpCircle, LogOut, Menu, X, FolderKanban,
     Star, ShoppingBag, LayoutDashboard, FileText, Wallet, ChevronLeft, ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils"
 const COLLAPSE_KEY = "app-sidebar-collapsed"
 
 const NAV_LINKS = [
-    { href: "/prompt-bank", icon: <LayoutGrid size={16} />, label: "Prompt Bank" },
     { href: "/projects", icon: <FolderKanban size={16} />, label: "My Projects" },
     { href: "/favourites", icon: <Star size={16} />, label: "My Favourites" },
     { href: "/dashboard", icon: <LayoutDashboard size={16} />, label: "Dashboard" },

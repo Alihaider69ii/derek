@@ -6,6 +6,7 @@ import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { User } from "@/lib/models/User";
 import { placeholderRating } from "@/lib/utils";
 import { generateUniqueSlug, ensureListingSlug, ensureUserUsername } from "@/lib/slug";
+import { migratePromptBankIfNeeded } from "@/lib/promptBankMigration";
 import mongoose from "mongoose";
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +27,9 @@ export async function GET(request: Request) {
         const sort = searchParams.get("sort") || "top-rated"; // top-rated | newest | price-asc | price-desc | sales
 
         await connectToDatabase();
+        // One-time, self-healing migration of legacy Prompt Bank docs into the
+        // unified marketplace — a no-op once it's already run.
+        await migratePromptBankIfNeeded();
         // Only publicly-visible listings: "live", or legacy docs created before
         // the status field existed (lean() reads skip schema defaults).
         const dbFilter: any = {
@@ -69,6 +73,9 @@ export async function GET(request: Request) {
                 createdAt: l.createdAt,
                 promptText: hasPurchased ? l.promptText : null,
                 purchased: !!hasPurchased,
+                isOfficial: !!l.isOfficial,
+                emoji: l.emoji || null,
+                isMega: !!l.isMega,
             };
         }));
 

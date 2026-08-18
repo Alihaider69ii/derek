@@ -135,7 +135,7 @@ export default function FavouritesPage() {
         <div className="text-center max-w-xs">
           <div className="text-5xl mb-4">⭐</div>
           <h2 className="text-xl font-bold text-text-primary mb-2">Sign in to view Favourites</h2>
-          <p className="text-text-secondary text-sm mb-6">Star prompts from Derek or the Prompt Bank to save them here.</p>
+          <p className="text-text-secondary text-sm mb-6">Star prompts from Derek or the Marketplace to save them here.</p>
           <Link href="/login"><button className="px-8 py-2.5 rounded-full text-sm font-semibold text-white" style={{ background: "linear-gradient(135deg,var(--accent),var(--accent-hover))" }}>Sign In</button></Link>
         </div>
       </div>
@@ -151,11 +151,11 @@ export default function FavouritesPage() {
           </h1>
           <span className="text-xs text-text-secondary bg-bg-panel border border-border px-3 py-1 rounded-full">{favs.length} saved</span>
         </div>
-        <p className="text-text-secondary text-sm">Your starred prompts from Derek and the Prompt Bank</p>
+        <p className="text-text-secondary text-sm">Your starred prompts from Derek and the Marketplace</p>
       </div>
 
       <div className="px-6 mb-4 flex gap-2 flex-wrap">
-        {[{ key: "all", label: "All", icon: <Filter size={12} /> }, { key: "generated", label: "Derek Generated", icon: <Cpu size={12} /> }, { key: "bank", label: "From Bank", icon: <BookOpen size={12} /> }].map(t => (
+        {[{ key: "all", label: "All", icon: <Filter size={12} /> }, { key: "generated", label: "Derek Generated", icon: <Cpu size={12} /> }, { key: "bank", label: "Official", icon: <BookOpen size={12} /> }].map(t => (
           <button key={t.key} onClick={() => setTab(t.key as any)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${tab === t.key ? "bg-accent text-white shadow-[0_0_12px_rgba(255,77,0,0.4)]" : "bg-bg-panel border border-border text-text-secondary hover:text-text-primary hover:border-accent/40"}`}>
             {t.icon} {t.label}
@@ -185,8 +185,8 @@ export default function FavouritesPage() {
               <p className="text-text-primary font-semibold">No favourites yet</p>
               <p className="text-text-secondary text-sm mt-1">
                 {tab === "generated" ? "Star Derek's responses using the ⭐ icon next to Smart Copy"
-                  : tab === "bank" ? "Star prompts from the Prompt Bank to save them here"
-                    : "Star prompts from Derek chat or the Prompt Bank"}
+                  : tab === "bank" ? "Star official prompts from the Marketplace to save them here"
+                    : "Star prompts from Derek chat or the Marketplace"}
               </p>
             </div>
           </div>

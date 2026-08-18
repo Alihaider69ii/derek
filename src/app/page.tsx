@@ -456,7 +456,7 @@ export default function LandingPage() {
         <div className={styles.sectionInner}>
           <p className={styles.sectionEyebrow}>Marketplace</p>
           <h2 className={styles.sectionHeading}>Proven prompts.<br /><em>Ready to use.</em></h2>
-          <p className={styles.sectionSub}>Browse the Prompt Bank — community-built, ready to copy into any AI tool.</p>
+          <p className={styles.sectionSub}>Browse the Marketplace — official and community-built, ready to copy into any AI tool.</p>
 
           <div className={styles.marqueeRows}>
             {rows.length > 0 ? rows.map((row, idx) => (
