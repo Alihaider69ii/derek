@@ -12,6 +12,8 @@ export interface IUser extends Document {
     email: string;
     password?: string;
     name?: string;
+    username?: string; // unique handle powering the public /[username] profile URL
+    usernameChangedAt?: Date; // set the first time a user manually changes their username — they only get one
     image?: string;
     bio?: string;
     emailVerified?: Date;
@@ -40,6 +42,8 @@ const UserSchema = new Schema<IUser>(
         email: { type: String, required: true, unique: true },
         password: { type: String },
         name: { type: String },
+        username: { type: String, unique: true, sparse: true, index: true },
+        usernameChangedAt: { type: Date },
         image: { type: String },
         bio: { type: String, maxlength: 280 },
         emailVerified: { type: Date },

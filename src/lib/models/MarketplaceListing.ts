@@ -10,6 +10,7 @@ export interface IMarketplaceListing extends Document {
     sellerId: mongoose.Types.ObjectId;
     sellerName: string;
     favouriteId: mongoose.Types.ObjectId; // reference to the Favourite being sold
+    slug?: string; // unique handle powering the public /[slug] prompt URL
     title: string;
     description?: string;
     category?: string;
@@ -42,6 +43,7 @@ const MarketplaceListingSchema = new Schema<IMarketplaceListing>(
         sellerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
         sellerName: { type: String, required: true, default: "Anonymous" },
         favouriteId: { type: Schema.Types.ObjectId, ref: "Favourite", required: true },
+        slug: { type: String, unique: true, sparse: true, index: true },
         title: { type: String, required: true },
         description: { type: String },
         category: { type: String },

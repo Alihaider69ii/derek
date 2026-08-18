@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/db";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
 import { User } from "@/lib/models/User";
-import { placeholderRating, handleFromName } from "@/lib/utils";
+import { placeholderRating } from "@/lib/utils";
+import { ensureListingSlug, ensureUserUsername } from "@/lib/slug";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
@@ -60,9 +61,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
             const sellerListings = await MarketplaceListing.find({ sellerId: listing.sellerId }).select("sales buyers").lean();
             sellerTotalSales = sellerListings.reduce((sum: number, l: any) => sum + (Array.isArray(l.sales) ? l.sales.length : (l.buyers?.length || 0)), 0);
         }
+        const slug = await ensureListingSlug(listing);
+        const sellerUsername = seller ? await ensureUserUsername(seller) : "";
 
         return NextResponse.json({
             _id: listing._id,
+            slug,
             title: listing.title,
             description: listing.description || "",
             category: listing.category || null,
@@ -89,7 +93,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             seller: {
                 id: listing.sellerId,
                 name: seller ? (seller as any).name || listing.sellerName : listing.sellerName,
-                handle: seller ? handleFromName((seller as any).name, (seller as any)._id.toString()) : handleFromName(listing.sellerName, listing.sellerId.toString()),
+                username: sellerUsername,
                 joinedYear: seller ? new Date((seller as any).createdAt).getFullYear() : null,
                 totalSales: sellerTotalSales,
             },

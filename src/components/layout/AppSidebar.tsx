@@ -27,6 +27,7 @@ const NAV_LINKS = [
 export function AppSidebar() {
     const { data: session } = useSession()
     const userId = (session?.user as any)?.id
+    const username = (session?.user as any)?.username
     const router = useRouter()
     const searchParams = useSearchParams()
     const pathname = usePathname()
@@ -201,7 +202,7 @@ export function AppSidebar() {
 
             <div className="p-4 border-t border-border mt-auto">
                 <Link
-                    href={userId ? `/profile/${userId}` : "/profile"}
+                    href={username ? `/${username}` : userId ? `/profile/${userId}` : "/profile"}
                     onClick={() => setIsOpen(false)}
                     title={iconOnly ? name : undefined}
                     className={cn(

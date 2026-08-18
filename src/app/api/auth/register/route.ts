@@ -6,6 +6,7 @@ import clientPromise from "@/lib/mongodb";
 import { User } from "@/lib/models/User";
 import { getAdminSettings } from "@/lib/adminSettings";
 import { logApiError } from "@/lib/apiErrorLog";
+import { generateUniqueUsername } from "@/lib/slug";
 
 const PROVIDER_LABELS: Record<string, string> = {
     google: "Google",
@@ -79,11 +80,13 @@ export async function POST(req: Request) {
 
         const hashedPassword = await bcrypt.hash(password, 12);
         const name = `${firstName} ${lastName || ""}`.trim();
+        const username = await generateUniqueUsername(name);
 
         const newUser = new User({
             email,
             password: hashedPassword,
             name,
+            username,
         });
 
         await newUser.save();

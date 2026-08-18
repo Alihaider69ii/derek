@@ -12,10 +12,14 @@ export default function DashboardSettingsPage() {
 
     const [name, setName] = React.useState("")
     const [bio, setBio] = React.useState("")
+    const [username, setUsername] = React.useState("")
+    const [originalUsername, setOriginalUsername] = React.useState("")
+    const [usernameLocked, setUsernameLocked] = React.useState(false)
     const [loaded, setLoaded] = React.useState(false)
     const [saving, setSaving] = React.useState(false)
     const [saved, setSaved] = React.useState(false)
     const [error, setError] = React.useState("")
+    const [usernameError, setUsernameError] = React.useState("")
 
     React.useEffect(() => {
         if (!userId) return
@@ -25,6 +29,9 @@ export default function DashboardSettingsPage() {
                 if (!d?.error) {
                     setName(d.name || "")
                     setBio(d.bio || "")
+                    setUsername(d.username || "")
+                    setOriginalUsername(d.username || "")
+                    setUsernameLocked(!!d.usernameLocked)
                 }
             })
             .catch(console.error)
@@ -36,15 +43,33 @@ export default function DashboardSettingsPage() {
         if (!userId) return
         setSaving(true)
         setError("")
+        setUsernameError("")
         setSaved(false)
         try {
+            const body: { name: string; bio: string; username?: string } = { name, bio }
+            if (!usernameLocked && username.trim().toLowerCase() !== originalUsername) {
+                body.username = username.trim().toLowerCase()
+            }
             const res = await fetch(`/api/profile/${userId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, bio }),
+                body: JSON.stringify(body),
             })
             const data = await res.json()
-            if (!res.ok) throw new Error(data.error || "Failed to save")
+            if (!res.ok) {
+                if (body.username) {
+                    setUsernameError(data.error || "Failed to update username")
+                    setUsername(originalUsername)
+                } else {
+                    throw new Error(data.error || "Failed to save")
+                }
+                return
+            }
+            if (typeof data.username === "string") {
+                setUsername(data.username)
+                setOriginalUsername(data.username)
+                setUsernameLocked(!!data.usernameLocked)
+            }
             setSaved(true)
             update?.()
         } catch (e: any) {
@@ -83,6 +108,25 @@ export default function DashboardSettingsPage() {
                                     onChange={e => setName(e.target.value)}
                                     className="w-full h-10 rounded-btn border border-border bg-bg-input px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
                                 />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-semibold text-text-primary">Username</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-secondary">@</span>
+                                    <input
+                                        value={username}
+                                        onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                                        disabled={usernameLocked}
+                                        maxLength={20}
+                                        className="w-full h-10 rounded-btn border border-border bg-bg-input pl-7 pr-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                                    />
+                                </div>
+                                <p className="text-xs text-text-secondary">
+                                    {usernameLocked
+                                        ? "You've already used your one-time username change."
+                                        : `Your profile: easemyprompt.ai/${username || "..."} — you can only change this once.`}
+                                </p>
+                                {usernameError && <p className="text-sm text-danger">{usernameError}</p>}
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-text-primary">Bio</label>

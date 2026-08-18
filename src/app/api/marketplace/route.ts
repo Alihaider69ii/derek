@@ -3,7 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/db";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
+import { User } from "@/lib/models/User";
 import { placeholderRating } from "@/lib/utils";
+import { generateUniqueSlug, ensureListingSlug, ensureUserUsername } from "@/lib/slug";
 import mongoose from "mongoose";
 
 export const dynamic = 'force-dynamic';
@@ -33,14 +35,28 @@ export async function GET(request: Request) {
 
         const listings = await MarketplaceListing.find(dbFilter).lean();
 
+        // Batch-resolve seller usernames (denormalized nowhere else), backfilling
+        // any legacy sellers that predate the username field.
+        const sellerIds = Array.from(new Set((listings as any[]).map(l => l.sellerId.toString())));
+        const sellerDocs = await User.find({ _id: { $in: sellerIds } }).select("username name").lean();
+        const sellerMap = new Map(sellerDocs.map((s: any) => [s._id.toString(), s]));
+        const usernameById = new Map<string, string>();
+        await Promise.all(sellerIds.map(async (id) => {
+            const seller = sellerMap.get(id);
+            usernameById.set(id, seller ? await ensureUserUsername(seller) : "");
+        }));
+
         const now = Date.now();
-        let sanitized = (listings as any[]).map((l) => {
+        let sanitized = await Promise.all((listings as any[]).map(async (l) => {
             const hasPurchased = userId && l.buyers?.some((b: any) => b.toString() === userId);
             const salesCount = Array.isArray(l.sales) ? l.sales.length : (l.buyers?.length || 0);
             const rating = typeof l.rating === "number" ? l.rating : placeholderRating(l._id.toString());
+            const slug = await ensureListingSlug(l);
             return {
                 _id: l._id,
+                slug,
                 sellerId: l.sellerId,
+                sellerUsername: usernameById.get(l.sellerId.toString()) || "",
                 title: l.title,
                 sellerName: l.sellerName,
                 category: l.category || null,
@@ -54,7 +70,7 @@ export async function GET(request: Request) {
                 promptText: hasPurchased ? l.promptText : null,
                 purchased: !!hasPurchased,
             };
-        });
+        }));
 
         // Price bucket filter
         if (price === "free") sanitized = sanitized.filter(l => l.isFree);
@@ -132,11 +148,13 @@ export async function POST(request: Request) {
 
         const allowedOutputTypes = ["Text", "Image", "Video", "Code", "Audio", "Other"];
         const resolvedOutputType = allowedOutputTypes.includes(outputType) ? outputType : "Text";
+        const slug = await generateUniqueSlug(title.trim());
 
         const listing = await MarketplaceListing.create({
             sellerId: new mongoose.Types.ObjectId((session.user as any).id),
             sellerName: session.user.name || "Anonymous",
             favouriteId: favouriteId ? new mongoose.Types.ObjectId(favouriteId) : new mongoose.Types.ObjectId(),
+            slug,
             title: title.trim(),
             description: description?.trim(),
             category: category?.trim(),

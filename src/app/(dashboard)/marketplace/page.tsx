@@ -13,7 +13,9 @@ export const dynamic = 'force-dynamic'
 
 type Listing = {
   _id: string
+  slug: string
   sellerId: string
+  sellerUsername: string
   title: string
   sellerName: string
   category: string | null
@@ -207,8 +209,8 @@ function ReportModal({
 }
 
 // ── Marketplace Card ──────────────────────────────────────────────────────────
-// Clicking a card opens the dedicated Prompt Detail & Purchase page
-// (/marketplace/[id]) — buying, "Try with Derek", and reviews all live there.
+// Clicking a card opens the dedicated Prompt Detail & Purchase page at its
+// public /[slug] URL — buying, "Try with Derek", and reviews all live there.
 function ListingCard({ listing }: { listing: Listing }) {
   const [showReport, setShowReport] = React.useState(false)
   const [reportToast, setReportToast] = React.useState("")
@@ -232,7 +234,7 @@ function ListingCard({ listing }: { listing: Listing }) {
   return (
     <>
       <Link
-        href={`/marketplace/${listing._id}`}
+        href={`/${listing.slug}`}
         className="relative flex flex-col gap-3 p-4 rounded-card border border-border bg-bg-panel hover:border-accent/40 transition-all duration-200 hover:shadow-[0_0_24px_rgba(46,91,255,0.10)]"
       >
         {/* Tag row */}
@@ -280,7 +282,7 @@ function ListingCard({ listing }: { listing: Listing }) {
             )}
             <span className="text-text-secondary/40">·</span>
             <Link
-              href={`/profile/${listing.sellerId}`}
+              href={`/${listing.sellerUsername}`}
               onClick={e => e.stopPropagation()}
               className="flex items-center gap-1 text-[0.7rem] text-text-secondary hover:text-accent truncate"
             >

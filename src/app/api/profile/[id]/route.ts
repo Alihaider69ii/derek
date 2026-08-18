@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/db";
 import { User } from "@/lib/models/User";
 import { MarketplaceListing } from "@/lib/models/MarketplaceListing";
-import { placeholderRating, handleFromName } from "@/lib/utils";
+import { placeholderRating } from "@/lib/utils";
+import { ensureUserUsername, isHandleAvailable, isValidUsernameFormat, RESERVED_HANDLES } from "@/lib/slug";
 import mongoose from "mongoose";
 
 export const dynamic = 'force-dynamic';
@@ -61,10 +62,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
             }));
 
         const name = (user as any).name || "Anonymous";
+        const username = await ensureUserUsername(user as any);
         return NextResponse.json({
             id: (user as any)._id,
             name,
-            handle: handleFromName(name, (user as any)._id.toString()),
+            username,
+            usernameLocked: !!(user as any).usernameChangedAt,
             bio: (user as any).bio || "",
             plan: (user as any).plan || "Free",
             sellerLabel: (user as any).plan === "Pro" ? "Pro seller" : liveListings.length > 0 ? "Seller" : "Member",
@@ -84,7 +87,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 }
 
-// PATCH /api/profile/[id] — owner-only: update display name / bio.
+// PATCH /api/profile/[id] — owner-only: update display name / bio, and (once
+// ever) the username that powers the public /[username] profile URL.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
     try {
         const session = await getServerSession(authOptions);
@@ -93,15 +97,44 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         }
         await connectToDatabase();
         const body = await request.json();
-        const update: { name?: string; bio?: string } = {};
+        const update: { name?: string; bio?: string; username?: string; usernameChangedAt?: Date } = {};
         if (typeof body.name === "string") update.name = body.name.trim().slice(0, 80);
         if (typeof body.bio === "string") update.bio = body.bio.trim().slice(0, 280);
+
+        if (typeof body.username === "string") {
+            const candidate = body.username.trim().toLowerCase();
+            const current = await User.findById(params.id).select("username usernameChangedAt").lean();
+            if (!current) {
+                return NextResponse.json({ error: "User not found" }, { status: 404 });
+            }
+            if ((current as any).usernameChangedAt) {
+                return NextResponse.json({ error: "You can only change your username once." }, { status: 400 });
+            }
+            if (candidate !== (current as any).username) {
+                if (!isValidUsernameFormat(candidate)) {
+                    return NextResponse.json({ error: "Usernames must be 3-20 characters: lowercase letters, numbers, or underscores." }, { status: 400 });
+                }
+                if (RESERVED_HANDLES.has(candidate)) {
+                    return NextResponse.json({ error: "That username is reserved." }, { status: 400 });
+                }
+                if (!(await isHandleAvailable(candidate, { excludeUserId: params.id }))) {
+                    return NextResponse.json({ error: "That username is already taken." }, { status: 400 });
+                }
+                update.username = candidate;
+                update.usernameChangedAt = new Date();
+            }
+        }
 
         const user = await User.findByIdAndUpdate(params.id, update, { new: true }).lean();
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
-        return NextResponse.json({ name: (user as any).name, bio: (user as any).bio || "" });
+        return NextResponse.json({
+            name: (user as any).name,
+            bio: (user as any).bio || "",
+            username: (user as any).username,
+            usernameLocked: !!(user as any).usernameChangedAt,
+        });
     } catch (error) {
         console.error("Update Profile Error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

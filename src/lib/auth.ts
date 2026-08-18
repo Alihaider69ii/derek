@@ -10,6 +10,7 @@ import connectToDatabase from "@/lib/db";
 import { User } from "@/lib/models/User";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
+import { ensureUserUsername } from "@/lib/slug";
 export const authOptions: NextAuthOptions = {
     adapter: MongoDBAdapter(clientPromise) as Adapter,
     providers: [
@@ -137,6 +138,10 @@ export const authOptions: NextAuthOptions = {
                 await connectToDatabase();
                 const dbUser = await User.findById(token.sub).lean();
                 token.role = (dbUser as any)?.role || "user";
+                // Backfills a username for accounts created before this field
+                // existed (including OAuth signups, which skip /api/auth/register)
+                // so every signed-in session always carries one.
+                token.username = dbUser ? await ensureUserUsername(dbUser as any) : undefined;
             }
             return token;
         },
@@ -145,6 +150,7 @@ export const authOptions: NextAuthOptions = {
                 // Attach the user ID and role from the database to the session
                 (session.user as any).id = token.sub;
                 (session.user as any).role = token.role || "user";
+                (session.user as any).username = token.username;
             }
             return session;
         },
